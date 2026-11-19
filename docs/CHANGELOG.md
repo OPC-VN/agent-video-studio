@@ -7,6 +7,7 @@ kiểm).
 
 ## Chưa phát hành
 
+- Skill mới `land-plot-map-video` (30 skill): video giới thiệu lô đất 9:16 trên bản đồ thật. Toạ độ KML → `geo_cfg.py` chiếu Web Mercator ra pixel và sinh CFG của template; `geo-capture.html` (MapLibre) chụp ảnh vệ tinh Esri top-down và nhà 3D OSM đúng toạ độ. Đã thử Esri + OpenFreeMap (chạy), OSM raster (không tải được), Mapbox/MapTiler/Google Static (chưa thử, cần key); điều khoản video thương mại của các nguồn ảnh chưa kiểm.
 - Gia cố đường nhận đầu vào ngoài: tải ảnh URL, ảnh B-ROLL Openverse và trang GitHub đi qua một hàm tải công khai (ghim địa chỉ chống DNS rebinding, kiểm lại từng chuyển hướng, trần byte, từ chối máy không phân giải được); URL ảnh vượt trần bị từ chối thay vì cắt cụt; đường tải này không dùng biến proxy.
 - Đường UNC/thiết bị Windows không bị chạm hệ tệp, tên ổ chỉ nhận chữ cái ASCII; `render --project-dir` so tệp trước và sau khi chép, ghi file ra qua tệp tạm không đoán được, từ chối liên kết/thư mục ở đích, cảnh báo khi ghi đè, hiện tối đa 60 dòng lỗi `check --strict`.
 

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>land-plot-map-video</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "PlotBold"; src: url("assets/font-bold.ttf"); font-weight: 900; }
+      html, body { margin: 0; padding: 0; width: 1080px; height: 1920px; overflow: hidden; background: #000; }
+      #master-root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #0b1a0f; }
+      .scene { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
+      .cam { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 50% 50%; }
+      .cam img.bg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; display: block; }
+      .cam svg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; }
+      .txt { position: absolute; left: 60px; width: 960px; text-align: center; font-family: "PlotBold", sans-serif;
+             font-weight: 900; font-size: 74px; line-height: 1.12; color: #fff; text-transform: uppercase;
+             -webkit-text-stroke: 10px #000; paint-order: stroke fill; }
+      .txt .hl { color: #ffa21a; }
+      .txt .hl2 { color: #b6ff1a; }
+      .txt .ch { display: inline-block; white-space: pre; }
+      .lbl { position: absolute; font-family: "PlotBold", sans-serif; font-weight: 900; color: #fff;
+             -webkit-text-stroke: 8px #000; paint-order: stroke fill; text-transform: uppercase; white-space: nowrap; }
+      .person { position: absolute; left: 0; bottom: 0; height: 1180px; width: auto; }
+      .brand { position: absolute; font-family: "PlotBold", sans-serif; font-weight: 900; font-size: 70px; color: #b6ff1a;
+               -webkit-text-stroke: 9px #000; paint-order: stroke fill; text-transform: uppercase; white-space: nowrap; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Template «giới thiệu lô đất trên ảnh vệ tinh» (skill land-plot-map-video).
+      CHỈ SỬA khối CFG bên dưới + thay file trong assets/. Mọi mốc thời gian là số cố định;
+      timeline GSAP paused, đăng ký vào window.__timelines["master"]; không Math.random, không repeat:-1.
+      Toạ độ (x,y) tính trên khung 1080×1920, ảnh nền phải đúng 1080×1920 (cắt trước, cover).
+    -->
+    <div id="master-root" data-composition-id="master" data-width="1080" data-height="1920"
+         data-start="0" data-duration="31">
+      <div id="stage"></div>
+      <script>
+        /* CFG do script geo_cfg.py sinh từ KML (toạ độ thật). Bản này chỉ là mặc định minh hoạ, KHÔNG gõ pixel tay. */
+        /*CFG-BEGIN*/ const CFG = {
+          brand: "TÊN KÊNH", person: "assets/person.png",
+          hook:  { t0: 0, t1: 6.8, bg: "assets/plot.jpg", poly: [[200,720],[880,700],[900,1180],[190,1200]],
+                   line1: "Trực quan, sinh động", line2: "và [thuyết phục khách hàng]", say: "TÔI CÓ THỂ GIÚP BẠN\nLÀM ĐIỀU ĐÓ", sayAt: 5.3 },
+          intro: { t0: 6.8, t1: 9.4, bg: "assets/area.jpg", text: "Đầu tiên là phần\ngiới thiệu tổng quát" },
+          where: { t0: 9.4, t1: 14.6, bg: "assets/region.jpg", pin: [540,960], pinLabel: "Vị trí lô đất",
+                   commune:  { poly: [[250,520],[760,470],[860,880],[600,1130],[300,980]], label: "Xã nào ?", at: [520,900], rot: 38 },
+                   province: { poly: [[90,330],[960,300],[1010,1100],[700,1500],[120,1320]], label: "Tỉnh nào ?", at: [480,1300], rot: -12 } },
+          size:  { t0: 14.6, t1: 20.4, bg: "assets/plot.jpg", poly: [[200,720],[880,700],[900,1180],[190,1200]], label: "A×B m" },
+          city:  { t0: 20.4, t1: 23.4, bg: "assets/city.jpg", from: [150,1650], to: [800,330], label: "Trung tâm", dist: "≈ — m" },
+          radius:{ t0: 23.4, t1: 27.4, bg: "assets/radius.jpg", pin: [540,960], r: 430, label: "Bán kính — m",
+                   pois: [[520,600,"book"],[250,1000,"cross"],[420,1330,"star"]] },
+          cta:   { t0: 27.4, t1: 31, bg: "assets/cta.jpg", line1: "Nếu bạn đang cần", line2: "[1 video] như vậy", sub: "Liên hệ ngay" }
+        }; /*CFG-END*/
+        /* ============================================================================= */
+
+        const NS = "http://www.w3.org/2000/svg";
+        const stage = document.getElementById("stage");
+        const tl = gsap.timeline({ paused: true });
+        const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+        const pts = p => p.map(a => a.join(",")).join(" ");
+
+        function scene(id, c, extraSvg) {
+          const s = document.createElement("div");
+          s.className = "scene clip"; s.id = id; s.setAttribute("data-layout-allow-overflow", "");
+          s.setAttribute("data-start", c.t0); s.setAttribute("data-duration", +(c.t1 - c.t0).toFixed(3));
+          s.setAttribute("data-track-index", "1");
+          s.innerHTML = '<div class="cam" data-layout-allow-overflow data-layout-allow-occlusion id="'+id+'-cam"><img class="bg" src="'+c.bg+'" alt=""/>' +
+                        '<svg viewBox="0 0 1080 1920" id="'+id+'-svg">'+(extraSvg||"")+'</svg></div>';
+          stage.appendChild(s); return s;
+        }
+        // chữ gõ từng ký tự; [từ khoá] đổi màu (cam=hl, lục=hl2 nếu có dấu ])
+        function typed(id, y, text, cls, t, per, size) {
+          const d = document.createElement("div"); d.className = "txt"; d.id = id; d.style.top = y + "px";
+          if (size) d.style.fontSize = size + "px";
+          let html = "", hl = false; const chars = [];
+          for (const ch of text) {
+            if (ch === "[") { hl = true; continue; } if (ch === "]") { hl = false; continue; }
+            html += '<span class="ch ' + (hl ? cls : "") + '">' + esc(ch === "\n" ? " " : ch) + "</span>";
+          }
+          d.innerHTML = html; return { el: d, t, per };
+        }
+        function addText(parent, o) { parent.appendChild(o.el);
+          tl.fromTo(o.el.querySelectorAll(".ch"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.05, stagger: o.per, ease: "power1.out" }, o.t); }
+        function label(parent, id, text, x, y, size, rot, color) {
+          const e = document.createElement("div"); e.className = "lbl"; e.id = id; e.textContent = text;
+          e.style.left = x + "px"; e.style.top = y + "px"; e.style.fontSize = size + "px"; if (color) e.style.color = color;
+          if (/^(sz-l|ct-d|rd-l)$/.test(id)) e.style.textTransform = "none";
+          e.style.transform = "translate(-50%,-50%) rotate(" + (rot||0) + "deg)"; parent.appendChild(e); return e; }
+        // chuyển cảnh nhòe: cảnh vào phóng to + blur rồi nét
+        function blurIn(camId, t, dur, fromScale, blur) {
+          tl.fromTo("#"+camId, { scale: fromScale, filter: "blur(" + blur + "px)" }, { scale: 1, filter: "blur(0px)", duration: dur, ease: "power3.out" }, t); }
+        function drawStroke(sel, t, dur) { tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: dur, ease: "power2.inOut" }, t); }
+        function glowPoly(id, poly, stroke, fill, w) {
+          return '<defs><filter id="'+id+'-g" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter></defs>' +
+            '<polygon id="'+id+'-f" points="'+pts(poly)+'" fill="'+fill+'" opacity="0"/>' +
+            '<polygon id="'+id+'-b" points="'+pts(poly)+'" fill="none" stroke="'+stroke+'" stroke-width="'+(w+10)+'" filter="url(#'+id+'-g)" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>' +
+            '<polygon id="'+id+'-l" points="'+pts(poly)+'" fill="none" stroke="'+stroke+'" stroke-width="'+w+'" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>'; }
+        function showPoly(id, t, dur, fillOp) {
+          drawStroke("#"+id+"-l", t, dur); drawStroke("#"+id+"-b", t, dur);
+          tl.to("#"+id+"-f", { opacity: fillOp, duration: 0.5, ease: "power1.out" }, t + dur * 0.6); }
+        function pin(id, x, y, kind, color) {
+          const ic = kind === "book" ? '<rect x="-9" y="-9" width="18" height="14" fill="#fff"/>' :
+                     kind === "cross" ? '<path d="M-3,-11 h6 v8 h8 v6 h-8 v8 h-6 v-8 h-8 v-6 h8z" fill="#fff"/>' :
+                     kind === "star" ? '<polygon points="0,-12 3.5,-4 12,-3 5.5,3 7.5,12 0,7.5 -7.5,12 -5.5,3 -12,-3 -3.5,-4" fill="#ffd33d"/>' :
+                     '<circle r="9" fill="#fff"/>';
+          return '<g id="'+id+'" transform="translate('+x+','+y+')"><g class="pinbody"><path d="M0,0 C-34,-44 -44,-70 -44,-88 A44,44 0 1 1 44,-88 C44,-70 34,-44 0,0z" fill="'+color+'" stroke="#fff" stroke-width="5"/>' +
+                 '<g transform="translate(0,-88) scale(1.7)">'+ic+'</g></g></g>'; }
+
+        /* ---------- HOOK (B0–B2): zoom-blur lao xuống + đa giác sáng + chữ gõ + người dẫn ---------- */
+        const H = CFG.hook;
+        const sHook = scene("s-hook", H, glowPoly("hk", H.poly, "#d6ff2e", "rgba(190,255,40,.38)", 8));
+        blurIn("s-hook-cam", 0, 0.6, 3.2, 26);
+        showPoly("hk", 0.9, 1.4, 1);
+        { const a = typed("hk-t1", 300, H.line1, "hl", 0.6, 0.045, 50), b = typed("hk-t2", 470, H.line2, "hl", 2.6, 0.045, 50);
+          addText(sHook, a); addText(sHook, b);
+          tl.fromTo(b.el.querySelectorAll(".hl"), { color: "#fff" }, { color: "#ffa21a", duration: 0.3, stagger: 0.02 }, 4.2);
+          tl.to([a.el, b.el], { opacity: 0, duration: 0.25 }, H.sayAt - 0.1); }
+        { const say = typed("hk-say", 300, H.say, "hl", H.sayAt, 0.03, 66); addText(sHook, say);
+          const img = document.createElement("img"); img.className = "person"; img.id = "hk-person"; img.src = CFG.person; img.alt = "";
+          img.style.left = "190px"; sHook.appendChild(img);
+          tl.fromTo(img, { y: 600, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, H.sayAt);
+          tl.to(img, { x: -260, opacity: 0, filter: "blur(18px)", duration: 0.35, ease: "power2.in" }, H.t1 - 0.4);
+          tl.to(say.el, { opacity: 0, duration: 0.25 }, H.t1 - 0.4); }
+
+        /* ---------- INTRO (B3): pan nhòe rồi nét + chữ 2 dòng ---------- */
+        const I = CFG.intro; const sIntro = scene("s-intro", I);
+        tl.fromTo("#s-intro-cam", { x: 160, y: -120, scale: 1.25, filter: "blur(22px)" }, { x: 0, y: 0, scale: 1.05, filter: "blur(0px)", duration: 0.9, ease: "power3.out" }, I.t0);
+        { const t = typed("in-t", 780, I.text, "hl", I.t0 + 0.5, 0.03, 60); addText(sIntro, t); }
+
+        /* ---------- WHERE (B4): ghim + ranh xã (vàng) + ranh tỉnh (cyan) ---------- */
+        const W = CFG.where;
+        const sWhere = scene("s-where", W, glowPoly("cm", W.commune.poly.length ? W.commune.poly : [[0,0],[1,1],[2,0]], "#e4ff3a", "rgba(228,255,58,.10)", 7) +
+                                           glowPoly("pv", W.province.poly.length ? W.province.poly : [[0,0],[1,1],[2,0]], "#27e6ff", "rgba(20,140,160,.38)", 9) +
+                                           '<g id="wh-ring"><circle cx="'+W.pin[0]+'" cy="'+W.pin[1]+'" r="34" fill="none" stroke="#fff" stroke-width="5"/></g>' +
+                                           '<circle id="wh-dot" cx="'+W.pin[0]+'" cy="'+W.pin[1]+'" r="22" fill="#e11d2e" stroke="#fff" stroke-width="6"/>');
+        tl.fromTo("#s-where-cam", { scale: 2.6, filter: "blur(20px)" }, { scale: 1.6, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, W.t0);
+        label(sWhere.querySelector(".cam"), "wh-pl", W.pinLabel, W.pin[0] + 10, W.pin[1] - 62, 40, -8, "#ff6b6b");
+        tl.fromTo("#wh-pl", { opacity: 0 }, { opacity: 1, duration: 0.3 }, W.t0 + 0.8);
+        tl.fromTo("#wh-ring circle", { scale: 0.4, opacity: 1, transformOrigin: "50% 50%" }, { scale: 2.4, opacity: 0, duration: 0.9, repeat: 3, ease: "power1.out" }, W.t0 + 0.6);
+        showPoly("cm", W.t0 + 1.2, 1.0, 1);
+        label(sWhere.querySelector(".cam"), "wh-xa", W.commune.label, W.commune.at[0], W.commune.at[1], 84, W.commune.rot, "#e4ff3a");
+        tl.fromTo("#wh-xa", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, W.t0 + 2.0);
+        tl.to("#s-where-cam", { scale: 1.0, duration: 1.1, ease: "power2.inOut" }, W.t0 + 2.4);
+        showPoly("pv", W.t0 + 2.6, 1.2, 1);
+        label(sWhere.querySelector(".cam"), "wh-tinh", W.province.label, W.province.at[0], W.province.at[1], 100, W.province.rot, "#d6ff2e");
+        tl.fromTo("#wh-tinh", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, W.t0 + 3.4);
+
+        /* ---------- SIZE (B5): quay lại cận cảnh, khối xanh neon + nhãn A×B + camera xoay ---------- */
+        const Z = CFG.size;
+        const sSize = scene("s-size", Z, glowPoly("sz", Z.poly, "#7fd0ff", "rgba(40,110,255,.55)", 9));
+        tl.fromTo("#s-size-cam", { scale: 2.4, rotation: 6, filter: "blur(22px)" }, { scale: 1.12, rotation: -3, filter: "blur(0px)", duration: 1.0, ease: "power3.out" }, Z.t0);
+        tl.to("#s-size-cam", { rotation: 4, scale: 1.18, duration: Z.t1 - Z.t0 - 1.0, ease: "sine.inOut" }, Z.t0 + 1.0);
+        showPoly("sz", Z.t0 + 0.9, 1.0, 1);
+        { const cx = Z.poly.reduce((a,p)=>a+p[0],0)/Z.poly.length, cy = Z.poly.reduce((a,p)=>a+p[1],0)/Z.poly.length;
+          label(sSize.querySelector(".cam"), "sz-l", Z.label, cx, cy, 78, -6, "#b6ff1a");
+          tl.fromTo("#sz-l", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, Z.t0 + 1.5); }
+
+        /* ---------- CITY (B6): đường nét đứt vẽ dần tới trung tâm ---------- */
+        const C = CFG.city;
+        const sCity = scene("s-city", C,
+          '<defs><mask id="cm-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1080" height="1920"><line x1="'+C.from[0]+'" y1="'+C.from[1]+'" x2="'+C.to[0]+'" y2="'+C.to[1]+'" stroke="#fff" stroke-width="40" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" id="ct-mline"/></mask></defs>' +
+          '<line mask="url(#cm-mask)" x1="'+C.from[0]+'" y1="'+C.from[1]+'" x2="'+C.to[0]+'" y2="'+C.to[1]+'" stroke="#fff" stroke-width="22" stroke-dasharray="46 30"/>' +
+          pin("ct-pin", C.from[0], C.from[1] + 20, "dot", "#e11d2e") +
+          '<circle id="ct-target" cx="'+C.to[0]+'" cy="'+C.to[1]+'" r="46" fill="rgba(255,210,70,.35)" stroke="#ffd33d" stroke-width="8"/>');
+        tl.fromTo("#s-city-cam", { x: -200, y: 260, scale: 1.5, filter: "blur(18px)" }, { x: 0, y: 0, scale: 1.0, filter: "blur(0px)", duration: 0.9, ease: "power3.out" }, C.t0);
+        drawStroke("#ct-mline", C.t0 + 0.6, 1.5);
+        tl.fromTo("#ct-target", { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.4, ease: "back.out(2.4)" }, C.t0 + 2.0);
+        label(sCity.querySelector(".cam"), "ct-l", C.label, C.to[0] - 60, C.to[1] - 80, 46, 0);
+        label(sCity.querySelector(".cam"), "ct-d", C.dist, (C.from[0] + C.to[0]) / 2 + 150, (C.from[1] + C.to[1]) / 2, 62, 0, "#ffd33d");
+        tl.fromTo(["#ct-l", "#ct-d"], { opacity: 0 }, { opacity: 1, duration: 0.35, stagger: 0.25 }, C.t0 + 1.9);
+
+        /* ---------- RADIUS (B7): vòng bán kính nở từ tâm + ghim tiện ích rơi nảy ---------- */
+        const R = CFG.radius;
+        const sRad = scene("s-rad", R,
+          '<circle id="rd-c" cx="'+R.pin[0]+'" cy="'+R.pin[1]+'" r="'+R.r+'" fill="rgba(210,230,30,.38)" stroke="#f3ff3a" stroke-width="8"/>' +
+          '<circle cx="'+R.pin[0]+'" cy="'+R.pin[1]+'" r="20" fill="#e11d2e" stroke="#fff" stroke-width="6"/>' +
+          R.pois.map((p,i) => pin("rd-p"+i, p[0], p[1], p[2], "#d8202f")).join(""));
+        tl.fromTo("#s-rad-cam", { scale: 1.8, filter: "blur(18px)" }, { scale: 1.0, filter: "blur(0px)", duration: 0.8, ease: "power3.out" }, R.t0);
+        tl.fromTo("#rd-c", { scale: 0, opacity: 0, transformOrigin: R.pin[0]+"px "+R.pin[1]+"px" }, { scale: 1, opacity: 1, duration: 0.9, ease: "power3.out" }, R.t0 + 0.5);
+        label(sRad.querySelector(".cam"), "rd-l", R.label, R.pin[0] - 80, R.pin[1] + R.r - 40, 44, -10);
+        tl.fromTo("#rd-l", { opacity: 0 }, { opacity: 1, duration: 0.3 }, R.t0 + 1.2);
+        R.pois.forEach((p, i) => tl.fromTo("#rd-p" + i + " .pinbody", { y: -420, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: "bounce.out" }, R.t0 + 1.5 + i * 0.3));
+
+        /* ---------- CTA (B8): chữ trượt + người lao vào zoom-blur + nhãn kênh ---------- */
+        const A = CFG.cta; const sCta = scene("s-cta", A);
+        tl.fromTo("#s-cta-cam", { scale: 1.6, filter: "blur(16px)" }, { scale: 1.05, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, A.t0);
+        { const a = typed("cta-1", 150, A.line1, "hl2", A.t0 + 0.3, 0.03, 80), b = typed("cta-2", 250, A.line2, "hl2", A.t0 + 0.8, 0.03, 90);
+          addText(sCta, a); addText(sCta, b);
+          tl.fromTo([a.el, b.el], { y: -60 }, { y: 0, duration: 0.5, ease: "power3.out" }, A.t0 + 0.3);
+          const img = document.createElement("img"); img.className = "person"; img.id = "cta-person"; img.src = CFG.person; img.alt = ""; img.style.left = "0px"; sCta.appendChild(img);
+          tl.fromTo(img, { scale: 2.2, opacity: 0, filter: "blur(24px)", transformOrigin: "50% 100%" }, { scale: 1, opacity: 1, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, A.t0 + 1.0);
+          const br = document.createElement("div"); br.className = "brand"; br.id = "cta-brand"; br.textContent = CFG.brand; br.style.left = "560px"; br.style.top = "1400px"; sCta.appendChild(br);
+          tl.fromTo(br, { x: 120, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: "back.out(1.6)" }, A.t0 + 1.5);
+          const sub = typed("cta-sub", 1560, A.sub, "hl2", A.t0 + 1.9, 0.03, 60); sub.el.style.left = "520px"; sub.el.style.width = "520px"; addText(sCta, sub); }
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["master"] = tl;
+      </script>
+    </div>
+  </body>
+</html>
