@@ -285,3 +285,58 @@ def test_https_uses_server_hostname_and_verifies(monkeypatch):
         nf.fetch_public("https://img.example.com/a.png", max_bytes=10, resolver=lambda h, p: [PUBLIC])
     assert rec["sni"] == "img.example.com" and rec["check_hostname"] is True
     assert rec["addr"][0] == PUBLIC                                    # kết nối tới IP đã ghim
+
+
+def test_structured_error_categories_are_stable():
+    resolver, connector, _, _ = make([], resolver_ips=None)
+    with pytest.raises(nf.FetchError) as denied:
+        nf.fetch_public('https://evil.example/', max_bytes=3, allowed_hosts={'registry.npmjs.org'}, resolver=resolver, connector=connector)
+    assert denied.value.kind == 'policy'
+    resolver, connector, _, _ = make([], resolver_ips=lambda host: None)
+    with pytest.raises(nf.FetchError) as network:
+        nf.fetch_public('https://registry.npmjs.org/', max_bytes=3, allowed_hosts={'registry.npmjs.org'}, resolver=resolver, connector=connector)
+    assert network.value.kind == 'network'
+    resolver, connector, _, _ = make([FakeResp(200, {'Content-Length': '4'}, b'abcd')])
+    with pytest.raises(nf.FetchError) as oversized:
+        nf.fetch_public('https://registry.npmjs.org/', max_bytes=3, allowed_hosts={'registry.npmjs.org'}, resolver=resolver, connector=connector)
+    assert oversized.value.kind == 'policy'
+    resolver, connector, _, _ = make([FakeResp(302, {'Location': 'https://evil.example/'})])
+    with pytest.raises(nf.FetchError) as redirect:
+        nf.fetch_public('https://registry.npmjs.org/', max_bytes=3, allowed_hosts={'registry.npmjs.org'}, resolver=resolver, connector=connector)
+    assert redirect.value.kind == 'policy'
+    resolver, connector, _, _ = make([])
+    with pytest.raises(nf.FetchError) as timeout:
+        nf.fetch_public('https://registry.npmjs.org/', max_bytes=3, total_deadline=0, allowed_hosts={'registry.npmjs.org'}, resolver=resolver, connector=connector)
+    assert timeout.value.kind == 'network'
+
+
+@pytest.mark.parametrize("value, limit, expected", [
+    ("0" * 5000, 0, 0),
+    ("0" * 5000 + "1", 1, 1),
+    ("0" * 5000 + "1000000000000", 1000000000000, 1000000000000),
+])
+def test_declared_length_normalizes_long_zero_prefix(value, limit, expected):
+    assert nf._declared_length(value, limit) == expected
+
+
+@pytest.mark.parametrize("value, limit", [
+    ("0" * 5000 + "2", 1),
+    ("0" * 5000 + "1000000000001", 1000000000000),
+    ("9" * 5000, 1000000000000),
+])
+def test_declared_length_rejects_values_above_limit(value, limit):
+    with pytest.raises(nf.FetchError):
+        nf._declared_length(value, limit)
+
+
+@pytest.mark.parametrize("header, body", [("0" * 5000, b""), ("0" * 5000 + "1", b"x")])
+def test_fetch_accepts_zero_padded_declared_length(header, body):
+    (url, _ct, data), _log, _ = get("https://a.example.com/", FakeResp(200, {"Content-Length": header}, body), max_bytes=1)
+    assert url == "https://a.example.com/" and data == body
+
+
+def test_fetch_rejects_zero_padded_length_before_reading():
+    resp = FakeResp(200, {"Content-Length": "0" * 5000 + "2"}, b"xx")
+    with pytest.raises(nf.FetchError):
+        get("https://a.example.com/", resp, max_bytes=1)
+    assert resp.pos == 0

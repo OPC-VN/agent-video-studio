@@ -178,3 +178,190 @@ def test_npm_keys_differing_only_by_case_are_removed_in_render_project(monkeypat
     assert keys == ["npm_config_userconfig"] and env[keys[0]] == "/good"
     off = [k for k in env if k.lower() == "npm_config_offline"]
     assert off == ["npm_config_offline"] and env[off[0]] == "true"
+
+
+import argparse
+
+import pytest
+
+from video_studio import render
+from video_studio.contract import ContractError
+
+
+@pytest.mark.parametrize("field", ["project_dir", "out"])
+@pytest.mark.parametrize("bad", [r"\\server\share", "//server/share", r"\\?\C:\x", r"\??\C:\x", r"C:\safe\NUL\file", "safe/aux.txt/file", r"C:\safe\COM1.txt"])
+def test_raw_paths_rejected_before_any_probe(monkeypatch, field, bad):
+    args = argparse.Namespace(project_dir="valid-project", out="valid-output")
+    setattr(args, field, bad)
+    class ProbeCalled(Exception):
+        pass
+    def probe(*args, **kwargs):
+        raise ProbeCalled
+    with monkeypatch.context() as patch:
+        patch.setattr(render.os.path, "abspath", probe)
+        try:
+            render.do_render_project_dir(args)
+        except (ContractError, ProbeCalled) as exc:
+            outcome = exc
+        else:
+            outcome = None
+    assert isinstance(outcome, ContractError), "filesystem probe before raw path validation"
+
+
+def test_raw_paths_allow_local(monkeypatch):
+    args = argparse.Namespace(project_dir="project", out="output")
+    monkeypatch.setattr(render, "_scan_project", lambda root: (_ for _ in ()).throw(RuntimeError("scanned")))
+    with pytest.raises(RuntimeError, match="scanned"):
+        render.do_render_project_dir(args)
+
+
+def test_scan_rejects_hardlinked_file(proj, tmp_path):
+    os.link(proj / 'assets' / 'a.png', tmp_path / 'other.png')
+    with pytest.raises(ContractError):
+        render._scan_project(str(proj))
+
+
+@pytest.mark.parametrize('during_copy', [False, True])
+def test_stage_rejects_new_hardlink(proj, tmp_path, monkeypatch, during_copy):
+    files = render._scan_project(str(proj))
+    original = render.shutil.copyfile
+    if during_copy:
+        def copy(src, dst, **kwargs):
+            result = original(src, dst, **kwargs)
+            if src.endswith('a.png'):
+                os.link(src, tmp_path / 'other.png')
+            return result
+        monkeypatch.setattr(render.shutil, 'copyfile', copy)
+    else:
+        os.link(proj / 'assets' / 'a.png', tmp_path / 'other.png')
+    with pytest.raises(ContractError):
+        render._stage_project(files, str(tmp_path / 'stage'))
+
+
+@pytest.mark.parametrize('during_copy', [False, True])
+def test_stage_rejects_ancestor_swap_even_if_child_inode_survives(proj, tmp_path, monkeypatch, during_copy):
+    nested = proj / 'assets' / 'nested'
+    nested.mkdir()
+    (nested / 'child.png').write_bytes(b'abc')
+    files = render._scan_project(str(proj))
+    def swap():
+        (proj / 'assets').rename(proj / 'old-assets')
+        (proj / 'assets').mkdir()
+        (proj / 'old-assets' / 'nested').rename(proj / 'assets' / 'nested')
+    if during_copy:
+        original = render.shutil.copyfile
+        def copy(src, dst, **kwargs):
+            result = original(src, dst, **kwargs)
+            if src.endswith('child.png'):
+                swap()
+            return result
+        monkeypatch.setattr(render.shutil, 'copyfile', copy)
+    else:
+        swap()
+    with pytest.raises(ContractError):
+        render._stage_project(files, str(tmp_path / 'stage'))
+
+
+def test_stage_rejects_missing_snapshot(proj, tmp_path):
+    files = render._scan_project(str(proj))
+    with pytest.raises(ContractError):
+        render._stage_project(list(files), str(tmp_path / 'stage'))
+
+
+def test_stage_rejects_same_size_and_mtime_file_replacement(proj, tmp_path):
+    victim = proj / 'assets' / 'a.png'
+    files = render._scan_project(str(proj))
+    st = victim.stat()
+    victim.rename(tmp_path / 'old.png')
+    victim.write_bytes(b'PNG')
+    os.utime(victim, ns=(st.st_atime_ns, st.st_mtime_ns))
+    with pytest.raises(ContractError):
+        render._stage_project(files, str(tmp_path / 'stage'))
+
+
+@pytest.mark.parametrize('rel', ['', 'assets', 'assets/a.png'])
+def test_stage_rejects_inode_change_alone(proj, tmp_path, monkeypatch, rel):
+    files = render._scan_project(str(proj))
+    target = os.path.normcase(os.path.abspath(os.path.join(str(proj), *rel.split('/'))))
+    original_lstat = os.lstat
+    observed = []
+
+    class ChangedInode:
+        def __init__(self, original):
+            self.original = original
+            self.st_ino = original.st_ino + 1
+
+        def __getattr__(self, name):
+            return getattr(self.original, name)
+
+    def lstat(path, *args, **kwargs):
+        result = original_lstat(path, *args, **kwargs)
+        if os.path.normcase(os.path.abspath(path)) == target:
+            observed.append(result.st_ino)
+            return ChangedInode(result)
+        return result
+
+    monkeypatch.setattr(render.os, 'lstat', lstat)
+    with pytest.raises(ContractError, match='đã đổi'):
+        render._stage_project(files, str(tmp_path / 'stage'))
+    assert observed
+
+
+def test_scan_and_stage_translate_disappearance(proj, tmp_path, monkeypatch):
+    files = render._scan_project(str(proj))
+    (proj / 'assets' / 'a.png').unlink()
+    with pytest.raises(ContractError):
+        render._stage_project(files, str(tmp_path / 'stage'))
+    monkeypatch.setattr(render.os, 'scandir', lambda path: (_ for _ in ()).throw(FileNotFoundError()))
+    with pytest.raises(ContractError):
+        render._scan_project(str(proj))
+
+
+@pytest.mark.parametrize('during_copy', [False, True])
+def test_stage_rejects_root_replacement(proj, tmp_path, monkeypatch, during_copy):
+    files = render._scan_project(str(proj))
+    def swap():
+        proj.rename(tmp_path / 'old-project')
+        proj.mkdir()
+    if during_copy:
+        original = render.shutil.copyfile
+        def copy(src, dst, **kwargs):
+            result = original(src, dst, **kwargs)
+            swap()
+            return result
+        monkeypatch.setattr(render.shutil, 'copyfile', copy)
+    else:
+        swap()
+    with pytest.raises(ContractError):
+        render._stage_project(files, str(tmp_path / 'stage'))
+
+
+@pytest.mark.parametrize('operation', ['lstat', 'copyfile'])
+def test_stage_translates_io_errors(proj, tmp_path, monkeypatch, operation):
+    files = render._scan_project(str(proj))
+    target = render.os if operation == 'lstat' else render.shutil
+    monkeypatch.setattr(target, operation, lambda *a, **k: (_ for _ in ()).throw(FileNotFoundError()))
+    with pytest.raises(ContractError):
+        render._stage_project(files, str(tmp_path / 'stage'))
+
+
+def test_missing_ancestor_snapshot_fails_closed(proj, tmp_path):
+    files = render._scan_project(str(proj))
+    del files.snapshots['assets']
+    with pytest.raises(ContractError):
+        render._stage_project(files, str(tmp_path / 'stage'))
+
+
+@pytest.mark.parametrize('suffix', ['.glb', '.gltf', '.geojson', '.wasm', '.pmtiles', '.pbf', '.hdr', '.bin'])
+def test_locked_project_extensions(proj, suffix):
+    (proj / 'assets' / ('locked' + suffix)).write_bytes(b'x')
+    with pytest.raises(ContractError):
+        render._scan_project(str(proj))
+
+
+def test_check_tail_bounds_long_line_and_removes_terminal_controls():
+    value = render._check_tail('x' * 15000 + '\x1b[31mred\x1b[0m\x07')
+    assert len(value) < 12100
+    assert '\x1b' not in value and '\x07' not in value
+    assert value.endswith('red')
+    assert 'cắt' in value

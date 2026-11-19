@@ -54,9 +54,10 @@ Các mẫu là tham chiếu để chuyển thể, không phải template đã ki
 
 | Lệnh | Làm gì |
 |---|---|
+| `video-studio libs` | Kiểm và cấp thư viện runtime đã ghim: `status`, `plan`, `fetch`, `path`. Tải cần `--yes`; giữ tệp đã có sau khi kiểm. |
 | `video-studio doctor` | Kiểm Node ≥ 22, npx, bản HyperFrames đang ghim, Chromium headless của nó, ffmpeg/ffprobe, font Inter, trạm và `station.json`. `--check-updates` chỉ *báo* bản HyperFrames mới. |
 | `video-studio init` | Dựng trạm (`embedded` trong repo, hoặc `separate` ngoài repo), ghi `station.json`. `--migrate` nhận một trạm bố cục cũ (và gỡ bản skill bản cũ đã chép vào đó), `--dry-run` in kế hoạch không ghi gì, `--undo` đảo lần chạy gần nhất theo nhật ký. |
-| `video-studio render` | spec JSON (`schema_version: 1`) → MP4 theo template: `news`, `news-weekly`, `topstory`, `repo-today`, hoặc `effect-preview`. Template tin cần phần phụ `[voice]`; `effect-preview` hiện cần Windows và file `dist/gsap.min.js` của GSAP 3.15.0 có SHA-256 đã ghim qua `--gsap-file`, dựng lớp hiệu ứng tổng hợp 16:9 không âm thanh. Preview đặt npm ở chế độ offline; đây không phải sandbox mạng cho engine. |
+| `video-studio render` | spec JSON (`schema_version: 1`) → MP4 theo template: `news`, `news-weekly`, `topstory`, `repo-today`, hoặc `effect-preview`. Template tin cần `[voice]` và GSAP ghim trong trạm (hoặc file thay thế đã kiểm); thiếu GSAP trả mã 3. `effect-preview` cũng dùng GSAP ghim và dựng lớp hiệu ứng tổng hợp 16:9 không âm thanh. Kiểm HTML giới hạn không phải sandbox mạng. |
 | `video-studio probe` | Render thử một trang 320×180 dài 0,5 s, không tài nguyên ngoài (vài giây trên máy khoẻ). Môi trường render kẹt (quá giờ hoặc `Navigation timeout`) ⇒ mã 1, lỗi mở đầu `RENDER_STUCK:` — khởi động lại máy. `--heal` chụp gói chẩn đoán, giết Chrome/HyperFrames mồ côi, xoá profile tạm cũ rồi thử lại (60 s, rồi 600 s) trước khi chịu thua. Pipeline chạy lệnh này trước các bước tốn kém. |
 | `video-studio narrate` | video câm (hoặc cả một project, render trước) + lời dẫn → một MP4 hoàn chỉnh có giọng và nhạc nền tuỳ chọn, qua trạm giọng. |
 | `video-studio preview` | Mở studio xem trước của HyperFrames cho một project — bằng **đúng bản đã ghim**, nên thứ bạn soi chính là thứ sẽ render. |
@@ -66,6 +67,16 @@ Các mẫu là tham chiếu để chuyển thể, không phải template đã ki
 | `video-studio export` / `import` | Đóng gói trạm thành zip và bung vào máy khác. `--personal` chỉ lấy tài sản của project (`projects/*/assets`) cộng đúng những thư mục bạn kể tên bằng `--include`; nháp, cache, venv và cây git không bao giờ vào gói. `import` mặc định **không đè**, có `--dry-run` và `--overwrite`. |
 | `video-studio backup` / `migrate` / `update` | Zip cả trạm; chuyển trạm `embedded` ra ngoài repo; cập nhật bản clone (không bao giờ xoá gì). |
 | `video-studio uninstall` | Chỉ gỡ thứ bộ cài đã đặt — liên kết repo → trạm, skill bản cũ đã chép (nếu chưa sửa), `.env` chưa điền, hook pre-commit của chính nó — và dời chúng vào nhật ký của trạm thay vì xoá. Trạm và mọi project giữ nguyên. `--dry-run` in kế hoạch. |
+
+Với project tự dựng, `render --project-dir DIR --lib NAME --out OUT` khai thư viện chỉ xuất hiện
+trong import JavaScript; `--lib-file NAME=PATH` chọn nguồn đã kiểm, không tự khai nhu cầu. Project
+đã tự có đủ file module không cần khai. Cổng HTML kiểm URL script từ xa trực tiếp, base đổi hoặc
+chưa rõ gốc, tập SVG bảo thủ và cấu trúc HTML chưa hỗ trợ. Literal `<!--` trong raw script (kể cả
+chuỗi JavaScript), comment không chuẩn và marked section ngoài raw/RCDATA đều chưa hỗ trợ.
+Template repo bị từ chối; project người dùng nhận cảnh báo và tắt tự dò, vẫn dùng được `--lib`
+tường minh. Đây không phải parser HTML5 đầy đủ, bộ lọc làm sạch nội dung, công cụ quét JavaScript
+hay sandbox mạng; font, ảnh và tài nguyên khác vẫn có thể dùng mạng. Xem
+[hợp đồng runtime](docs/CONTRACT.md#thư-viện-runtime-libs) để biết tập SVG, comment được nhận và đầy đủ quy tắc.
 
 Mọi lệnh theo một hợp đồng: mã `0` ok · `1` lỗi render/engine (chạy lại được) · `2` gọi hoặc
 cấu hình sai · `3` thiếu trạm/công cụ; có `--json` thì dòng cuối stdout là một object JSON, log
@@ -130,9 +141,18 @@ Hướng dẫn từng bước cho người dùng: [GUIDE.vi.md](GUIDE.vi.md).
 
 ## Skill cho agent
 
-`skills/` có **33 skill**: mười hai skill của chính repo này (`video-routing`, `video-edit`,
+[`video-storyboard-design`](skills/video-storyboard-design/SKILL.md) biến brief thành storyboard
+theo từng cảnh, có lựa chọn hình, cue chuyển động, nguồn và chỉ dẫn bàn giao. Skill tra
+`video-theme-library`; storyboard là thiết kế, chưa phải bằng chứng video đã render.
+
+[Hướng dẫn nguồn hiệu ứng](skills/video-theme-library/references/effect-sources.md#tiếp-nhận-nguồn-hiệu-ứng-mới)
+chỉ nơi đặt reference, mã dùng lại và template mới, cùng cách ghi quyền và bằng chứng kiểm.
+[Recipe GSAP core draw](skills/video-theme-library/references/gsap-core-draw.md) hiện là một
+preset candidate, chưa phải thư viện template GSAP hoàn chỉnh.
+
+`skills/` có **35 skill**: mười bốn skill của chính repo này (`video-routing`, `video-edit`,
 `video-cleanup`, `video-theme-library`, `video-reference-analysis`,
-`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, [`infographic-production`](skills/infographic-production/SKILL.md)) và **21 skill chưng cất từ bộ skill hiện hành của HyperFrames**
+`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `video-storyboard-design`, `line-art-motion`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, [`infographic-production`](skills/infographic-production/SKILL.md)) và **21 skill chưng cất từ bộ skill hiện hành của HyperFrames**
 (`skills/hyperframes/`). Bộ 21 này là bản **đã dịch sang tiếng Việt, rút gọn và biên tập lại** từ
 `skills/<tên>/SKILL.md` của upstream tại một tag cụ thể — frontmatter giữ tiếng Anh vì đó là thứ
 harness đọc để định tuyến. Không file nhị phân nào của upstream (font, nhạc, ảnh) được chép vào
@@ -141,7 +161,7 @@ harness đọc để định tuyến. Không file nhị phân nào của upstrea
 
 Skill **không** được chép vào trạm. Gốc repo có một adapter nhỏ cho mỗi skill ở `.claude/skills/`
 (Claude Code) và `.agents/skills/` (Codex, Antigravity): adapter chỉ mang `name` + `description`
-của skill và trỏ agent về bản gốc trong `skills/`. Mở thư mục repo trong host là thấy đủ 33 skill;
+của skill và trỏ agent về bản gốc trong `skills/`. Mở thư mục repo trong host là thấy đủ 35 skill;
 `git pull` là có nội dung skill mới. Thêm, xoá hay đổi mô tả skill thì chạy
 `python scripts/build_host_adapters.py`; `tests/test_host_adapters.py` đỏ khi adapter lệch nguồn.
 Trạm dựng bằng bản cũ còn bản chép cùng `skills-lock.json`: `init --station DIR --migrate` **gỡ**

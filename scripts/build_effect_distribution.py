@@ -20,34 +20,23 @@ import time
 import zipfile
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(os.path.abspath(__file__)).parents[1]
 sys.path.insert(0, str(ROOT))
 
 from video_studio.effect_library import _native_windows as nt  # noqa: E402
+from video_studio.contract import ContractError  # noqa: E402
 from video_studio.effect_library.catalog import validate_entry  # noqa: E402
+from video_studio.effect_library.search import _strict_json_loads  # noqa: E402
+from video_studio.effect_library.template import check_contract, project_relpath  # noqa: E402
 
 MANIFEST = "scripts/effect-distribution-manifest.json"
 
 
-def _read_relative(root, relative):
-    parts = PurePosixPath(relative).parts
-    if not parts or any(p in (".", "..") for p in relative.split("/")):
-        raise ValueError("unsafe manifest path")
-    handles = []
-    try:
-        parent = root
-        for part in parts[:-1]:
-            parent = nt.open_directory(parent, part)
-            handles.append(parent)
-        file = nt.open_file(parent, parts[-1])
-        handles.append(file)
-        return nt.read_all(file)
-    finally:
-        for handle in reversed(handles):
-            nt.close(handle)
+def _read_relative(root, relative, *, limit=64 * 1024 * 1024):
+    return nt.read_repo_file(root, relative, limit=limit)
 
 
-def _source_allowed(path):
+def _safe_source_path(path):
     if not isinstance(path, str) or not path or "\\" in path:
         return False
     p = PurePosixPath(path)
@@ -57,10 +46,18 @@ def _source_allowed(path):
         return False
     if any(word in p.name.lower() for word in ("credential", "secret", "token", "auth.json")):
         return False
+    return True
+
+
+def _source_allowed(path):
+    if not _safe_source_path(path):
+        return False
+    p = PurePosixPath(path)
     if path in {"pyproject.toml", "README.md", "LICENSE", "LICENSE-APACHE", "NOTICE", "upstream.json", "docs/THEME-LIBRARY.md", "docs/CONTRACT.md", "docs/reference-to-remix.md"}:
         return True
     if path.startswith("video_studio/"):
-        return p.suffix in {".py", ".html", ".json", ".md"} and "_bundled" not in p.parts
+        return (p.suffix in {".py", ".json", ".md"} or
+                path == "video_studio/templates/news/news_v2_components.html") and "_bundled" not in p.parts
     return path.startswith("skills/") and p.suffix in {".md", ".json", ".js", ".mjs", ".css"}
 
 
@@ -70,23 +67,89 @@ def _inputs(root):
         raise ValueError("unknown distribution manifest")
     files = manifest.get("files")
     resources = manifest.get("resources")
-    if not isinstance(files, dict) or not isinstance(resources, list) or len(set(resources)) != len(resources):
+    if (not isinstance(files, dict) or not isinstance(resources, list) or
+            not all(isinstance(p, str) for p in resources) or len(set(resources)) != len(resources)):
         raise ValueError("invalid distribution manifest")
-    if (any(not _source_allowed(p) for p in files) or not set(resources).issubset(files) or
+    if (not all(isinstance(p, str) for p in resources) or not set(resources).issubset(files) or
             any(p.startswith("video_studio/") or p in {"pyproject.toml", "README.md"} for p in resources)):
+        raise ValueError("distribution manifest contains forbidden input")
+    catalog_path = "skills/video-theme-library/assets/effect-library/entries.json"
+    if catalog_path not in resources or not _source_allowed(catalog_path):
+        raise ValueError("distribution catalog missing")
+    catalog_bytes = _read_relative(root, catalog_path, limit=16 * 1024 * 1024)
+    if hashlib.sha256(catalog_bytes).hexdigest() != files[catalog_path]:
+        raise ValueError("source hash mismatch: " + catalog_path)
+    catalog = _strict_json_loads(catalog_bytes.decode("utf-8-sig"))
+    if not isinstance(catalog, list):
+        raise ValueError("invalid distribution catalog")
+    catalog_assets, template_files, contract_files, ids = set(), set(), set(), set()
+    bundle_remaining, asset_bundles = {}, {}
+    for entry in catalog:
+        validate_entry(entry)
+        key = entry["id"].casefold()
+        if key in ids:
+            raise ValueError("duplicate catalog ID: " + entry["id"])
+        ids.add(key)
+        if "assets" in entry:
+            bundle_remaining[key] = 64 * 1024 * 1024
+            for item in entry["assets"]:
+                asset_bundles.setdefault(item["path"], []).append(key)
+        if entry["kind"] == "template":
+            base = "templates/effect-library/" + entry["id"]
+            if (entry["template_root"] != base + "/project" or
+                    PurePosixPath(entry["contract_path"]).parent.as_posix() != base or
+                    PurePosixPath(entry["contract_path"]).suffix != ".md"):
+                raise ValueError("template must use its own distribution stem")
+            contract = entry["contract_path"]
+            if contract not in resources or files[contract] != entry["contract_sha256"]:
+                raise ValueError("template contract missing or hash mismatch")
+            template_files.add(contract)
+            contract_files.add(contract)
+        for item in entry.get("assets", []):
+            path = item["path"]
+            if path not in resources or files[path] != item["sha256"]:
+                raise ValueError("bundle asset missing or hash mismatch")
+            license_source = (item.get("license") or {}).get("source")
+            if license_source and "://" not in license_source and license_source not in resources:
+                raise ValueError("bundle license source missing")
+            if entry["kind"] == "template":
+                if PurePosixPath(path).suffix not in {".html", ".css", ".js", ".mjs", ".json", ".svg", ".txt"}:
+                    raise ValueError("template asset has forbidden suffix")
+                template_files.add(path)
+            catalog_assets.add(path)
+    if any(not _safe_source_path(p) or (not _source_allowed(p) and p not in template_files) for p in files):
         raise ValueError("distribution manifest contains forbidden input")
     contents = {}
     for name, expected in files.items():
         if not isinstance(expected, str) or len(expected) != 64:
             raise ValueError("invalid source hash")
-        content = _read_relative(root, name)
+        limit = 1024 * 1024 if name in contract_files else 64 * 1024 * 1024
+        memberships = asset_bundles.get(name, ())
+        if memberships:
+            limit = min(limit, *(bundle_remaining[key] for key in memberships))
+        content = _read_relative(root, name, limit=limit)
+        if len(content) > limit:
+            raise ValueError("bundle source exceeds size limit")
+        for key in memberships:
+            bundle_remaining[key] -= len(content)
         if hashlib.sha256(content).hexdigest() != expected:
             raise ValueError(f"source hash mismatch: {name}")
+        if name in template_files:
+            try:
+                content.decode("utf-8-sig")
+                if b"\x00" in content:
+                    raise ValueError("NUL byte")
+            except (UnicodeDecodeError, ValueError) as exc:
+                raise ValueError(f"template resource must be UTF-8 text: {name}") from exc
         contents[name] = content
-    catalog = json.loads(contents["skills/video-theme-library/assets/effect-library/entries.json"])
-    catalog_assets = set()
     for entry in catalog:
-        validate_entry(entry)
+        if entry["kind"] == "template":
+            assets = entry["assets"]
+            if sum(len(contents[item["path"]]) for item in assets) > 64 * 1024 * 1024:
+                raise ValueError("template bundle exceeds size limit")
+            check_contract(contents[entry["contract_path"]], entry,
+                           [project_relpath(entry, item["path"]) for item in assets])
+    for entry in catalog:
         for path in (entry.get("source"), entry.get("details"), (entry.get("license") or {}).get("source")):
             if path and "://" not in path and path not in resources:
                 raise ValueError(f"referenced resource missing: {path}")
@@ -260,11 +323,7 @@ def _validate_sdist(payload, expected):
 def build(out):
     if os.name != "nt":
         raise RuntimeError("distribution staging unavailable: platform not verified")
-    source = nt.open_root(str(ROOT))
-    try:
-        contents, resources = _inputs(source)
-    finally:
-        nt.close(source)
+    contents, resources = _inputs(ROOT)
     with tempfile.TemporaryDirectory(prefix="video-effect-build-") as tmp:
         temporary = Path(tmp)
         stage = temporary / "source"
@@ -354,7 +413,7 @@ def main():
     try:
         print(json.dumps(build(args.out), ensure_ascii=False))
         return 0
-    except (ValueError, OSError, RuntimeError) as exc:
+    except (ContractError, ValueError, OSError, RuntimeError) as exc:
         print(str(exc), file=sys.stderr)
         return 1
 

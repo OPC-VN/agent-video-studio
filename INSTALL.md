@@ -308,6 +308,8 @@ dòng vào báo cáo.
 | `[FAIL] station` | Chưa có trạm | Mục 6 |
 | `[FAIL] two-sources` / `gitignore` | Cấu hình sai (mã 2) | Dừng, đọc dòng `→`, hỏi người dùng |
 | `[WARN] chromium` | Chưa có Chromium của HyperFrames | Chạy đúng lệnh doctor in ra, dạng `npx --yes hyperframes@<bản ghim> browser ensure` (cần mạng). `browser ensure` là lệnh của HyperFrames, **không** phải lệnh con của CLI repo này |
+| `[WARN]` cho `runtime-libs/gsap` | Trạm chưa có GSAP cho bản tin | Xem kế hoạch và xin đồng ý trước khi cấp, theo mục 9 |
+| `[FAIL]` cho `runtime-libs/gsap` | File không đọc an toàn hoặc lệch SHA-256 | Đọc hướng dẫn doctor, kiểm đúng file bị lỗi rồi cấp lại |
 | `[WARN] font` / `voice-studio` / `video-use` | Phần tuỳ chọn chưa có | Không chặn; báo người dùng |
 | `[NOT_CHECKED] render` | Doctor không tự render | **Không phải lỗi.** Chứng minh bằng bài mẫu ở mục 9 |
 | `[NOT_CHECKED] hyperframes-doctor` | Chưa gọi được engine (không mạng / thiếu npx) | Có mạng và Node thì chạy lại doctor |
@@ -323,10 +325,25 @@ trong project. Hai số lệch nhau thì số trong `station.json` là số rend
 
 ## 9. Xác minh bằng bài mẫu
 
-Chỉ khi đã có Node, ffmpeg, repo giọng cùng venv **và** giọng mặc định (mục 5b). Lần render đầu
-cần mạng: `npx` tải HyperFrames đúng bản ghim, Chromium của nó tải về `~/.cache/hyperframes`
-(hoặc chạy trước `npx --yes hyperframes@<bản ghim> browser ensure` — đúng lệnh `doctor` in ra),
-trang HTML nạp thư viện hoạt ảnh từ CDN. Chạy từ gốc repo:
+Chỉ khi đã có Node, ffmpeg, repo giọng cùng venv **và** giọng mặc định (mục 5b). Bản tin
+và seed dùng GSAP cục bộ đã kiểm SHA-256, không còn tải GSAP từ CDN. Sau khi tạo trạm, xem
+kế hoạch cấp thư viện; trình địa chỉ tải, giấy phép và trần dung lượng cho người dùng rồi chờ đồng ý:
+
+```text
+video-studio libs plan gsap
+```
+
+Chỉ sau khi người dùng đồng ý tải, cấp vào trạm và kiểm trạng thái:
+
+```text
+video-studio libs fetch gsap --yes
+video-studio libs status
+```
+
+`fetch` không có `--yes` chỉ in kế hoạch, thoát mã 2 và không tải; nó không tự hỏi tương tác.
+Chưa có GSAP thì render bản tin dừng mã 3; file sai hash bị từ chối. Lần render đầu có thể cần
+mạng để `npx` tải HyperFrames đúng bản ghim và Chromium vào `~/.cache/hyperframes` (hoặc chạy trước
+`npx --yes hyperframes@<bản ghim> browser ensure` — đúng lệnh `doctor` in ra). Chạy từ gốc repo:
 
 ```text
 video-studio render --project news --input samples/news-mini/spec.json --brand samples/news-mini/brand.json --out out/news-mini --json
@@ -336,7 +353,7 @@ Kết quả phải khớp [samples/news-mini/EXPECTED.md](samples/news-mini/EXPE
 `2026-01-02.mp4` và `2026-01-02-short.mp4` trong `out/news-mini/`. Chưa có repo giọng thì lệnh dừng
 **mã 3** kèm lệnh cài — ghi render là `NOT_CHECKED` trong báo cáo, không coi là lỗi cài.
 
-**Trên Mac:** bài mẫu đã render thật trên arm64 (Mac mini M1, số đo trong EXPECTED.md). Bản
+**Trên Mac:** bài mẫu đã render thật trên arm64 trước thay đổi GSAP cục bộ (Mac mini M1, số đo trong EXPECTED.md); chưa coi đó là xác nhận cho bản hiện tại. Bản
 HyperFrames repo đang ghim (0.8.54) vẫn chưa dựng bài `topstory` thật nào. Hỏng thì chép nguyên
 văn 15 dòng log cuối, đừng tự đổi bản engine; chạy được thì ghi thời gian dựng và thời lượng hai
 file vào báo cáo.

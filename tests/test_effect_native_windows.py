@@ -75,10 +75,10 @@ def test_repo_bundle_search_verifies_each_file(tmp_path, monkeypatch):
     (tmp_path / "other.css").write_bytes(b"css")
     assert search("repo multi", repo_entries=catalog)[0]["id"] == "VE-repo-multi"
     (tmp_path / "other.css").write_bytes(b"tampered")
-    with pytest.raises(ContractError, match="hash"):
+    with pytest.raises(ContractError, match="repo bundle.*other.css.*hash"):
         search(repo_entries=catalog)
     (tmp_path / "other.css").unlink()
-    with pytest.raises(ContractError, match="repo bundle"):
+    with pytest.raises(ContractError, match="repo bundle.*other.css"):
         search(repo_entries=catalog)
 
 
@@ -98,18 +98,17 @@ def test_repo_bundle_holds_all_file_handles_during_verification(tmp_path, monkey
     catalog = tmp_path / "entries.json"
     catalog.write_text(json.dumps([record]), encoding="utf-8")
     monkeypatch.setattr(importlib.import_module("video_studio.effect_library.search"), "resource_root", lambda: tmp_path)
-    original = native.read_all
+    original = native._reader_read_handle
     attempted = []
 
-    def observe(handle, limit=64 * 1024 * 1024):
-        payload = original(handle, limit)
-        if payload == b"asset-a":
+    def observe(handle, limit, expected_sha256):
+        if expected_sha256 == hashlib.sha256(b"asset-a").hexdigest():
             with pytest.raises(PermissionError):
                 b.write_bytes(b"changed during verification")
             attempted.append(True)
-        return payload
+        return original(handle, limit, expected_sha256)
 
-    monkeypatch.setattr(native, "read_all", observe)
+    monkeypatch.setattr(native, "_reader_read_handle", observe)
     assert search(repo_entries=catalog)[0]["id"] == "VE-held"
     assert attempted == [True] and b.read_bytes() == b"asset-b"
 
@@ -122,20 +121,28 @@ def test_repo_catalog_close_failure_closes_other_handles(tmp_path, monkeypatch):
 
     catalog = tmp_path / "entries.json"
     catalog.write_text(json.dumps([]), encoding="utf-8")
+    from collections import Counter
+    original_open = native._reader_open
     original_close = native.close
-    calls = []
+    opened, closed = [], []
+
+    def tracked_open(*args, **kwargs):
+        handle = original_open(*args, **kwargs)
+        opened.append(handle.value)
+        return handle
 
     def failing_close(handle):
         original_close(handle)
-        calls.append(handle)
-        if len(calls) == 1:
+        closed.append(handle.value)
+        if len(closed) == 1:
             raise OSError("injected close error")
 
+    monkeypatch.setattr(native, "_reader_open", tracked_open)
     monkeypatch.setattr(native, "close", failing_close)
     monkeypatch.setattr(importlib.import_module("video_studio.effect_library.search"), "resource_root", lambda: tmp_path)
-    with pytest.raises(ContractError, match="close repo verification"):
+    with pytest.raises(ContractError, match="injected close error"):
         search(repo_entries=catalog)
-    assert len(calls) == 2
+    assert opened and Counter(opened) == Counter(closed)
 
 
 def test_capture_verifies_repo_bundle_and_rejects_duplicate_identity(tmp_path, monkeypatch):
@@ -242,22 +249,28 @@ def test_single_repo_asset_does_not_follow_junction_after_check(tmp_path, monkey
     catalog.write_text(json.dumps([record]), encoding="utf-8")
     module = importlib.import_module("video_studio.effect_library.search")
     monkeypatch.setattr(module, "resource_root", lambda: repo)
-    original = module._safe_file
+    from video_studio.effect_library import _native_windows as native
+    original = native._reader_open
     link = repo / "inside"
+    attempted = []
 
-    def swap_after_check(root, relative):
-        path = original(root, relative)
-        link.rename(repo / "saved")
-        env = dict(os.environ, EFFECT_TEST_LINK=str(link), EFFECT_TEST_TARGET=str(outside))
-        result = subprocess.run(["powershell", "-NoProfile", "-Command", "New-Item -ItemType Junction -Path $env:EFFECT_TEST_LINK -Target $env:EFFECT_TEST_TARGET | Out-Null"], env=env, capture_output=True, timeout=20)
-        if result.returncode:
-            pytest.skip("Windows junction setup unavailable")
-        return path
+    def swap_before_open(root, name, directory):
+        if name == "inside" and directory:
+            link.rename(repo / "saved")
+            env = dict(os.environ, EFFECT_TEST_LINK=str(link), EFFECT_TEST_TARGET=str(outside))
+            result = subprocess.run(["powershell", "-NoProfile", "-Command", "New-Item -ItemType Junction -Path $env:EFFECT_TEST_LINK -Target $env:EFFECT_TEST_TARGET | Out-Null"], env=env, capture_output=True, timeout=20)
+            if result.returncode:
+                pytest.skip("Windows junction setup unavailable")
+            attempted.append(True)
+        return original(root, name, directory)
 
-    monkeypatch.setattr(module, "_safe_file", swap_after_check)
+    monkeypatch.setattr(native, "_reader_open", swap_before_open)
     try:
-        with pytest.raises(ContractError, match="hash|repo"):
+        with pytest.raises(ContractError, match="VE-single-race.*inside/effect.js"):
             search(repo_entries=catalog)
+        assert attempted == [True]
+        assert (outside / "effect.js").read_bytes() == b"outside"
+        assert (repo / "saved/effect.js").read_bytes() == b"inside"
     finally:
         if _is_junction(link):
             os.rmdir(link)

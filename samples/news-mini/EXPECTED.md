@@ -4,14 +4,27 @@ Bản tin ngày nhỏ nhất còn đi qua trọn chuỗi dựng: **2 cảnh tin*
 không nhạc nền, spec không trỏ ảnh nào trên mạng. Dùng để kiểm một máy vừa cài (Windows hoặc
 macOS) và để so hai máy với nhau bằng cùng một đầu vào.
 
-Hai chỗ vẫn cần mạng lúc dựng, do template chứ không do spec: trang HTML nạp thư viện hoạt ảnh
-từ CDN, và bản ngắn thiếu ảnh thì lấp khung bằng filler của trạm giọng nếu có, không thì tải một
-ảnh b-roll giấy phép CC (lỗi mạng không chặn render, chỉ để khung trống). Vì thế khung hình bản
-ngắn có thể khác giữa hai lượt; thời lượng thì không.
+GSAP được cấp cục bộ trước khi dựng, không tải từ CDN. Bản ngắn thiếu ảnh thì lấp khung bằng
+filler của trạm giọng nếu có, không thì tìm ảnh b-roll giấy phép CC qua mạng (lỗi mạng không chặn
+render, chỉ để khung trống). Vì thế khung hình bản ngắn có thể khác giữa hai lượt.
 
 ## Chạy
 
-Từ gốc repo, sau `video-studio init` và `video-studio doctor` báo mã 0:
+Từ gốc repo, sau `video-studio init` và `video-studio doctor` báo mã 0, xem kế hoạch cấp GSAP:
+
+```text
+video-studio libs plan gsap
+```
+
+Sau khi đồng ý tải (địa chỉ, giấy phép và trần dung lượng có trong kế hoạch), chạy:
+
+```text
+video-studio libs fetch gsap --yes
+video-studio libs status
+```
+
+Không có `--yes`, `fetch` chỉ in kế hoạch rồi thoát mã 2; không tự hỏi hoặc tải. Thiếu GSAP
+thì doctor báo WARN và render dừng mã 3; file lệch hash bị từ chối. Sau đó dựng mẫu:
 
 ```text
 video-studio render --project news --input samples/news-mini/spec.json --brand samples/news-mini/brand.json --out out/news-mini --json
@@ -38,6 +51,8 @@ Kiểm bằng máy, không cần mạng: `tests/test_samples.py` đọc đúng c
 | Nhạc nền | không (`"bgm": "none"`) |
 
 ## Số đo theo máy
+
+Các số đo dưới đây có trước thay đổi sang GSAP cục bộ; chưa xác nhận bản hiện tại.
 
 Đầu ra **không** trùng từng byte giữa hai hệ điều hành: font sẵn có (Segoe UI chỉ có trên
 Windows) và bộ giải mã khác nhau làm lệch vài khung hình. So thời lượng theo khoảng, không so

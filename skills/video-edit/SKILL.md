@@ -23,8 +23,7 @@ Phỏng theo `SKILL.md` của `browser-use/video-use` (MIT, © 2026 Browser Use)
 
 ## Nguyên tắc
 
-1. **Tiếng nói là chính, hình theo sau.** Điểm cắt đến từ biên của TỪ và từ khoảng lặng, không
-   từ cảm giác nhìn timeline. Chỉ soi hình ở những chỗ phải quyết.
+1. **Tiếng nói là chính, hình theo sau.** ASR gợi ý biên từ và khoảng lặng; đối chiếu hình, âm và đuôi câu thực tế trước khi chốt điểm cắt. Không coi mốc ASR hay khoảng lề là bảo đảm không lóe hình hoặc mất tiếng.
 2. **Một artifact dẫn đường duy nhất:** `takes_packed.md` — bản ghi lời gom thành cụm, có mốc
    `[bắt đầu-kết thúc]`. Mọi thứ khác (đánh dấu từ đệm, nhận diện quay lại, chấm điểm nhấn) suy
    ra lúc quyết định, đừng dựng sẵn.
@@ -42,8 +41,8 @@ Phỏng theo `SKILL.md` của `browser-use/video-use` (MIT, © 2026 Browser Use)
 4. **Overlay phải dịch PTS** (`setpts=PTS-STARTPTS+T/TB`) để khung 0 của nó rơi đúng mốc; thiếu
    thì người xem thấy khúc GIỮA của hoạt ảnh.
 5. **Phụ đề tính theo mốc của VIDEO RA**: `mốc ra = từ.start − đoạn.start + tổng các đoạn trước`.
-6. **Không bao giờ cắt giữa một từ.** Mọi mép cắt bám biên từ trong bản bóc lời.
-7. **Chừa lề mỗi mép cắt: 30–200 ms.** Mốc của ASR trôi 50–100 ms; lề hấp thụ chỗ trôi đó.
+6. **Không cắt giữa một từ hay cụt đuôi câu.** Mốc ASR chỉ gợi ý; chọn mép sau khi đối chiếu hình và âm thực tế.
+7. **Bắt đầu với lề 30–200 ms khi phù hợp**, rồi kiểm hình và nghe mép cắt; điều chỉnh theo tư liệu, không mặc định lề xử lý hết sai số ASR.
 8. **Bóc lời mức TỪ.** Không dùng chế độ câu/SRT (mất thông tin khoảng lặng dưới giây).
 9. **Bóc lời một lần rồi dùng lại.** Chỉ bóc lại khi chính file nguồn đổi (`--force`).
 10. **Chốt chiến lược trước khi thi hành.**
@@ -62,7 +61,7 @@ tư liệu đòi hỏi.
 | 4. Chốt | 4–8 câu: hình dạng, chọn take nào, hướng cắt, màu, phụ đề, độ dài dự kiến. **Chờ gật** | — |
 | 5. Dựng | viết `edl.json` (xem dưới) rồi render | `video-studio edit --footage … --out … --edl edl.json --build-subtitles` |
 | 6. Xem thử | bản nhanh để soi điểm cắt | thêm `--quality preview` (hoặc `draft` chỉ để kiểm mép cắt) |
-| 7. Tự soi | xem lại từng mép cắt: nhảy hình, "tạch" tiếng, phụ đề bị che, overlay lệch. Hỏng thì sửa → dựng lại. **Tối đa 3 vòng**, còn lỗi thì nói ra chứ đừng lặp mãi | — |
+| 7. Tự soi | xem lại từng mép cắt: nhảy hình, "tạch" tiếng, phụ đề bị che, overlay lệch. Hỏng thì sửa → dựng lại. Theo workflow chung: ba draft đầy đủ, hai lượt review và chỉnh sửa; còn lỗi thì nói ra chứ đừng lặp mãi | — |
 | 8. Giao + ghi lại | bản cuối, rồi ghi vào `<nơi làm việc>/project.md` phiên này đã quyết gì | — |
 
 Không có `edl.json` thì lệnh **dừng ở bước gom cụm** và in bước tiếp theo — đó là chủ ý, không

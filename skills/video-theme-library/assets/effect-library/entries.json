@@ -648,5 +648,456 @@
     "repository": "https://github.com/ibelick/motion-primitives",
     "license_note": "Repository code is MIT; verify the license and dependencies of the particular item before use.",
     "details": "skills/video-theme-library/references/effect-sources.md"
+  },
+  {
+    "id": "VE-gsap-core-draw",
+    "name": "Vẽ nét SVG với GSAP core",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-core-draw.md",
+    "runtime": "GSAP core 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "tags": [
+      "gsap",
+      "draw",
+      "svg",
+      "ve net"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "svg",
+      "stroke"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/core-draw.js",
+      "sha256": "6d6ccfd499b14c6160af703582263e04cf3ad65c51973e3f2bdebceda4ddfb2d"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "pass",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "preview": "Chromium seek 5 times forward, reverse, shuffled, pinned GSAP core 3.15.0, Windows",
+      "render": "video-studio render --project-dir with pinned local GSAP, HyperFrames 0.8.54, Windows; two 2-second renders, 0/60 frame hashes differ"
+    }
+  },
+  {
+    "id": "VE-gsap-drawsvg",
+    "name": "DrawSVG",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "description": "Đã render fixture tổng hợp trên Windows; chưa chứng minh tái sử dụng độc lập.",
+    "tags": [
+      "gsap",
+      "drawsvg"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/draw-svg.mjs",
+      "sha256": "c48ea236dde928e669f04ab61f4499ed1b518f528c02f7777c95776791682dae"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "render": "video-studio render --project-dir <fixture> --out <out> --json; Windows; HyperFrames 0.8.54, GSAP 3.15.0 local verified; 2 runs, 0/60 differing frame hashes; combined seven-recipe fixture."
+    }
+  },
+  {
+    "id": "VE-gsap-morphsvg",
+    "name": "MorphSVG",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "description": "Đã render fixture tổng hợp trên Windows; chưa chứng minh tái sử dụng độc lập.",
+    "tags": [
+      "gsap",
+      "morphsvg"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/morph-svg.mjs",
+      "sha256": "09744830bb26a3bcf3fcabc50f8bf5568e31b4363a36b24e9d8fab6bd0223c13"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "render": "video-studio render --project-dir <fixture> --out <out> --json; Windows; HyperFrames 0.8.54, GSAP 3.15.0 local verified; 2 runs, 0/60 differing frame hashes; combined seven-recipe fixture."
+    }
+  },
+  {
+    "id": "VE-gsap-motionpath",
+    "name": "MotionPath",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "description": "Đã render fixture tổng hợp trên Windows; chưa chứng minh tái sử dụng độc lập.",
+    "tags": [
+      "gsap",
+      "motionpath"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/motion-path.mjs",
+      "sha256": "4943db2f530a27ca64e8d74b1988ceed676ad202f6abb3a5188b71d1bd070e15"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "render": "video-studio render --project-dir <fixture> --out <out> --json; Windows; HyperFrames 0.8.54, GSAP 3.15.0 local verified; 2 runs, 0/60 differing frame hashes; combined seven-recipe fixture."
+    }
+  },
+  {
+    "id": "VE-gsap-splittext",
+    "name": "SplitText",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "description": "Đã render fixture tổng hợp trên Windows; chưa chứng minh tái sử dụng độc lập.",
+    "tags": [
+      "gsap",
+      "splittext"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/split-text.mjs",
+      "sha256": "de42b3571e3b48e75d4b01dcdfa53bc36221257f8cfea0b3bdf2368df96000a2"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "render": "video-studio render --project-dir <fixture> --out <out> --json; Windows; HyperFrames 0.8.54, GSAP 3.15.0 local verified; 2 runs, 0/60 differing frame hashes; combined seven-recipe fixture."
+    }
+  },
+  {
+    "id": "VE-gsap-flip",
+    "name": "Flip",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "description": "Đã render fixture tổng hợp trên Windows; chưa chứng minh tái sử dụng độc lập.",
+    "tags": [
+      "gsap",
+      "flip"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/flip.mjs",
+      "sha256": "c4ebb0bef1ba134a03556456b8cf5c9ad67c41440e364528b11081b42bd06469"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "render": "video-studio render --project-dir <fixture> --out <out> --json; Windows; HyperFrames 0.8.54, GSAP 3.15.0 local verified; 2 runs, 0/60 differing frame hashes; combined seven-recipe fixture."
+    }
+  },
+  {
+    "id": "VE-gsap-customease",
+    "name": "CustomEase",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "description": "Đã render fixture tổng hợp trên Windows; chưa chứng minh tái sử dụng độc lập.",
+    "tags": [
+      "gsap",
+      "customease"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/custom-ease.mjs",
+      "sha256": "4b06549c9f27cdfbaadb37b1b65ff0207df35591441ae9fd9e4d441a21a1608c"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "render": "video-studio render --project-dir <fixture> --out <out> --json; Windows; HyperFrames 0.8.54, GSAP 3.15.0 local verified; 2 runs, 0/60 differing frame hashes; combined seven-recipe fixture."
+    }
+  },
+  {
+    "id": "VE-gsap-seededscramble",
+    "name": "Scramble tất định",
+    "kind": "preset",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP 3.15.0 local theo hash qua runtime-libs; không phân phối GSAP; timeline paused",
+    "description": "Đã render fixture tổng hợp trên Windows; chưa chứng minh tái sử dụng độc lập.",
+    "tags": [
+      "gsap",
+      "seededscramble"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [
+      "16:9"
+    ],
+    "asset": {
+      "path": "skills/video-theme-library/assets/gsap-recipes/seeded-scramble.mjs",
+      "sha256": "c979bf1418284d0446e9d06a29e37c3190ac464f84814df51f6611baa754dc01"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "pass",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "evidence": {
+      "render": "video-studio render --project-dir <fixture> --out <out> --json; Windows; HyperFrames 0.8.54, GSAP 3.15.0 local verified; 2 runs, 0/60 differing frame hashes; combined seven-recipe fixture."
+    }
+  },
+  {
+    "id": "VE-gsap-seek-safety",
+    "name": "Kiểm tua an toàn",
+    "kind": "reference",
+    "maturity": "reference_only",
+    "rights": "owned",
+    "source": "skills/video-theme-library/references/gsap-recipes.md",
+    "runtime": "GSAP local theo hash; kiểm tùy môi trường",
+    "description": "Hướng dẫn thử tua; chưa chứng minh mọi engine hoặc hệ điều hành.",
+    "tags": [
+      "gsap",
+      "seek"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "animation"
+    ],
+    "ratios": [],
+    "asset": null,
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "not_run",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    }
+  },
+  {
+    "id": "VE-line-art-walker",
+    "name": "Nhân vật nét mực",
+    "kind": "component",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/line-art-motion/assets/walker.mjs",
+    "runtime": "SVG ES modules; requires line-art.mjs beside component; single-file materialize does not provide helper",
+    "description": "Component thủ tục; cấp helper cùng thư mục, chưa kiểm tái sử dụng qua materialize.",
+    "tags": [
+      "line-art",
+      "walker"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "svg"
+    ],
+    "ratios": [],
+    "asset": {
+      "path": "skills/line-art-motion/assets/walker.mjs",
+      "sha256": "42a69111695f5f1f8febb8a6902807a16ca3d70acc3d3afdb991db190a010e1a"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "not_run",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "license": {
+      "id": "MIT",
+      "source": "LICENSE",
+      "terms": "Original clean-room code; retain notice."
+    }
+  },
+  {
+    "id": "VE-line-art-hanging",
+    "name": "Vật treo nét mực",
+    "kind": "component",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/line-art-motion/assets/hanging.mjs",
+    "runtime": "SVG ES modules; requires line-art.mjs beside component; single-file materialize does not provide helper",
+    "description": "Component thủ tục; cấp helper cùng thư mục, chưa kiểm tái sử dụng qua materialize.",
+    "tags": [
+      "line-art",
+      "hanging"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "svg"
+    ],
+    "ratios": [],
+    "asset": {
+      "path": "skills/line-art-motion/assets/hanging.mjs",
+      "sha256": "dcf041c8858d75b9b89ac3be499758f3038a585df786466742e3662d5ad34c06"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "not_run",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "license": {
+      "id": "MIT",
+      "source": "LICENSE",
+      "terms": "Original clean-room code; retain notice."
+    }
+  },
+  {
+    "id": "VE-line-art-ink-scene",
+    "name": "Cảnh mực và ngày đêm",
+    "kind": "component",
+    "maturity": "candidate",
+    "rights": "owned",
+    "source": "skills/line-art-motion/assets/ink-scene.mjs",
+    "runtime": "SVG ES modules; requires line-art.mjs beside component; single-file materialize does not provide helper",
+    "description": "Component thủ tục; cấp helper cùng thư mục, chưa kiểm tái sử dụng qua materialize.",
+    "tags": [
+      "line-art",
+      "ink-scene"
+    ],
+    "roles": [
+      "motion"
+    ],
+    "techniques": [
+      "svg"
+    ],
+    "ratios": [],
+    "asset": {
+      "path": "skills/line-art-motion/assets/ink-scene.mjs",
+      "sha256": "d7bc5870d26f75814b3fa97d4afd2279595cf632aaf688f7d4725d50517fa6a6"
+    },
+    "checks": {
+      "static_check": "not_run",
+      "preview": "not_run",
+      "render": "not_run",
+      "audio": "not_run",
+      "ratio_test": "not_run",
+      "reuse_evidence": "not_run"
+    },
+    "license": {
+      "id": "MIT",
+      "source": "LICENSE",
+      "terms": "Original clean-room code; retain notice."
+    }
   }
 ]

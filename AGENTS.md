@@ -28,7 +28,7 @@ gỡ chúng (có nhật ký, `--undo` trả về).
 ## 1. Repo này là gì
 
 **Agent Video Studio** = engine dựng video quanh [HyperFrames](https://github.com/heygen-com/hyperframes)
-(HTML/CSS/GSAP → MP4) đóng gói thành một package Python với một lệnh, `video-studio`, cộng 33 skill
+(HTML/CSS/GSAP → MP4) đóng gói thành một package Python với một lệnh, `video-studio`, cộng các skill chưng cất
 cho agent. Bản tin 16:9 + short 9:16 từ một spec JSON, lồng tiếng qua repo giọng
 `agent-voice-studio` (tuỳ chọn, cùng venv).
 
@@ -36,7 +36,7 @@ cho agent. Bản tin 16:9 + short 9:16 từ một spec JSON, lồng tiếng qua 
 agent-video-studio/
 ├─ video_studio/          package: CLI, trạm, doctor, render, edit, narrate, uninstall
 │  └─ templates/news/        họ template bản tin (news, news-weekly, topstory, repo-today)
-├─ skills/                33 skill (12 của repo + 21 chưng cất từ HyperFrames trong skills/hyperframes/)
+├─ skills/                skill của repo và skill chưng cất từ HyperFrames trong skills/hyperframes/ (số đếm: `python scripts/skill_counts.py --check`)
 ├─ templates/             seed project HyperFrames + cây mẫu của một trạm mới
 ├─ samples/news-mini/     bài mẫu + kết quả kỳ vọng (EXPECTED.md)
 ├─ hosts/                 hướng dẫn riêng từng ứng dụng AI

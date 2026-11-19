@@ -1,0 +1,5 @@
+# Vật lý tua được
+
+Lò xo dưới tắt dùng `x = to + exp(-ζωt) (A cos(ωd t) + B sin(ωd t))`, với `ω = sqrt(k/m)`, `ζ = damping / (2 sqrt(k*m))`, `ωd = ω sqrt(1-ζ²)`, `A = from-to`, `B = (v0+ζωA)/ωd`. Tới hạn dùng `x = to + exp(-ωt)(A+(v0+ωA)t)`. Trên tắt dùng hai nghiệm thực `-ω(ζ ± sqrt(ζ²-1))`.
+
+Con lắc góc nhỏ dùng phương trình tuyến tính; góc lớn dùng bảng RK4 bước cố định, nội suy theo thời gian tuyệt đối. `createHanging` chọn nhánh góc nhỏ khi `|theta0| ≤ 0,35` rad; góc ban đầu nhỏ không bảo đảm toàn quỹ đạo nhỏ nếu vận tốc ban đầu lớn. Ở nhánh góc lớn của component, sau 120 giây tính từ `t0` (giây), phần dao động đã bake giữ giá trị cuối còn gió vẫn đổi; dùng helper với thời hạn phù hợp nếu cần cảnh dài hơn. Gió cộng vào góc là xấp xỉ nghệ thuật, không phải nghiệm vật lý đầy đủ của ngoại lực. Đơn vị chiều dài ở component là đơn vị SVG; đừng suy ra mô phỏng SI chuẩn. Gió dùng seed ổn định nhưng `period` là thang tần số, không bảo đảm chu kỳ khép kín. Một cú thả có góc ban đầu khác góc trước thời điểm thả có thể nhảy trạng thái; thiết kế chuyển tiếp và kiểm hai phía mốc thả.

@@ -55,6 +55,16 @@ if os.name == "nt":
     class _AttributeTag(ctypes.Structure):
         _fields_ = [("attributes", wintypes.DWORD), ("tag", wintypes.DWORD)]
 
+    class _ReaderFileInformation(ctypes.Structure):
+        _fields_ = [("attributes", wintypes.DWORD), ("created", wintypes.FILETIME),
+                    ("accessed", wintypes.FILETIME), ("modified", wintypes.FILETIME),
+                    ("volume", wintypes.DWORD), ("size_high", wintypes.DWORD),
+                    ("size_low", wintypes.DWORD), ("links", wintypes.DWORD),
+                    ("index_high", wintypes.DWORD), ("index_low", wintypes.DWORD)]
+
+    class _ReaderDeviceInformation(ctypes.Structure):
+        _fields_ = [("device_type", wintypes.ULONG), ("characteristics", wintypes.ULONG)]
+
     class _Rename(ctypes.Structure):
         _fields_ = [("replace", ctypes.c_ubyte), ("root", wintypes.HANDLE),
                     ("length", wintypes.ULONG), ("name", wintypes.WCHAR * 256)]
@@ -71,6 +81,18 @@ if os.name == "nt":
     _kernel.CloseHandle.argtypes = [wintypes.HANDLE]
     _kernel.GetFileInformationByHandleEx.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD]
     _kernel.GetFileInformationByHandleEx.restype = wintypes.BOOL
+    _kernel.GetFileInformationByHandle.argtypes = [wintypes.HANDLE, ctypes.POINTER(_ReaderFileInformation)]
+    _kernel.GetFileInformationByHandle.restype = wintypes.BOOL
+    _kernel.GetFileType.argtypes = [wintypes.HANDLE]
+    _kernel.GetFileType.restype = wintypes.DWORD
+    _kernel.GetDriveTypeW.argtypes = [wintypes.LPCWSTR]
+    _kernel.GetDriveTypeW.restype = wintypes.UINT
+    _kernel.ReadFile.argtypes = [wintypes.HANDLE, ctypes.c_void_p, wintypes.DWORD,
+                                 ctypes.POINTER(wintypes.DWORD), ctypes.c_void_p]
+    _kernel.ReadFile.restype = wintypes.BOOL
+    _nt.NtQueryVolumeInformationFile.argtypes = [wintypes.HANDLE, ctypes.POINTER(_IoStatus),
+                                                  ctypes.c_void_p, wintypes.ULONG, wintypes.ULONG]
+    _nt.NtQueryVolumeInformationFile.restype = ctypes.c_long
 
 
 class _LegacyRecord(Exception):
@@ -761,3 +783,227 @@ def inspect_stages(entries):
         return results
     finally:
         close(root)
+
+class ReaderOpenError(OSError):
+    """A native reader open failed, with an unsigned NTSTATUS for callers."""
+
+    def __init__(self, status):
+        self.ntstatus = status & 0xffffffff
+        super().__init__(f"NTSTATUS 0x{self.ntstatus:08x}")
+
+
+# Read-only snapshot primitives. These deliberately do not reuse the writer's
+# opens, whose requested directory rights include FILE_ADD_FILE.
+def _reader_open(root, name, directory):
+    if os.name != "nt":
+        raise OSError("Windows native API unavailable")
+    buffer = ctypes.create_unicode_buffer(name)
+    length = len(name.encode("utf-16-le"))
+    if length > 65532:
+        raise ValueError("name too long")
+    text = _UnicodeString(length, length, ctypes.cast(buffer, wintypes.LPWSTR))
+    attrs = _Attributes(ctypes.sizeof(_Attributes), root, ctypes.pointer(text), 0x1040, None, None)
+    io = _IoStatus()
+    handle = wintypes.HANDLE()
+    # SYNCHRONIZE | FILE_READ_ATTRIBUTES | FILE_TRAVERSE for dirs, or
+    # FILE_READ_DATA for files; OPEN_REPARSE_POINT | OPEN_NO_RECALL.
+    access = 0x00100080 | (0x20 if directory else 0x01)
+    options = 0x00600020 | (0 if directory else 0x40)
+    status = _nt.NtCreateFile(ctypes.byref(handle), access, ctypes.byref(attrs), ctypes.byref(io),
+                              None, 0, 3 if directory else 1, 1, options, None, 0)
+    if status != 0:
+        raise ReaderOpenError(status)
+    try:
+        _reader_info(handle, directory)
+    except BaseException:
+        close(handle)
+        raise
+    return handle
+
+
+def _reader_info(handle, directory):
+    info = _ReaderFileInformation()
+    if not _kernel.GetFileInformationByHandle(handle, ctypes.byref(info)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    if _kernel.GetFileType(handle) != 1:
+        raise OSError("source is not a disk file")
+    tag = _AttributeTag()
+    if not _kernel.GetFileInformationByHandleEx(handle, 9, ctypes.byref(tag), ctypes.sizeof(tag)):
+        raise ctypes.WinError(ctypes.get_last_error())
+    if tag.attributes != info.attributes or tag.tag:
+        raise OSError("source reparse tag or attributes are unsafe")
+    if info.attributes & (0x400 | 0x1000 | 0x40000 | 0x400000):
+        raise OSError("reparse, offline or recall item is prohibited")
+    if bool(info.attributes & 0x10) != directory:
+        raise OSError("unexpected source type")
+    if not info.volume or not (info.index_high or info.index_low):
+        raise OSError("source identity unavailable")
+    if not directory and info.links != 1:
+        raise OSError("source must have exactly one link")
+    return (info.volume, info.index_high, info.index_low, info.links, info.attributes,
+            info.size_high, info.size_low, info.modified.dwHighDateTime, info.modified.dwLowDateTime)
+
+
+def _reader_local_drive(drive):
+    # Unknown, unavailable, remote, optical and RAM disks are not assumed local.
+    return _kernel.GetDriveTypeW(drive + "\\") in (2, 3)
+
+
+def _reader_validate_volume(handle):
+    info = _ReaderDeviceInformation()
+    io = _IoStatus()
+    status = _nt.NtQueryVolumeInformationFile(handle, ctypes.byref(io), ctypes.byref(info),
+                                               ctypes.sizeof(info), 4)
+    if status != 0 or io.information != ctypes.sizeof(info):
+        raise OSError("unable to verify source volume")
+    if info.device_type != 7 or info.characteristics & 0x10:
+        raise OSError("source volume is not a local disk")
+
+
+def open_root_chain_read(path):
+    """Pin the local volume and every directory until the context exits."""
+    from contextlib import ExitStack, contextmanager
+    import ntpath
+
+    @contextmanager
+    def chain():
+        value = os.fspath(path)
+        if not isinstance(value, str):
+            raise ValueError("expected a text path")
+        drive, tail = ntpath.splitdrive(value)
+        if not re.fullmatch(r"[A-Za-z]:", drive) or not tail.startswith("\\") or "/" in value:
+            raise ValueError("expected a local absolute Windows path")
+        if not _reader_local_drive(drive):
+            raise OSError("source must be on a local drive")
+        parts = tail.split("\\")[1:]
+        if parts and parts[-1] == "":
+            parts.pop()
+        for part in parts:
+            _component(part)
+        with ExitStack() as stack:
+            parent = _reader_open(None, "\\??\\" + drive + "\\", True)
+            stack.callback(close, parent)
+            _reader_validate_volume(parent)
+            for part in parts:
+                parent = _reader_open(parent, part, True)
+                stack.callback(close, parent)
+            yield parent, stack
+    return chain()
+
+
+def _reader_open_relative(root, stack, relative, close_callback):
+    from .catalog import _relative
+    parts = _relative(relative).parts
+    parent = root
+    for part in parts[:-1]:
+        _component(part)
+        parent = _reader_open(parent, part, True)
+        stack.callback(close_callback, parent, relative)
+    _component(parts[-1])
+    handle = _reader_open(parent, parts[-1], False)
+    stack.callback(close_callback, handle, relative)
+    return handle
+
+
+def _reader_close_relative(handle, relative):
+    close(handle)
+
+
+def _reader_read_handle(handle, limit, expected_sha256):
+    import hashlib
+    if not isinstance(limit, int) or isinstance(limit, bool) or limit < 0:
+        raise ValueError("invalid read limit")
+    before = _reader_info(handle, False)
+    chunks = []
+    size = 0
+    while True:
+        buffer = ctypes.create_string_buffer(min(65536, limit - size + 1))
+        count = wintypes.DWORD()
+        if not _kernel.ReadFile(handle, buffer, len(buffer), ctypes.byref(count), None):
+            raise ctypes.WinError(ctypes.get_last_error())
+        if not count.value:
+            break
+        size += count.value
+        if size > limit:
+            raise ValueError("asset exceeds size limit")
+        chunks.append(buffer.raw[:count.value])
+    data = b"".join(chunks)
+    after = _reader_info(handle, False)
+    if before != after:
+        raise OSError("source changed while reading")
+    if size != ((after[5] << 32) | after[6]):
+        raise OSError("source size differs from bytes read")
+    if expected_sha256 is not None and hashlib.sha256(data).hexdigest() != expected_sha256:
+        raise ValueError("source hash mismatch")
+    return data
+
+
+def _reader_relative(root, stack, relative, limit, expected_sha256):
+    handle = _reader_open_relative(root, stack, relative, _reader_close_relative)
+    return _reader_read_handle(handle, limit, expected_sha256)
+
+
+def read_repo_file(repo_root, relative, *, limit, expected_sha256=None):
+    with open_root_chain_read(repo_root) as (root, stack):
+        return _reader_relative(root, stack, relative, limit, expected_sha256)
+
+
+def _bundle_close(handle, relative):
+    from video_studio.contract import ContractError
+    try:
+        close(handle)
+    except OSError as exc:
+        raise ContractError(f"repo bundle close failed for {relative}: {exc}") from exc
+
+
+def read_repo_files(repo_root, assets, *, max_total=64 * 1024 * 1024):
+    from .catalog import _relative
+    from video_studio.contract import ContractError
+
+    if not isinstance(max_total, int) or isinstance(max_total, bool) or max_total < 0:
+        raise ContractError("repo bundle invalid total limit")
+    if not isinstance(assets, list) or len(assets) > 64:
+        raise ContractError("repo bundle exceeds asset count limit")
+    seen = set()
+    for asset in assets:
+        try:
+            path = asset["path"]
+            parts = _relative(path).parts
+            if not parts or len(parts) > 8 or path in seen:
+                raise ValueError("invalid depth or duplicate path")
+            asset["sha256"]
+            seen.add(path)
+        except (ContractError, KeyError, TypeError, ValueError) as exc:
+            raise ContractError(f"repo bundle invalid asset {asset!r}: {exc}") from exc
+    result = {}
+    try:
+        with open_root_chain_read(repo_root) as (root, stack):
+            handles = []
+            for asset in assets:
+                path = asset["path"]
+                try:
+                    handle = _reader_open_relative(root, stack, path, _bundle_close)
+                except (ContractError, OSError, ValueError) as exc:
+                    raise ContractError(f"repo bundle open failed for {path}: {exc}") from exc
+                handles.append((asset, handle))
+            total = 0
+            for asset, handle in handles:
+                path = asset["path"]
+                try:
+                    data = _reader_read_handle(handle, max_total - total, asset["sha256"])
+                except (ContractError, OSError, ValueError) as exc:
+                    raise ContractError(f"repo bundle read failed for {path}: {exc}") from exc
+                total += len(data)
+                result[path] = data
+    except ContractError:
+        raise
+    except OSError as exc:
+        raise ContractError(f"repo bundle root open or close failed: {exc}") from exc
+    return result
+
+
+def write_tree(dirs: list[str], files: list[tuple[str, bytes]], dest) -> None:
+    """Refuse before creating anything until private ownership is verified."""
+    from video_studio.contract import ContractError
+
+    raise ContractError('Secure Windows writer unavailable: private DACL and rollback are not proven')

@@ -28,6 +28,8 @@ description: Non-animation creative direction for HyperFrames videos - design sp
    không coi reference hoặc phương án overlay là code đã chạy.
 5. Chỉ sau đó mới sang `hyperframes-core` để viết HTML và `hyperframes-animation` để chọn chuyển động.
 
+Dùng `video-storyboard-design` để so sánh hướng kể và chuyển thiết kế thành storyboard khả thi. Hai định dạng khác nhau cần cân nhắc mục tiêu, cách kể, bố cục và nhịp riêng; chỉ đổi màu hay tỷ lệ không chứng minh chúng khác cách kể.
+
 ## Bảng màu và chữ
 
 - **Một hệ màu cho cả video.** Trộn hai hệ là cách nhanh nhất làm video trông như ghép từ hai chỗ.

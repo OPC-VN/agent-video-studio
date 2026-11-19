@@ -48,9 +48,24 @@ không thay việc kiểm chứng bằng chứng đó.
 Khi muốn xem thêm reference chưa rõ tỷ lệ, kết hợp `--ratio 16:9 --include-unknown-ratio`;
 chưa rõ không có nghĩa là đã tương thích. `--runtime` lọc metadata, không chứng minh engine đã cài.
 CLI không tự suy trạm. Kết quả chỉ là metadata; kiểm quyền, hash và runtime trước khi dùng.
-Windows hỗ trợ `capture`, `materialize` và `materialize-repo` một file. Mã 3 có thể đã công bố:
-kiểm trạm/đích trước khi thử lại. Xem [nguồn và giới hạn](references/effect-sources.md).
-Bundle nhiều file chưa materialize được; metadata không tự chứng minh bản quyền.
+Windows hỗ trợ `capture`, `materialize` và `materialize-repo` một file.
+Thêm `--layout` để tra một phần catalog layout; `--layout-station <trạm>` cho phép tra layout
+riêng khi trạm chưa có entries, hoặc `--station` chọn cùng trạm cho cả hai. Chỉ mục layout chỉ
+gồm hàng một ID ở mục 2–5 và 8; bỏ hàng ghép và media tự do. Tỷ lệ chỉ lấy từ ID ghi rõ ở bảng
+§1; vai trò và kỹ thuật chưa có metadata. Xem catalog gốc khi cần đầy đủ. `--origin` và
+`--coverage` lọc nguồn/vùng; truy vấn có một số đồng nghĩa Việt–Anh, không hiểu tự do mọi câu.
+Không tìm thấy thì báo không thấy, có thể tự thiết kế nhưng không tự đặt ID như thể đã có trong
+thư viện. Nếu lưu ý tưởng do mình tạo, dùng `reference`, `reference_only`, `owned`, source đúng
+`urn:avs:idea:<ID>` và thẻ metadata ngắn không có nội dung riêng; URN là mã định danh, không
+phải chứng cứ quyền hay file. Chỉ capture khi trạm đã được cho phép ghi và kiểm tìm lại.
+Riêng lệnh capture/materialize trả mã 3: có thể đã ghi nhưng báo kết quả thất bại; kiểm thực tế
+trạm hoặc đích trước khi thử lại. Không diễn giải mã này thành thiếu công cụ rồi chạy lại ngay.
+Lệnh `materialize-template` cho template nhiều file đã có giao diện nhưng hiện **bị chặn ghi**:
+Windows chưa chứng minh được quyền riêng và hoàn tác đúng đối tượng; tổ hợp no-recall với tạo mới
+cũng chưa được chứng minh hoặc được Windows chấp nhận. macOS/Linux chủ động chặn khi chưa chứng
+minh được thao tác an toàn. Không coi đây là tính năng đã dùng được. Xem
+[hợp đồng và cách xử lý lỗi](references/effect-sources.md#template-nhiều-file); metadata không
+tự chứng minh bản quyền.
 
 ## Template tin tức không đi qua thư viện motion
 

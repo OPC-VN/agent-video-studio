@@ -9,9 +9,11 @@ from pathlib import Path
 from video_studio import render
 
 
-@pytest.mark.skipif(os.name != "nt", reason="effect-preview đọc seed qua handle Windows; macOS hoãn")
 def test_effect_preview_cli_builds_a_seekable_offline_project(tmp_path, monkeypatch):
     monkeypatch.setattr(render, "PREVIEW_GSAP_SHA256", hashlib.sha256(b"fixture").hexdigest())
+    lock = render.runtime_libs.load_lock()
+    lock["libs"]["gsap"]["members"][0]["file_sha256"] = render.PREVIEW_GSAP_SHA256
+    monkeypatch.setattr(render.runtime_libs, "load_lock", lambda *a, **k: lock)
     source = tmp_path / "spec.json"
     source.write_text(json.dumps({"schema_version": 1, "brand": {"a": "Example", "b": "Studio", "site": "example.invalid"}, "outputs": {"long": "preview.mp4", "short": False}}), encoding="utf-8")
     gsap = tmp_path / "gsap.min.js"
@@ -37,15 +39,15 @@ def test_effect_preview_cli_builds_a_seekable_offline_project(tmp_path, monkeypa
     assert (tmp_path / "out" / "preview.mp4").exists()
 
 
-def test_effect_preview_requires_explicit_local_gsap(tmp_path, capsys):
+def test_effect_preview_requires_station_or_override(tmp_path, capsys, monkeypatch):
+    monkeypatch.setattr(render.runtime_libs, "station_path", lambda *a, **k: str(tmp_path / "missing.js"))
     source = tmp_path / "spec.json"
     source.write_text(json.dumps({"schema_version": 1, "brand": {"a": "Example", "b": "Studio", "site": "example.invalid"}, "outputs": {"long": True, "short": False}}), encoding="utf-8")
-    assert render.main(["--project", "effect-preview", "--input", str(source), "--out", str(tmp_path / "out")]) == 2
-    assert "--gsap-file" in capsys.readouterr().err
+    assert render.main(["--project", "effect-preview", "--input", str(source), "--out", str(tmp_path / "out")]) == 3
+    assert "libs fetch gsap" in capsys.readouterr().err
     assert not (tmp_path / "out").exists()
 
 
-@pytest.mark.skipif(os.name != "nt", reason="effect-preview đọc seed qua handle Windows; macOS hoãn")
 def test_effect_preview_rejects_untrusted_gsap_before_render(tmp_path, capsys, monkeypatch):
     def unexpected_render(*args, **kwargs):
         raise AssertionError("untrusted script reached renderer")
@@ -59,7 +61,6 @@ def test_effect_preview_rejects_untrusted_gsap_before_render(tmp_path, capsys, m
     assert not (tmp_path / "out").exists()
 
 
-@pytest.mark.skipif(os.name != "nt", reason="effect-preview đọc seed qua handle Windows; macOS hoãn")
 def test_effect_preview_uses_installed_bundle_assets(tmp_path, monkeypatch):
     from video_studio.effect_library import resources
     from video_studio.templates import effect_preview
@@ -91,7 +92,6 @@ def test_effect_preview_uses_installed_bundle_assets(tmp_path, monkeypatch):
     assert seen == {"sun": "bundled sun-rays.js", "flare": "bundled lens-flare.js"}
 
 
-@pytest.mark.skipif(os.name != "nt", reason="effect-preview đọc seed qua handle Windows; macOS hoãn")
 def test_preview_rejects_tampered_seed_before_renderer(tmp_path, monkeypatch):
     import pytest
     from video_studio.templates import effect_preview
@@ -245,3 +245,23 @@ def test_gsap_file_close_error_is_contract_error_and_root_is_closed(tmp_path, mo
     with pytest.raises(render.ContractError, match="injected close failure"):
         render._read_preview_gsap(str(tmp_path / "file.js"))
     assert closed == [2, 1]
+
+
+def test_posix_preview_asset_branch_verifies_both_files(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from video_studio.templates import effect_preview
+
+    assets = tmp_path / "skills" / "photo-ambient-effects" / "assets"
+    assets.mkdir(parents=True)
+    payloads = {name: name.encode() for name in ("sun-rays.js", "lens-flare.js")}
+    for name, payload in payloads.items():
+        (assets / name).write_bytes(payload)
+    monkeypatch.setattr(effect_preview, "os", SimpleNamespace(name="posix"))
+    monkeypatch.setattr(effect_preview.resources, "resource_root", lambda: tmp_path)
+    monkeypatch.setattr(effect_preview, "PREVIEW_ASSET_HASHES", {
+        name: hashlib.sha256(payload).hexdigest() for name, payload in payloads.items()
+    })
+    assert effect_preview._read_preview_assets() == payloads
+    (assets / "sun-rays.js").write_bytes(b"tampered")
+    with pytest.raises(render.ContractError, match="SHA-256"):
+        effect_preview._read_preview_assets()

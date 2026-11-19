@@ -1,0 +1,6 @@
+import {pendulum,bakePendulum,wind,SMALL_ANGLE} from './line-art.mjs';
+export const meta={id:'VE-line-art-hanging',kind:'component'};
+export function createHanging({seed=1,anchor={x:0,y:0},length=40,damping=.4,windStrength=.15,release={t0:0,theta0:.3}}={}) {
+  if(!Number.isFinite(length)||length<=0)throw RangeError('invalid length'); const opts={length,gravity:9.81,theta0:release.theta0,damping}; const decay=Math.abs(release.theta0)<=SMALL_ANGLE?pendulum(opts):bakePendulum({...opts,duration:120});const breeze=wind({seed,strength:windStrength,period:6}); let group,cord,lamp;
+  return {mount(g){if(group)throw Error('mounted');group=g;const doc=g.ownerDocument;cord=doc.createElementNS('http:'+'//www.w3.org/2000/svg','line');lamp=doc.createElementNS('http:'+'//www.w3.org/2000/svg','circle');cord.setAttribute('stroke','currentColor');lamp.setAttribute('r','6');lamp.setAttribute('fill','var(--lamp)');lamp.setAttribute('stroke','currentColor');g.appendChild(cord);g.appendChild(lamp);},render(t){if(!group)throw Error('not mounted');if(!Number.isFinite(t))throw RangeError('invalid time');const angle=breeze(t)+(t<release.t0?0:decay(t-release.t0)),x=anchor.x+length*Math.sin(angle),y=anchor.y+length*Math.cos(angle);for(const [k,v] of Object.entries({x1:anchor.x,y1:anchor.y,x2:x,y2:y}))cord.setAttribute(k,v);lamp.setAttribute('cx',x);lamp.setAttribute('cy',y);}};
+}

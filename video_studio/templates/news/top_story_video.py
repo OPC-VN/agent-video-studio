@@ -334,7 +334,7 @@ _LONG_HEAD = """<!doctype html>
 <html lang="vi" data-resolution="landscape">
 <head><meta charset="UTF-8"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="gsap.min.js"></script>
 <style>
   html,body{margin:0;width:1920px;height:1080px;overflow:hidden}
   #master-root{width:1920px;height:1080px;position:relative;color:var(--tx);
@@ -399,7 +399,7 @@ _SHORT_HEAD = """<!doctype html>
 <html lang="vi" data-resolution="portrait">
 <head><meta charset="UTF-8"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="gsap.min.js"></script>
 <style>
   html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
   #master-root{width:1080px;height:1920px;position:relative;color:var(--tx);
@@ -1046,7 +1046,7 @@ def _render(html, out_path, voice, sr, silent_name, timeout=3600):
     hỏng thoáng qua, chạy lại là qua; và stderr của HyperFrames LUÔN được in ra log.
     """
     proj = _proj()
-    render.write_index(proj, html)
+    render.write_index(proj, html, libs=("gsap",))
     silent = os.path.join(proj, silent_name)
     render.render_project(proj, silent, timeout=timeout, label="top-story")
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)

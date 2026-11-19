@@ -5,7 +5,7 @@ from contextlib import ExitStack
 from pathlib import Path
 import tempfile
 
-from .. import render
+from .. import render, runtime_libs
 from ..contract import ContractError
 from ..effect_library import resources
 
@@ -29,9 +29,11 @@ update();window.__timelines={master:tl};</script></div></body></html>'''
 
 
 def _read_preview_assets():
-    """Read only pinned seed bytes via the Windows no-recall handle boundary."""
+    """Read pinned seeds without following links, including on POSIX."""
     if os.name != "nt":
-        raise ContractError("effect-preview chưa hỗ trợ đọc asset an toàn trên hệ điều hành này")
+        root = Path(resources.resource_root()) / "skills" / "photo-ambient-effects" / "assets"
+        return {name: runtime_libs.read_verified(root / name, expected, 1024 * 1024)
+                for name, expected in PREVIEW_ASSET_HASHES.items()}
     from ..effect_library import _native_windows as native
     try:
         with ExitStack() as roots:

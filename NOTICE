@@ -9,6 +9,11 @@ Bản này KHÔNG phát hành lại code, skill, font, ảnh hay video của bê
   `npx hyperframes@$HYPERFRAMES_VERSION`, không nằm trong repo. Lần đầu chạy, HyperFrames tự tải
   Chromium headless về cache của người dùng.
 - Node.js — MIT. ffmpeg — LGPL/GPL tuỳ bản build; gọi như tiến trình ngoài, không phân phối.
+- GSAP — GreenSock Standard License (miễn phí, không phải nguồn mở;
+  https://gsap.com/community/standard-license/, đọc ngày 14/11/2026 qua công cụ tóm tắt,
+  chưa đối chiếu từng chữ). Repo không phân phối lại; GSAP 3.15.0 được cấp vào trạm
+  hoặc từ file người dùng và kiểm SHA-256 trước khi dựng.
+- three.js (mrdoob/three.js) — MIT. Chưa dùng; dự kiến cấp theo hash vào trạm, không nằm trong repo.
 
 Phần CHƯNG CẤT từ nguồn ngoài (mã và tài liệu viết lại, không phải bản sao nguyên văn):
 
@@ -60,6 +65,18 @@ Nguồn ý tưởng/nghiên cứu cho đợt mở rộng sản phẩm và kỹ t
   cache và caption mapping; phần mở rộng tự viết, không chép code/văn bản/asset hoặc dùng
   backend Hypit. Nguồn video-use của helper edit hiện hữu được giữ nguyên.
   https://github.com/hypit-ai/hypit/blob/2d31e88765e297f0795348b460c77a6067f12261/LICENSE
+
+
+- nexu-io/openmotion, commit d9ebe30bbcbb39e89bef9308d96e705cc06cc6be — Apache-2.0
+  cho mã nguồn; asset có giấy phép hỗn hợp. Tham khảo ý tưởng, chưa chưng cất; quét hết
+  thời gian, phần còn lại và gateway/runtime chưa đánh giá. Không tiếp nhận installer, config,
+  catalog, mã hay asset. https://github.com/nexu-io/openmotion
+- JuneYaooo/rea-video, commit b08faf2eb53690fc92ddf94576a8c7c3a4a87f89 — Apache-2.0.
+  Tham khảo ý tưởng, chưa chưng cất; chín media bị cắt khi quét. Không tiếp nhận installer,
+  config, CLI, VLM, mã hay media. https://github.com/JuneYaooo/rea-video
+- JDhruv14/line-art-animation, commit c43d698913cf0ad44f984c7ae14c5348010594d3 — MIT.
+  idea from JDhruv14/line-art-animation @c43d698 (MIT); viết lại sạch, không chép mã.
+  Không tiếp nhận installer, config, package, script hay asset. https://github.com/JDhruv14/line-art-animation
 
 Baseline, đích local và quy trình kiểm cập nhật: upstream.json và docs/UPSTREAM-UPDATES.md.
 

@@ -58,9 +58,10 @@ Entries are references to adapt, not templates that were render-tested.
 
 | Command | Does |
 |---|---|
+| `video-studio libs` | Inspect and provision pinned runtime libraries: `status`, `plan`, `fetch` and `path`. Downloads require `--yes`; verified existing files are kept. |
 | `video-studio doctor` | Checks Node ≥ 22, npx, the pinned HyperFrames build, its headless Chromium, ffmpeg/ffprobe, the Inter font, the station and `station.json`. `--check-updates` only *reports* a newer HyperFrames. |
 | `video-studio init` | Lays out a station (`embedded` inside the repo, or `separate` outside it), writes `station.json`. `--migrate` adopts an older station layout (and removes skill copies an older version left there), `--dry-run` prints the plan without writing, `--undo` reverses the last run from its journal. |
-| `video-studio render` | A JSON spec (`schema_version: 1`) → MP4s from a template: `news`, `news-weekly`, `topstory`, `repo-today`, or `effect-preview`. News templates need the `[voice]` extra; `effect-preview` currently requires Windows and the SHA-256-pinned GSAP 3.15.0 `dist/gsap.min.js` via `--gsap-file`, and renders a silent 16:9 synthetic overlay. npm is set offline for this preview; that is not a network sandbox for the engine. |
+| `video-studio render` | A JSON spec (`schema_version: 1`) → MP4s from a template: `news`, `news-weekly`, `topstory`, `repo-today`, or `effect-preview`. News templates need `[voice]` and pinned GSAP in the station (or a verified file override); missing GSAP exits 3. `effect-preview` also uses pinned GSAP and renders a silent 16:9 synthetic overlay. The limited HTML checks are not a network sandbox. |
 | `video-studio probe` | Renders a tiny 320×180, 0.5 s page with no external assets (seconds on a healthy machine). Exits 1 with `RENDER_STUCK:` when the render environment is wedged (timeout or `Navigation timeout`) — restart the machine. `--heal` first snapshots a diagnostic bundle, kills orphaned Chrome/HyperFrames processes, clears stale temp profiles and retries (60 s, then 600 s) before giving up. Pipelines run it before their expensive steps. |
 | `video-studio narrate` | A silent MP4 (or a whole project, rendered first) + narration text → one finished MP4 with voice and optional background music, through the voice studio. |
 | `video-studio preview` | Opens the HyperFrames preview studio for a project — with the *pinned* build, so what you inspect is what will render. |
@@ -70,6 +71,17 @@ Entries are references to adapt, not templates that were render-tested.
 | `video-studio export` / `import` | Zip a station and unpack it on another machine. `--personal` takes only project assets (`projects/*/assets`) plus the top-level folders you name with `--include`; scratch, cache, virtualenvs and git trees never enter the pack. `import` never overwrites unless you ask, and has `--dry-run`. |
 | `video-studio backup` / `migrate` / `update` | Zip the station; move an `embedded` station out of the repo; fast-forward the clone (never cleans). |
 | `video-studio uninstall` | Removes only what the installer put in place — the repo → station link, skills an older version copied (if unmodified), an unfilled `.env`, its own pre-commit hook — and moves them into the station journal instead of deleting. The station and every project stay. `--dry-run` shows the plan. |
+
+For a custom project, `render --project-dir DIR --lib NAME --out OUT` declares a library when
+it appears only in JavaScript imports; `--lib-file NAME=PATH` selects a verified source but does
+not declare the need. Projects supplying all their own module files do not need a declaration.
+HTML checks cover direct remote script URLs, non-neutral base URLs, a conservative SVG subset and
+unsupported HTML structures. Literal `<!--` inside raw script, including a JavaScript string, and
+noncanonical HTML comments or marked sections outside raw/RCDATA are unsupported. Repository
+templates fail; custom projects warn and disable autodetection, but explicit `--lib` still works.
+This is not a full HTML5 parser, sanitizer, JavaScript scan or network sandbox; fonts, images and
+other resources can still use the network. See the [runtime contract](docs/CONTRACT.md#thư-viện-runtime-libs)
+for the SVG subset, supported comments and full rules.
 
 Every command follows one contract: exit `0` ok · `1` render/engine error (retryable) ·
 `2` bad call or config · `3` station or tool missing; with `--json` the last stdout line is a
@@ -137,9 +149,18 @@ always an exact version (never `latest`).
 
 ## Agent skills
 
-`skills/` holds **33 skills**: twelve written for this repo (`video-routing`, `video-edit`,
+[`video-storyboard-design`](skills/video-storyboard-design/SKILL.md) turns a brief into a scene-by-scene
+storyboard with visual choices, motion cues, sources and handoff instructions. It consults
+`video-theme-library`; a storyboard is a design, not proof of a rendered video.
+
+For new effect sources, the [effect source guide](skills/video-theme-library/references/effect-sources.md#tiếp-nhận-nguồn-hiệu-ứng-mới)
+maps references, reusable code and templates to their locations and records rights and verification.
+The current [GSAP core draw recipe](skills/video-theme-library/references/gsap-core-draw.md) is a
+single candidate preset; it is not a complete GSAP template library.
+
+`skills/` holds **35 skills**: fourteen written for this repo (`video-routing`, `video-edit`,
 `video-cleanup`, `video-theme-library`, `video-reference-analysis`,
-`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, [`infographic-production`](skills/infographic-production/SKILL.md)) and **21 distilled from the current HyperFrames skill set**
+`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `video-storyboard-design`, `line-art-motion`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, [`infographic-production`](skills/infographic-production/SKILL.md)) and **21 distilled from the current HyperFrames skill set**
 (`skills/hyperframes/`). Those 21 are translated into Vietnamese, condensed and edited from the
 upstream `skills/<name>/SKILL.md` at one pinned tag; the frontmatter stays in English because
 that is what a harness reads to route. No upstream binary (font, audio, image) and no upstream
@@ -149,7 +170,7 @@ that is what a harness reads to route. No upstream binary (font, audio, image) a
 Skills are **not** copied into the station. The repo root carries one small adapter per skill in
 `.claude/skills/` (Claude Code) and `.agents/skills/` (Codex, Antigravity): it holds only the
 skill's `name` and `description` and points the agent at the original under `skills/`. Open the
-repository folder in your host and it sees all 32; `git pull` is enough to get new skill content.
+repository folder in your host and it sees all 35; `git pull` is enough to get new skill content.
 After adding, removing or re-describing a skill, run `python scripts/build_host_adapters.py`;
 `tests/test_host_adapters.py` fails when an adapter drifts from its source. A station set up by
 an older version still holds copies plus `skills-lock.json`: `init --station DIR --migrate`

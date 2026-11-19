@@ -69,6 +69,10 @@ def ensure(name, station=None):
         raise StationMissing(
             f"project {name!r} thiếu {', '.join(missing)} và trạm chưa có seed ở {seed} — "
             f"chạy: {_env.init_command(st)} (dựng demo/ từ templates/_seed của repo)")
+    # Config seeds need not include an index; preserve existing user files.
+    if os.path.isfile(os.path.join(proj, 'index.html')):
+        from . import runtime_libs
+        runtime_libs.stage_detected(proj, required=False, keep_existing=True, station=st)
     return proj
 
 

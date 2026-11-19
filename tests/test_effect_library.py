@@ -32,9 +32,9 @@ def test_reference_unknown_is_searchable(tmp_path):
     assert search("nang", {"rights": "unknown"}, repo_entries=f)[0]["kind"] == "reference"
 
 
-def test_repo_bundle_fails_closed_without_windows_verifier(tmp_path, monkeypatch):
+def test_repo_bundle_fails_closed_when_posix_reader_unavailable(tmp_path, monkeypatch):
     import importlib
-    from types import SimpleNamespace
+    from video_studio.effect_library import _posix_fs
     module = importlib.import_module("video_studio.effect_library.search")
     record = entry()
     record.pop("asset")
@@ -42,8 +42,13 @@ def test_repo_bundle_fails_closed_without_windows_verifier(tmp_path, monkeypatch
                         for name in ("a.js", "b.css")]
     catalog = tmp_path / "entries.json"
     catalog.write_text(json.dumps([record]), encoding="utf-8")
-    monkeypatch.setattr(module, "os", SimpleNamespace(name="posix"))
-    with pytest.raises(ContractError, match="unavailable"):
+    monkeypatch.setattr(module, "_IS_NT", False)
+    monkeypatch.setattr(module, "resource_root", lambda: tmp_path)
+    monkeypatch.setattr(_posix_fs, "read_repo_file", lambda *args, **kwargs: catalog.read_bytes())
+    def unavailable(*args, **kwargs):
+        raise ContractError("POSIX reader unavailable")
+    monkeypatch.setattr(_posix_fs, "read_repo_files", unavailable)
+    with pytest.raises(ContractError, match="VE-test.*unavailable"):
         search(repo_entries=catalog)
 
 
@@ -67,7 +72,7 @@ def test_search_requires_all_words_without_matching_inside_other_words(tmp_path)
 def test_search_indexes_runtime_and_roles():
     root = Path(__file__).resolve().parents[1]
     catalog = root / "skills/video-theme-library/assets/effect-library/entries.json"
-    assert any(row["id"] == "VE-react-bits" for row in search("GSAP", repo_entries=catalog))
+    assert any(row["id"] == "VE-react-bits" for row in search("GSAP", repo_entries=catalog, limit=50))
     assert any(row["id"] == "VE-sun-rays" for row in search("ambient", repo_entries=catalog))
 
 

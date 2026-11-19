@@ -313,3 +313,117 @@ if p.returncode == 0:
 ```
 
 Mọi lệnh đều nhận `--help` và trả mã 0 cho `--help`; tham số sai trả mã 2.
+
+### Template nhiều file trong thư viện hiệu ứng
+
+Giao diện `python -m video_studio.effect_library materialize-template --id VE-x --into DIR`
+chỉ chọn catalog repo, không nhận `--station`; template trạm chưa hỗ trợ. Writer hiện bị chặn:
+Windows fail-closed vì chưa chứng minh quyền riêng và hoàn tác đúng đối tượng; tổ hợp no-recall
+với tạo mới cũng chưa được chứng minh hoặc được Windows chấp nhận. macOS/Linux bị chặn khi chưa
+chứng minh được thao tác an toàn. Chưa xác minh POSIX/macOS, host hoặc render thật.
+
+Template khai `template_root`, `contract_path`, `contract_sha256` và 2–64 `assets` có digest
+SHA-256 riêng; contract nằm ngoài cây project. Xem [khuôn contract](../skills/video-theme-library/references/template-contract.md).
+Contract và asset được kiểm digest trước khi ghi từ snapshot bytes; tổng asset tối đa 64 MiB.
+Đích phải mới hoàn toàn và cha phải tồn tại; không ghi đè hay gộp. Các đuôi `.glb`, `.gltf`,
+`.geojson`, `.wasm`, `.pmtiles`, `.pbf`, `.hdr`, `.bin` vẫn bị khóa.
+
+Theo hợp đồng, mã 0 trả một JSON dòng cuối với `ok`, `id`, `into`, `files`, `bytes`; số file và
+byte chỉ tính asset, không tính contract. Mã 2 là chưa hoàn tất và đã dọn sạch; mã 3 yêu cầu kiểm
+đích trước khi thử lại vì trạng thái không chắc chắn hoặc khâu hoàn tất/báo kết quả lỗi. Crash có
+thể để lại cây dở; không tự xóa file không rõ sở hữu. Kiểm `_scan_project` là kiểm tĩnh, không
+thay bằng chứng render bằng engine. Search có nhánh đọc bundle POSIX chưa được kiểm thật; hai
+nguồn FFmpeg/Hypit vẫn bị bỏ trên POSIX. Chi tiết: [bản đồ nguồn](../skills/video-theme-library/references/effect-sources.md#template-nhiều-file).
+
+
+### Thư viện runtime (`libs`)
+
+`libs status [--json]` kiểm tệp trạm; `libs plan [NAME …] [--json]` in kế hoạch mà không tải.
+`libs fetch [NAME …] --yes [--from-file PATH | DEST=PATH …] [--json]` chỉ tải hoặc cấp sau khi đã xác nhận. Thiếu `--yes` trả mã 2, JSON có `error: needs_confirmation` và `plan`. `--from-file` không dùng mạng, phải cung cấp đủ member và khớp SHA-256. `libs path NAME [--json]` chỉ trả đường đã kiểm.
+
+Mã 0: xong; 1: mạng, hết hạn hoặc lỗi I/O khi ghi; 2: chưa xác nhận, URL/chuyển hướng/trần/hash hoặc dữ liệu không hợp lệ; 3: thiếu trạm hay thư viện. Tệp có sẵn khác nội dung được giữ và báo lỗi.
+
+### Render và khai thư viện
+
+Đường tải công khai có hạn tổng thời gian, nhưng **không bảo đảm timeout cứng trong mọi pha**:
+phân giải DNS đồng bộ có thể chờ quá hạn; khi kết nối hoặc bắt tay TLS, socket có thể chưa được
+gắn để đồng hồ canh giữ ngắt. Không dựa vào hạn này để bảo đảm thời gian kết thúc tuyệt đối.
+
+Template bản tin khai GSAP cần dùng: file trong trạm hoặc file người dùng chọn được kiểm SHA-256
+rồi cấp cùng `index.html`; nếu thiếu, render trả mã 3. `effect-preview` cũng có thể dùng GSAP
+trong trạm. `render --lib-file NAME=PATH` chọn **nguồn** file cho lib một member; lib nhiều
+member dùng `--lib-file NAME:DEST=PATH` cho từng file. Cờ lặp được; `--gsap-file PATH` là bí danh
+của `--lib-file gsap=PATH`. `--lib-file` không tự khai project cần lib đó.
+
+Với `render --project-dir DIR --out OUT`, file thường có nhiều hard link bị từ chối. Chương trình
+kiểm snapshot danh tính của gốc, thư mục tổ tiên và file trước và sau khi chép để giảm rủi ro
+thay đường dẫn giữa lúc kiểm và dùng (TOCTOU). Đây không phải sandbox và không loại mọi race:
+nội dung có thể đã được đọc trước khi thay đổi bị phát hiện.
+
+Chương trình tự nhận diện tên file trong thẻ HTML thật
+`<script src>` và `<link href>` khi đường dẫn tương ứng file gốc project trong khoá (chấp nhận
+`./`, query và fragment). Nếu lib chỉ được nhắc đến trong JavaScript, ví dụ `import`, hãy khai rõ
+`--lib NAME` (lặp được) để cấp các member và mọi lib phụ thuộc trong `requires`. Tên rỗng hoặc
+không có trong khoá trả mã 2 trước khi tạo output hay gọi engine. Ví dụ cho sprint bổ sung
+three.js trong tương lai — **khoá đợt này chưa có `three`**:
+
+```text
+video-studio render --project-dir DIR --lib three --out OUT
+```
+
+Project người dùng đã tự cung cấp đầy đủ file module không cần khai lib. File tương ứng lib được
+nhận diện hoặc khai bằng `--lib` phải khớp hash trong khoá; lệch thì render trả mã 2 và giữ nguyên
+project gốc. File không được nhận diện và không khai bằng `--lib` không được kiểm theo khoá. Việc cấp các file còn thiếu chỉ diễn ra trong bản sao tạm, không sửa
+project gốc. Nếu chỉ có import, thiếu file và không khai `--lib`, chương trình không tự dò import;
+engine xử lý lỗi còn lại. Bare specifier và import map trong project người dùng không bị cấm bởi
+cổng này.
+
+Tự dò chỉ hoạt động khi không có thẻ `base` đầu tiên có `href`, hoặc giá trị `href` đầu tiên là
+rỗng, `.` hay `./`. Base khác (kể cả `assets/`, `../` và URL từ xa) tắt tự dò vì gốc thay đổi
+hoặc chưa rõ; project người dùng nhận cảnh báo và tiếp tục. `--lib` vẫn cấp ở gốc bản sao và
+không đổi `base` hay URL; người dùng chịu trách nhiệm trỏ đúng file. Ví dụ một project tự có
+`assets/gsap.min.js` và `base href="assets/"` không bị yêu cầu thêm GSAP ở gốc nếu không khai lib.
+`index.html` người dùng phải là UTF-8 hoặc UTF-8 có BOM; byte UTF-8 sai hoặc mã hoá khác trả mã 2
+trước khi cấp member mới hoặc gọi engine, không dùng `meta charset` để đoán. Bytes file gốc và
+bản sao không bị đổi vì BOM.
+
+Guard xử lý SVG theo tập bảo thủ đang dùng trong logo/seed: cây `svg > (path | defs | rect)`,
+`defs > pattern`, `pattern > path`, với `path`/`rect` là lá; thẻ phải cân bằng, chỉ có khoảng
+trắng giữa các phần tử, chấp nhận cú pháp tự đóng của SVG và không lồng `svg`. Thuộc tính được
+nhận là `class`, `id`, `width`, `height`, `viewBox`, `fill`, `stroke`, `stroke-width`,
+`stroke-linecap`, `stroke-linejoin`, `d`, `patternUnits`, `aria-hidden`; `xmlns` chuẩn SVG chỉ
+ở gốc, và `url(#id)` được giữ. Tag, thuộc tính, namespace hoặc cây ngoài tập, MathML, comment,
+CDATA hay processing instruction trong SVG, đóng lệch hoặc kết thúc khi SVG còn mở là cấu trúc
+foreign chưa được hỗ trợ. Đây là giới hạn tương thích, không phải danh sách SVG an toàn tổng quát.
+
+Khi gặp cấu trúc foreign chưa được hỗ trợ, template repo bị từ chối mã 2 trước khi cấp hoặc ghi
+index. Với project người dùng, chương trình cảnh báo và dừng tự dò thư viện cho **toàn bộ** HTML;
+`--lib NAME` vẫn khai và cấp bao đóng vào gốc bản sao. Project tự có đủ file vẫn có thể tiếp tục;
+người dùng chịu trách nhiệm tham chiếu đúng. Template mới cần cấu trúc ngoài tập này phải được bổ
+sung hỗ trợ và kiểm thử trước.
+
+Guard còn giới hạn các cấu trúc HTML có thể được trình duyệt phục hồi khác với bộ đọc:
+
+- Literal `<!--` trong nội dung raw của thẻ `script` chưa được hỗ trợ, kể cả khi nằm trong chuỗi
+  hoặc comment JavaScript. Đây là kiểm marker HTML bảo thủ, không phải phân tích ý nghĩa JS.
+- Ngoài raw/RCDATA, chỉ nhận comment chuẩn `<!--BODY-->` đóng đầy đủ với BODY không chứa `--`,
+  kể cả comment rỗng. Comment lồng, mở/đóng hụt, kết thúc abrupt, `--!>` hoặc không chuẩn bị
+  coi là cấu trúc chưa hỗ trợ. Nội dung giống thẻ script trong comment chuẩn vẫn là dữ liệu.
+- Mọi marked section mở bằng `<![` ngoài raw/RCDATA đều chưa được hỗ trợ, kể cả CDATA và dạng
+  chưa đóng. DOCTYPE và comment chuẩn vẫn được nhận; marker trong raw/RCDATA thông thường hoặc
+  trong comment chuẩn là dữ liệu của vùng đó, riêng quy tắc `<!--` trong raw script vẫn áp dụng.
+
+Gặp các cấu trúc chưa hỗ trợ này, template repo trả mã 2 trước cấp/ghi index; project người dùng
+nhận cảnh báo và tắt tự dò trên toàn HTML, nhưng `--lib NAME` tường minh vẫn cấp bao đóng. Guard
+không viết lại HTML hoặc file nguồn; cấu trúc này có thể cần sửa có chủ đích để template chạy.
+
+Kiểm HTML xét `script src` trực tiếp có `http:`, `https:`, `//host` và `base href` đầu tiên
+ngoài các giá trị nêu trên: template repo bị từ chối mã 2 trước khi cấp/ghi index; project người
+dùng chỉ cảnh báo. Cổng không quét nội dung JavaScript, `import`, `export`, import map, JS ngoài,
+script do DOM tạo, font, ảnh, iframe hay URL trong `link`. Kết quả không cảnh báo không chứng minh
+không có mã từ xa; đây không phải bộ lọc làm sạch nội dung (sanitizer), parser HTML5 đầy đủ, sandbox hay bảo đảm render ngoại tuyến. Cấp thư viện vào project
+không gọi mạng, nhưng font, ảnh (kể cả B-roll), JavaScript, HyperFrames hoặc Chromium có thể cần mạng.
+
+Trên POSIX, khi cấp nhiều member mà lỗi I/O hoặc có tiến trình khác tạo đích giữa lúc ghi, một số tệp đã kiểm có thể đã được cấp. Lỗi liệt kê các tên đã cấp; kiểm tra tệp và xử lý xung đột rồi chạy lại `libs fetch` (tệp đúng được giữ, tệp khác không bị ghi đè). Không tự xoá tệp đã cấp theo tên vì tiến trình khác có thể đã thay tên đó.
+
+Thư mục staging riêng trên POSIX được dọn các tệp bên trong qua handle, nhưng được giữ lại rỗng và thông báo tên: xoá thư mục theo tên ở nơi có thể bị tiến trình khác đổi tên có thể xoá nhầm. Quyền `0700` không cách ly tiến trình cùng UID.

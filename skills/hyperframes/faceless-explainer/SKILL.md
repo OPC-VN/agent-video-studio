@@ -10,8 +10,9 @@ description: Turn arbitrary text - an article, notes, a topic, a brief - into a 
 > Bản này **đã dịch, rút gọn và biên tập lại** (Apache-2.0 §4(b)); `references/*` không chép vào repo.
 
 Đầu vào là **chữ**: một bài viết, một mớ ghi chú, một chủ đề, một brief. Không có trang web để
-chụp, không có footage. Mọi hình đều phải **bịa ra theo từng cảnh** — chữ, đồ hoạ trừu tượng, sơ
-đồ, biểu đồ.
+chụp, không có footage. Hình được lựa chọn hoặc thiết kế theo từng cảnh — chữ, đồ hoạ, sơ đồ, biểu đồ và media có quyền.
+
+Trước khi dựng, dùng `video-storyboard-design`: mỗi cảnh chọn hình minh họa, sơ đồ, icon hoặc demo vì giúp hiểu ý; ghi rõ demo được dựng giả lập hay là thao tác thật có bằng chứng. Không gọi minh họa là bản ghi thao tác thật. Quy trình ba draft và review xem/nghe trực tiếp theo workflow chung.
 
 ## Bảy bước
 

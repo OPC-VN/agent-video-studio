@@ -22,15 +22,15 @@ RAM/handle lúc long chưa giải phóng hết — hỏng THOÁNG QUA, chạy l�
 để lại traceback Python rỗng không chẩn được).
 """
 import argparse
-import hashlib
 import os
+import re
 import shutil
 import stat
 import subprocess
 import tempfile
 import time
 
-from . import API_VERSION, __version__, _env, _paths, contract, spec as spec_mod, voice
+from . import API_VERSION, __version__, _env, _paths, contract, runtime_libs, spec as spec_mod, voice
 from .contract import ContractError, EngineError, StationMissing
 
 FONT_TOKEN = "__FONT__"
@@ -95,12 +95,14 @@ def hyperframes_argv(*args, version=None):
     return [npx, "--yes", _env.hyperframes_spec(version), *args]
 
 
-def write_index(proj_dir, html):
+def write_index(proj_dir, html, *, libs=()):
     """Ghi `index.html` của project + thay chỗ dành cho font.
 
     Template giữ `__FONT__` thay vì một tên font cứng, vì font sẵn có khác nhau giữa Windows
     và macOS. `_env.font_stack()` đọc `VIDEO_FONT` MỖI LẦN gọi nên đổi biến là đổi ngay.
     """
+    runtime_libs.assert_no_remote_code(html)
+    runtime_libs.stage(libs, proj_dir, keep_existing=True, verify_existing=True)
     path = os.path.join(proj_dir, INDEX)
     os.makedirs(proj_dir, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
@@ -267,41 +269,43 @@ def _template(project):
 
 
 def _read_preview_gsap(path):
-    """Read pinned GSAP via handle-relative Windows no-recall primitives only."""
-    if os.name != "nt":
-        raise ContractError("effect-preview chưa hỗ trợ đọc GSAP an toàn trên hệ điều hành này")
-    from .effect_library import _native_windows as native
-    full = os.path.abspath(path)
-    parent, name = os.path.split(full)
-    root = handle = None
-    try:
-        try:
-            root = native.open_root(parent)
-            handle = native.open_file(root, name)
-            gsap_bytes = native.read_all(handle, PREVIEW_GSAP_MAX_BYTES)
-        finally:
-            try:
-                if handle is not None:
-                    native.close(handle)
-            finally:
-                if root is not None:
-                    native.close(root)
-    except (OSError, ValueError) as exc:
-        raise ContractError(f"Không đọc được GSAP cục bộ: {exc}") from exc
-    if hashlib.sha256(gsap_bytes).hexdigest() != PREVIEW_GSAP_SHA256:
-        raise ContractError("GSAP SHA-256 không khớp bản 3.15.0 đã ghim")
-    return gsap_bytes
+    """Read the pinned preview script through the shared verified reader."""
+    return runtime_libs.read_verified(path, PREVIEW_GSAP_SHA256, PREVIEW_GSAP_MAX_BYTES)
+
+
+def _lib_overrides(args):
+    """Validate flag syntax and member names before starting a render."""
+    flags = list(getattr(args, "lib_file", []) or [])
+    gsap = getattr(args, "gsap_file", "")
+    if gsap:
+        flags.append("gsap=" + gsap)
+    mapping = {}
+    for flag in flags:
+        key, sep, path = flag.partition("=")
+        if not sep or not key or not path:
+            raise ContractError("--lib-file cần NAME=PATH hoặc NAME:DEST=PATH")
+        name, colon, dest = key.partition(":")
+        entry = runtime_libs.lib_entry(name)
+        members = entry["members"]
+        if colon:
+            if not dest or dest not in [member["dest"] for member in members]:
+                raise ContractError(f"Đích {dest!r} không thuộc {name}")
+            # Normalize the single-member spelling so duplicates cannot evade detection.
+            canonical = name if len(members) == 1 else key
+        else:
+            if len(members) != 1:
+                raise ContractError(f"{name} có nhiều member; dùng NAME:DEST=PATH")
+            canonical = name
+        if canonical in mapping:
+            raise ContractError(f"--lib-file trùng {canonical}")
+        mapping[canonical] = path
+    return mapping
 
 
 def do_render(args):
     data = spec_mod.load(args.input, brand_file=args.brand or None)
-    gsap_file = getattr(args, "gsap_file", "")
-    if gsap_file and args.project != "effect-preview":
-        raise ContractError("--gsap-file chỉ hỗ trợ effect-preview")
     if args.project == "effect-preview":
-        if not gsap_file:
-            raise ContractError("effect-preview cần --gsap-file trỏ tới GSAP JavaScript cục bộ")
-        data["_gsap_bytes"] = _read_preview_gsap(gsap_file)
+        data["_gsap_bytes"] = runtime_libs.load(["gsap"], overrides=runtime_libs.get_overrides())["gsap.min.js"]
     if args.voice_profile:
         data["voice"] = {**spec_mod.voice_of(data), "profile": args.voice_profile}
     # Đường dẫn tương đối trong spec (ảnh, clip) neo vào THƯ MỤC CHỨA SPEC, không vào cwd.
@@ -346,79 +350,126 @@ def _is_link(st):
 
 
 class _Scanned(list):
-    """Danh sách `[(đường tuyệt đối, đường tương đối)]` kèm `.stats[rel] = (kích thước, mtime_ns)` đo LÚC QUÉT."""
-    stats = None
+    """Danh sách file và snapshot danh tính của gốc, mọi thư mục và file."""
 
 
-def _scan_project(root):
-    """-> [(đường tuyệt đối, đường tương đối)] cần chép (kèm `.stats`); ContractError nếu project không an toàn."""
-    if not os.path.isdir(root) or _is_link(os.lstat(root)):
-        raise ContractError(f"--project-dir phải là một thư mục thật (không phải liên kết): {root}")
-    files, total, stats = _Scanned(), 0, {}
-    files.stats = stats
-    stack = [("", root)]
-    while stack:
-        rel_dir, cur = stack.pop()
-        with os.scandir(cur) as it:
-            entries = sorted(it, key=lambda e: e.name)
-        for e in entries:
-            rel = f"{rel_dir}{e.name}"
-            if e.name.lower() in FORBIDDEN_NAMES:
-                raise ContractError(
-                    f"project có `{rel}` — bị từ chối vì npx đọc tệp này ở thư mục chạy và có thể đổi "
-                    "registry hoặc chiếm lệnh. Bỏ `.npmrc`, `package.json`, `node_modules/` khỏi project "
-                    "(thư viện đặt tĩnh trong assets/).")
-            st = e.stat(follow_symlinks=False)
-            if _is_link(st):
-                raise ContractError(f"project có liên kết `{rel}` (symlink/junction) — không đi theo; "
-                                    "chép tệp thật vào project")
-            if stat.S_ISDIR(st.st_mode):
-                if rel_dir == "" and e.name != ASSET_DIR:
-                    raise ContractError(f"thư mục `{rel}/` không được nhận — chỉ `{ASSET_DIR}/` "
-                                        "(và `index.html`, tệp tĩnh ở gốc)")
-                stack.append((rel + "/", e.path))
-            elif stat.S_ISREG(st.st_mode):
-                if os.path.splitext(e.name)[1].lower() not in STATIC_EXTS:
-                    raise ContractError(f"tệp `{rel}` không phải tài nguyên tĩnh được nhận")
-                total += st.st_size
-                if total > PROJECT_MAX_BYTES:
-                    raise ContractError("project quá lớn (> 1 GiB)")
-                files.append((e.path, rel))
-                stats[rel] = (st.st_size, st.st_mtime_ns)
-            else:
-                raise ContractError(f"`{rel}` không phải tệp thường")
-    if INDEX not in [r for _a, r in files]:
-        raise ContractError(f"project thiếu `{INDEX}` ở gốc: {root}")
-    return files
+def _identity(st):
+    # inode bằng 0 không đủ phân biệt đối tượng; không suy ra an toàn từ metadata khác.
+    if not getattr(st, "st_ino", 0) or not hasattr(st, "st_dev"):
+        raise ContractError("hệ tệp không cung cấp danh tính đáng tin cho project")
+    return (st.st_dev, st.st_ino, st.st_mode, st.st_size, st.st_mtime_ns)
 
 
 def _regular(st):
-    return stat.S_ISREG(st.st_mode) and not _is_link(st)
+    return stat.S_ISREG(st.st_mode) and not _is_link(st) and st.st_nlink == 1
+
+
+def _snapshot(path, *, directory):
+    st = os.lstat(path)
+    if _is_link(st) or (not stat.S_ISDIR(st.st_mode) if directory else not _regular(st)):
+        raise ContractError(f"project chứa liên kết, hard link hoặc loại tệp không hợp lệ: {path}")
+    return (_identity(st), os.path.realpath(path))
+
+
+def _verify_snapshot(files, rel):
+    root = files.root
+    parts = rel.split("/") if rel else []
+    for i in range(len(parts) + 1):
+        key = "/".join(parts[:i])
+        path = os.path.join(root, *parts[:i])
+        expected = files.snapshots.get(key)
+        if expected is None:
+            raise ContractError(f"thiếu snapshot của `{key}`")
+        actual = _snapshot(path, directory=i < len(parts) or not rel)
+        if actual != expected or os.path.commonpath((files.real_root, actual[1])) != files.real_root:
+            raise ContractError(f"`{key}` đã đổi hoặc ra ngoài project — chạy lại")
+
+
+def _scan_project(root):
+    """Quét tài nguyên và lưu snapshot; lỗi hệ tệp được báo là lỗi hợp đồng."""
+    try:
+        files, total = _Scanned(), 0
+        files.root = os.path.abspath(root)
+        files.snapshots = {"": _snapshot(files.root, directory=True)}
+        files.real_root = files.snapshots[""][1]
+        stack = [""]
+        while stack:
+            rel_dir = stack.pop()
+            # Mọi ancestor được kiểm trước scandir; kiểm lại sau khi đọc danh sách.
+            _verify_directory_chain(files, rel_dir)
+            cur = os.path.join(files.root, *rel_dir.split("/")) if rel_dir else files.root
+            with os.scandir(cur) as it:
+                entries = sorted(it, key=lambda e: e.name)
+            _verify_directory_chain(files, rel_dir)
+            for e in entries:
+                rel = f"{rel_dir}/{e.name}" if rel_dir else e.name
+                if e.name.lower() in FORBIDDEN_NAMES:
+                    raise ContractError(f"project có `{rel}` — bị từ chối vì npx đọc tệp này")
+                st = os.lstat(e.path)
+                if _is_link(st):
+                    raise ContractError(f"project có liên kết `{rel}`")
+                if stat.S_ISDIR(st.st_mode):
+                    if not rel_dir and e.name != ASSET_DIR:
+                        raise ContractError(f"thư mục `{rel}/` không được nhận — chỉ `{ASSET_DIR}/`")
+                    snap = _snapshot(e.path, directory=True)
+                    if _identity(st) != snap[0]:
+                        raise ContractError(f"`{rel}` đã đổi trong lúc quét")
+                    files.snapshots[rel] = snap
+                    stack.append(rel)
+                elif stat.S_ISREG(st.st_mode):
+                    if os.path.splitext(e.name)[1].lower() not in STATIC_EXTS:
+                        raise ContractError(f"tệp `{rel}` không phải tài nguyên tĩnh được nhận")
+                    snap = _snapshot(e.path, directory=False)
+                    if _identity(st) != snap[0]:
+                        raise ContractError(f"`{rel}` đã đổi trong lúc quét")
+                    total += st.st_size
+                    if total > PROJECT_MAX_BYTES:
+                        raise ContractError("project quá lớn (> 1 GiB)")
+                    files.snapshots[rel] = snap
+                    files.append((e.path, rel))
+                else:
+                    raise ContractError(f"`{rel}` không phải tệp thường")
+        if INDEX not in [r for _a, r in files]:
+            raise ContractError(f"project thiếu `{INDEX}` ở gốc: {root}")
+        return files
+    except (OSError, ValueError) as exc:
+        raise ContractError(f"không thể quét project an toàn: {exc}") from exc
+
+
+def _verify_directory_chain(files, rel):
+    parts = rel.split("/") if rel else []
+    for i in range(len(parts) + 1):
+        key = "/".join(parts[:i])
+        path = os.path.join(files.root, *parts[:i])
+        expected = files.snapshots.get(key)
+        if expected is None or _snapshot(path, directory=True) != expected:
+            raise ContractError(f"thư mục `{key}` đã đổi hoặc thiếu snapshot")
+        if os.path.commonpath((files.real_root, expected[1])) != files.real_root:
+            raise ContractError(f"thư mục `{key}` ra ngoài project")
 
 
 def _stage_project(files, dest):
-    """Chép project sang `dest`. Mã 2 nếu một tệp đổi (liên kết, kích thước, giờ sửa) so với lúc quét, hoặc tổng vượt trần.
-
-    TOCTOU chỉ được THU HẸP, không loại hẳn: so `lstat` trước và sau mỗi lần chép với số đo lúc quét."""
-    stats = getattr(files, "stats", None) or {}
-    total = 0
-    for src, rel in files:
-        dst = os.path.join(dest, *rel.split("/"))
-        os.makedirs(os.path.dirname(dst), exist_ok=True)
-        before = os.lstat(src)
-        want = stats.get(rel, (before.st_size, before.st_mtime_ns))
-        if not _regular(before) or (before.st_size, before.st_mtime_ns) != want:
-            raise ContractError(f"`{rel}` đã đổi sau khi quét (liên kết, kích thước hoặc giờ sửa) — chạy lại")
-        shutil.copyfile(src, dst, follow_symlinks=False)
-        after = os.lstat(src)
-        copied = os.lstat(dst)
-        if not _regular(after) or (after.st_size, after.st_mtime_ns) != want:
-            raise ContractError(f"`{rel}` đổi trong lúc chép — chạy lại")
-        if not _regular(copied) or copied.st_size != want[0]:
-            raise ContractError(f"bản chép của `{rel}` không phải tệp thường đúng kích thước")
-        total += copied.st_size
-        if total > PROJECT_MAX_BYTES:
-            raise ContractError("project quá lớn (> 1 GiB)")
+    """Kiểm snapshot trước/sau chép; thu hẹp TOCTOU, không loại hoàn toàn race."""
+    if not all(hasattr(files, key) for key in ("root", "real_root", "snapshots")):
+        raise ContractError("thiếu snapshot của project")
+    try:
+        total = 0
+        for src, rel in files:
+            if src != os.path.join(files.root, *rel.split("/")):
+                raise ContractError(f"đường dẫn `{rel}` không khớp snapshot")
+            _verify_snapshot(files, rel)
+            dst = os.path.join(dest, *rel.split("/"))
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
+            shutil.copyfile(src, dst, follow_symlinks=False)
+            _verify_snapshot(files, rel)
+            copied = os.lstat(dst)
+            if not _regular(copied) or copied.st_size != files.snapshots[rel][0][3]:
+                raise ContractError(f"bản chép của `{rel}` không phải tệp thường đúng kích thước")
+            total += copied.st_size
+            if total > PROJECT_MAX_BYTES:
+                raise ContractError("project quá lớn (> 1 GiB)")
+    except (OSError, ValueError) as exc:
+        raise ContractError(f"không thể chép project an toàn: {exc}") from exc
 
 
 def _project_name(src_dir):
@@ -440,16 +491,28 @@ def _check_final(final):
     contract.log(f"  [warn] ghi đè {final}")
 
 
-def _check_tail(raw, limit=60):
-    """`limit` dòng cuối của `raw`; có cắt thì thêm dòng nói đã cắt bao nhiêu dòng đầu."""
+def _check_tail(raw, limit=60, max_chars=12000):
+    """Bound and sanitize engine diagnostics before sending them to a terminal."""
+    # Drop common ANSI CSI/OSC sequences, then all remaining C0/C1 controls.
+    raw = re.sub(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\)|[@-_])", "", raw)
+    raw = "".join(ch for ch in raw if ch in "\n\t" or ord(ch) >= 160 or 32 <= ord(ch) < 127)
     lines = raw.strip().splitlines()
-    if len(lines) <= limit:
-        return "\n".join(lines)
-    return f"(cắt {len(lines) - limit} dòng đầu)\n" + "\n".join(lines[-limit:])
+    removed = max(0, len(lines) - limit)
+    tail = "\n".join(lines[-limit:])
+    prefix = f"(cắt {removed} dòng đầu)\n" if removed else ""
+    if len(tail) > max_chars:
+        prefix += f"(cắt {len(tail) - max_chars} ký tự đầu)\n"
+        tail = tail[-max_chars:]
+    return prefix + tail
 
 
 def do_render_project_dir(args):
     """check --strict rồi render project tự dựng bằng engine ghim. Mã 2 nếu project không an toàn/không qua check."""
+    # Xét cả hai chuỗi gốc trước bất kỳ phép chuẩn hoá hay probe nào (UNC có thể mở SMB).
+    for field, raw in (("--project-dir", args.project_dir), ("--out", args.out)):
+        if _paths.is_unc_like(raw) or any(
+                _paths.is_device_name(part) for part in str(raw).replace("\\", "/").split("/")):
+            raise ContractError(f"{field} chứa đường mạng hoặc tên thiết bị: {raw!r}")
     src_dir = os.path.abspath(args.project_dir)
     out_dir = os.path.abspath(args.out)
     files = _scan_project(src_dir)                      # kiểm TRƯỚC khi tạo --out
@@ -457,10 +520,15 @@ def do_render_project_dir(args):
     final = _paths.join_out(out_dir, name + ".mp4", "--project-dir")
     _check_final(final)
     t0 = time.time()
-    with tempfile.TemporaryDirectory(prefix="video-studio-proj-") as work:
+    # macOS exposes its system temp directory through /var -> /private/var.
+    # Canonicalize only this internally selected parent before creating staging;
+    # user-supplied paths still retain the no-follow checks below.
+    temp_parent = os.path.realpath(tempfile.gettempdir()) if os.name != "nt" else None
+    with tempfile.TemporaryDirectory(prefix="video-studio-proj-", dir=temp_parent) as work:
         proj = os.path.join(work, "project")
         os.makedirs(proj)
         _stage_project(files, proj)
+        runtime_libs.stage_detected(proj, keep_existing=True, names=getattr(args, 'lib', ()), verify_existing=True)
         # Hai file rỗng RIÊNG: npm báo "double-loading config" và thoát nếu user và global trỏ cùng một file.
         user_rc = os.path.join(work, "empty-user.npmrc")
         global_rc = os.path.join(work, "empty-global.npmrc")
@@ -475,9 +543,12 @@ def do_render_project_dir(args):
         except subprocess.TimeoutExpired as e:
             raise EngineError(f"HyperFrames check quá {DEFAULT_TIMEOUT}s chưa xong") from e
         if chk.returncode:
-            raw = chk.stderr or chk.stdout or b""
-            raw = raw.decode("utf-8", "replace") if isinstance(raw, bytes) else str(raw)
-            tail = _check_tail(raw)
+            sections = []
+            for label, raw in (("stdout", chk.stdout), ("stderr", chk.stderr)):
+                if raw:
+                    decoded = raw.decode("utf-8", "replace") if isinstance(raw, bytes) else str(raw)
+                    sections.append(f"{label}:\n{_check_tail(decoded)}")
+            tail = "\n".join(sections)
             raise ContractError(f"project không qua `check --strict` (mã {chk.returncode}):\n{tail}")
         tmp_out = os.path.join(work, "render.mp4")
         render_project(proj, tmp_out, label=name, env_extra=env_extra)
@@ -516,7 +587,11 @@ def main(argv=None):
     ap.add_argument("--out", required=True, help="thư mục nhận file ra")
     ap.add_argument("--brand", default="", help="file brand.json đè khối brand của spec")
     ap.add_argument("--voice-profile", default="", help="đè voice.profile của spec")
-    ap.add_argument("--gsap-file", default="", help="file GSAP cục bộ cho effect-preview")
+    ap.add_argument("--lib", action="append", default=[], metavar="NAME",
+                    help="thư viện cần cấp cho --project-dir; có thể lặp")
+    ap.add_argument("--lib-file", action="append", default=[], metavar="NAME=PATH | NAME:DEST=PATH",
+                    help="file thư viện cục bộ đã ghim; có thể lặp")
+    ap.add_argument("--gsap-file", default="", help="bí danh của --lib-file gsap=PATH")
     ap.add_argument("--images", default="",
                     help="images.json: ghép ảnh của người dùng vào đúng cảnh/đoạn/phần "
                          "(repo-today, news, news-weekly, topstory), một ảnh hoặc danh sách ảnh mỗi cảnh (cục bộ hoặc URL; "
@@ -527,6 +602,17 @@ def main(argv=None):
         return code
 
     def fn(a):
+        if a.lib and not a.project_dir: raise ContractError("--lib chỉ dùng với --project-dir")
+        for name in a.lib: runtime_libs.lib_entry(name)
+        a.lib = list(dict.fromkeys(a.lib))
+        mapping = _lib_overrides(a)
+        runtime_libs.set_overrides(mapping)
+        try:
+            return run_render(a)
+        finally:
+            runtime_libs.set_overrides({})
+
+    def run_render(a):
         if a.project_dir:
             if a.project or a.input:
                 raise ContractError("--project-dir không đi cùng --project/--input")

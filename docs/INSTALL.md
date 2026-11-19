@@ -152,6 +152,27 @@ không phải xác nhận: dòng `render` luôn ở mức này, vì chỉ một 
 ([samples/news-mini](../samples/news-mini/EXPECTED.md)) mới chứng minh được cả chuỗi. Trong
 JSON, các dòng đó nằm ở danh sách `not_checked`.
 
+### Cấp GSAP trước khi dựng bản tin
+
+Bản tin và seed dùng GSAP cục bộ đã kiểm SHA-256; repo không phân phối thư viện này. Sau khi
+có trạm, xem kế hoạch (địa chỉ tải, giấy phép, trần dung lượng):
+
+```text
+video-studio libs plan gsap
+```
+
+Chỉ sau khi người dùng đồng ý tải, chạy:
+
+```text
+video-studio libs fetch gsap --yes
+video-studio libs status
+```
+
+`fetch` không có `--yes` chỉ in kế hoạch rồi thoát mã 2, không tải và không tự hỏi tương tác.
+Thiếu GSAP, doctor báo WARN và render bản tin dừng mã 3; file không đọc an toàn hoặc lệch hash
+bị doctor báo FAIL và từ chối sử dụng. Đọc chỉ dẫn doctor để kiểm đúng file trước khi cấp lại.
+GSAP không còn tải từ CDN khi render; HyperFrames, Chromium hoặc media vẫn có thể cần mạng.
+
 ## 5. Tuỳ chọn: bản `video-use` gốc cho việc chỉnh footage
 
 `video-studio edit` đã có bộ helper chưng cất sẵn trong repo — **không cần** bước này. Chỉ cài
@@ -198,11 +219,11 @@ Venv trên Windows có thêm `nvidia-cublas-cu12`, `nvidia-cuda-nvrtc-cu12`, `nv
 | Nền tảng | Bộ khung (CLI, trạm, test) | Render thật |
 |---|---|---|
 | Windows | đã chạy thật | đã chạy thật |
-| macOS (Apple Silicon) | CI chạy mỗi lần đẩy mã: cài gói + toàn bộ test | **bài mẫu `news-mini` đã chạy thật** (Mac mini M1, 30/09/2026, số đo ở `samples/news-mini/EXPECTED.md`). CI **cố ý** không cài Node, HyperFrames, ffmpeg hay model. Bản HyperFrames đang ghim (0.8.54) chưa dựng bài `topstory` thật nào |
+| macOS (Apple Silicon) | CI chạy mỗi lần đẩy mã: cài gói + toàn bộ test | **bài mẫu `news-mini` đã chạy thật trước thay đổi GSAP cục bộ** (Mac mini M1, 30/09/2026, số đo ở `samples/news-mini/EXPECTED.md`); chưa xác nhận bản hiện tại. CI **cố ý** không cài Node, HyperFrames, ffmpeg hay model. Bản HyperFrames đang ghim (0.8.54) chưa dựng bài `topstory` thật nào |
 | Linux | CI chạy cổng đối chiếu skill với `upstream.json` | **chưa kiểm** |
 
 Thứ đã được chứng minh trên mọi nền tảng là **bộ khung**: lệnh chạy, trạm dựng đúng, hợp đồng gọi
-và mã thoát giữ nguyên. Render thật có số đo trên Windows và macOS arm64 (bài mẫu). Trên Mac, các
+và mã thoát giữ nguyên. Render thật có số đo lịch sử trên Windows và macOS arm64 (bài mẫu), trước thay đổi GSAP cục bộ; chưa xác nhận bản hiện tại. Trên Mac, các
 chỗ ở mục 6 là chỗ dễ vấp nhất — chạy `browser ensure` (dạng `npx` ở trên) một lần rồi
 `doctor --json` trước khi tin vào bất cứ lịch chạy nào.
 
