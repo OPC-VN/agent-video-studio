@@ -162,7 +162,7 @@ DEFAULT_COPY = {
     "cta_sub": "Liên hệ ngay",
 }
 TIMES = {"hook": (0, 7.17), "intro": (7.17, 9.57), "where": (9.57, 14.63), "size": (14.63, 20.9),
-         "city": (20.9, 23.67), "radius": (23.67, 27.97), "cta": (27.97, 30.8)}  # đo từ video mẫu bằng rea-video (rhythm.md)
+         "city": (20.9, 22.2), "radius": (22.2, 27.97), "cta": (27.97, 30.8)}  # đo từ video mẫu bằng rea-video (rhythm.md)
 
 
 def build(site: dict, radius_m: float, copy: dict | None = None) -> tuple[dict, dict, dict]:
