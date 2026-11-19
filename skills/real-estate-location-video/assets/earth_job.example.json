@@ -1,0 +1,188 @@
+{
+ "out": "<thư mục ra>/raw/earth-clean",
+ "basemap": {
+  "type": "satellite",
+  "details": "clean"
+ },
+ "shots": [
+  {
+   "id": "R01",
+   "url": "https://earth.google.com/web/@17.2365,107.1196,516.4a,3636843d,35y,3.76h,0t,0r",
+   "wait": 22000,
+   "kind": "still"
+  },
+  {
+   "id": "R02",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,120000d,35y,0h,0t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R03",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,400d,35y,40h,70t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R04",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,1470d,35y,40h,55t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R05",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,900d,35y,40h,65t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R06",
+   "url": "https://earth.google.com/web/@20.95655,105.93502,5.09a,10854d,35y,0h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R07",
+   "url": "https://earth.google.com/web/@20.95655,105.93502,5.09a,10854d,35y,5h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R08",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,3920d,35y,40h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R09",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,2940d,35y,40h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R10",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,1960d,35y,40h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R11",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,980d,35y,40h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R11b",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,980d,35y,40h,60t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R17",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,978.98d,35y,0h,0t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R18",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,3000d,35y,315h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R19",
+   "url": "https://earth.google.com/web/@21.0288313,105.8525357,10a,3000d,35y,315h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "R20",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,2940d,35y,60h,45t,0r",
+   "wait": 14000,
+   "kind": "still"
+  },
+  {
+   "id": "MV1_dolly_out",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,420d,35y,40h,68t,0r",
+   "wait": 14000,
+   "kind": "move",
+   "steps": [
+    {
+     "wait": 500
+    },
+    {
+     "wheel": 120,
+     "n": 9,
+     "gap": 120
+    },
+    {
+     "wait": 900
+    }
+   ]
+  },
+  {
+   "id": "MV2_pan_north",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,2450d,35y,40h,60t,0r",
+   "wait": 14000,
+   "kind": "move",
+   "steps": [
+    {
+     "wait": 500
+    },
+    {
+     "drag": [
+      0,
+      320
+     ],
+     "n": 40,
+     "gap": 30
+    },
+    {
+     "wait": 900
+    }
+   ]
+  },
+  {
+   "id": "MV3_orbit",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,980d,35y,40h,60t,0r",
+   "wait": 14000,
+   "kind": "move",
+   "steps": [
+    {
+     "wait": 500
+    },
+    {
+     "drag": [
+      190,
+      0
+     ],
+     "n": 45,
+     "gap": 35,
+     "button": "right"
+    },
+    {
+     "wait": 900
+    }
+   ]
+  },
+  {
+   "id": "MV4_dive",
+   "url": "https://earth.google.com/web/@20.95374525,105.93237025,6a,120000d,35y,0h,0t,0r",
+   "wait": 16000,
+   "kind": "move",
+   "steps": [
+    {
+     "wait": 500
+    },
+    {
+     "wheel": -120,
+     "n": 24,
+     "gap": 110
+    },
+    {
+     "wait": 1200
+    }
+   ]
+  }
+ ]
+}
