@@ -520,7 +520,11 @@ def do_render_project_dir(args):
     final = _paths.join_out(out_dir, name + ".mp4", "--project-dir")
     _check_final(final)
     t0 = time.time()
-    with tempfile.TemporaryDirectory(prefix="video-studio-proj-") as work:
+    # macOS exposes its system temp directory through /var -> /private/var.
+    # Canonicalize only this internally selected parent before creating staging;
+    # user-supplied paths still retain the no-follow checks below.
+    temp_parent = os.path.realpath(tempfile.gettempdir()) if os.name != "nt" else None
+    with tempfile.TemporaryDirectory(prefix="video-studio-proj-", dir=temp_parent) as work:
         proj = os.path.join(work, "project")
         os.makedirs(proj)
         _stage_project(files, proj)

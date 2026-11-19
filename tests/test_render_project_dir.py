@@ -74,6 +74,18 @@ def test_happy_path_check_then_render_in_staged_copy(rec, proj, tmp_path, capsys
     assert rec.staged == ["assets", "index.html"]
 
 
+@pytest.mark.skipif(os.name == "nt", reason="POSIX temporary-directory symlink required")
+def test_internal_temp_root_alias_does_not_break_staged_read(rec, proj, tmp_path, capsys, monkeypatch):
+    actual = tmp_path / "temp-real"
+    actual.mkdir()
+    alias = tmp_path / "temp-alias"
+    alias.symlink_to(actual, target_is_directory=True)
+    monkeypatch.setattr(render.tempfile, "tempdir", str(alias))
+    rc, _ = run(proj, tmp_path, capsys)
+    assert rc == 0
+    assert len(rec.calls) == 2
+
+
 def test_npm_userconfig_pointed_at_empty_file(rec, proj, tmp_path, capsys, monkeypatch):
     monkeypatch.setenv("npm_config_userconfig", "/evil/.npmrc")
     seen = {}
