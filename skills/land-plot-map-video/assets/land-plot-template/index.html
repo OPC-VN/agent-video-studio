@@ -62,14 +62,16 @@
         function scene(id, c, extraSvg) {
           const s = document.createElement("div");
           s.className = "scene clip"; s.id = id; s.setAttribute("data-layout-allow-overflow", "");
-          // hoà trộn tuỳ chọn: XF > 0 => scene ra giữ thêm XF giây dưới scene vào (mờ dần). Đo bằng rea-video: XF=0 → 5 cắt cứng/ranh 8/8; 0,15 → 1 cắt/5 trên 8; 0,35 → 0 cắt/4 trên 8. Mặc định 0 (nhòe vào–ra)
-          const XF = 0, last = id === "s-cta";
-          s.setAttribute("data-start", c.t0); s.setAttribute("data-duration", +(c.t1 - c.t0 + (last ? 0 : XF)).toFixed(3));
+          // hoà trộn TUỲ CHỌN theo ranh: XF_IN[id] > 0 => scene vào mờ dần trên scene ra (scene ra giữ thêm đúng ngần đó).
+          // Mặc định chỉ 2 ranh bản đồ→bản đồ; còn lại nhòe vào–ra. Số đo rea-video ghi ở UAT-rea-video.md.
+          const XF_IN = { "s-where": 0.25, "s-city": 0.25 }, ORDER = ["s-hook", "s-intro", "s-where", "s-size", "s-city", "s-rad", "s-cta"];
+          const XF = XF_IN[id] || 0, ext = XF_IN[ORDER[ORDER.indexOf(id) + 1]] || 0;
+          s.setAttribute("data-start", c.t0); s.setAttribute("data-duration", +(c.t1 - c.t0 + ext).toFixed(3));
           s.setAttribute("data-track-index", "1");
           s.innerHTML = '<div class="cam" data-layout-allow-overflow data-layout-allow-occlusion id="'+id+'-cam"><img class="bg" src="'+c.bg+'" alt=""/>' +
                         '<svg viewBox="0 0 1080 1920" id="'+id+'-svg">'+(extraSvg||"")+'</svg></div>';
           stage.appendChild(s);
-          if (id !== "s-hook") tl.fromTo("#" + id + "-cam", { opacity: 0 }, { opacity: 1, duration: XF, ease: "none" }, c.t0);
+          if (XF > 0) tl.fromTo("#" + id + "-cam", { opacity: 0 }, { opacity: 1, duration: XF, ease: "none" }, c.t0);
           return s;
         }
         // chữ gõ từng ký tự; [từ khoá] đổi màu (cam=hl, lục=hl2 nếu có dấu ])
