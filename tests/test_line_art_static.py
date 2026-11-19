@@ -40,9 +40,19 @@ def test_provenance_and_distribution_manifest():
     files = {p.relative_to(ROOT).as_posix() for p in ASSETS.glob("*.mjs")}
     assert set(upstream["local_paths"]) == files
     assert upstream["code_copied"] is False and upstream["assets_copied"] is False
-    for name in files:
-        assert source in rights[name]["license"]
-    manifest = json.loads((ROOT / "scripts/effect-distribution-manifest.json").read_text(encoding="utf-8"))["files"]
+    helper = "skills/line-art-motion/assets/line-art.mjs"
+    assert source in rights[helper]["license"]
+    catalog = json.loads((ROOT / "skills/video-theme-library/assets/effect-library/entries.json").read_text(encoding="utf-8"))
+    components = {e["asset"]["path"]: e for e in catalog if e.get("id", "").startswith("VE-line-art-")}
+    assert set(components) == files - {helper}
+    for name, entry in components.items():
+        assert entry["rights"] == "owned" and entry["license"]["id"] == "MIT"
+        assert entry["asset"]["sha256"] == hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
+    distribution = json.loads((ROOT / "scripts/effect-distribution-manifest.json").read_text(encoding="utf-8"))
+    manifest = distribution["files"]
+    assert files <= set(distribution["resources"])
+    skill_files = {p.relative_to(ROOT).as_posix() for p in ASSETS.parent.rglob("*") if p.is_file()}
+    assert skill_files <= set(distribution["resources"])
     for name in files:
         assert manifest[name] == hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
 

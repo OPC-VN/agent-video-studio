@@ -74,30 +74,6 @@
         "LICENSE",
         "NOTICE"
       ]
-    },
-    "skills/line-art-motion/assets/walker.mjs": {
-      "license": "MIT; idea from JDhruv14/line-art-animation @c43d698 (MIT)",
-      "provenance": "skills/line-art-motion/references/seek-safe-physics.md",
-      "notices": [
-        "LICENSE",
-        "NOTICE"
-      ]
-    },
-    "skills/line-art-motion/assets/hanging.mjs": {
-      "license": "MIT; idea from JDhruv14/line-art-animation @c43d698 (MIT)",
-      "provenance": "skills/line-art-motion/references/seek-safe-physics.md",
-      "notices": [
-        "LICENSE",
-        "NOTICE"
-      ]
-    },
-    "skills/line-art-motion/assets/ink-scene.mjs": {
-      "license": "MIT; idea from JDhruv14/line-art-animation @c43d698 (MIT)",
-      "provenance": "skills/line-art-motion/references/seek-safe-physics.md",
-      "notices": [
-        "LICENSE",
-        "NOTICE"
-      ]
     }
   }
 }

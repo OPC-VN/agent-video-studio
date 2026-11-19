@@ -581,7 +581,14 @@ def _html_references(html):
         def parse_marked_section(self, i, report=1):
             self.unsupported_structure('CDATA hoặc marked section ngoài raw/RCDATA')
 
-        def set_cdata_mode(self, elem):
+        def parse_html_declaration(self, i):
+            if self.raw == 'plaintext':
+                return len(self.rawdata)
+            if self.raw is None and self.rawdata.startswith('<![', i):
+                self.unsupported_structure('CDATA hoặc marked section ngoài raw/RCDATA')
+            return super().parse_html_declaration(i)
+
+        def set_cdata_mode(self, elem, *, escapable=False):
             # HTMLParser otherwise treats a literal <script> inside RCDATA as
             # a real script and can swallow the enclosing </textarea>.
             if self.raw is None:

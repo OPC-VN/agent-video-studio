@@ -1,12 +1,61 @@
 # DN6: inline JavaScript tests now assert the HTML-only contract; prior parser evidence remains in the sprint record.
 import copy
 import hashlib
+import html.parser
 import os
 
 import pytest
 
 from video_studio import runtime_libs as libs, render, projects
 from video_studio.contract import ContractError, StationMissing
+
+
+def test_html_parser_accepts_new_cdata_keyword(monkeypatch):
+    original = html.parser.HTMLParser.parse_starttag
+
+    def newer_parser(self, index):
+        for tag in ('script', 'title', 'textarea'):
+            if self.rawdata[index:index + len(tag) + 1].lower() == '<' + tag:
+                self.set_cdata_mode(tag, escapable=tag != 'script')
+                self.clear_cdata_mode()
+                break
+        return original(self, index)
+
+    monkeypatch.setattr(html.parser.HTMLParser, 'parse_starttag', newer_parser)
+    assert libs.assert_no_remote_code('<script src="./local.js"></script>', strict=True) == []
+    for tag in ('title', 'textarea'):
+        content = f'<{tag}>&lt;/{tag}&gt;<script src=fake.js></script></{tag}>'
+        assert libs._html_references(content + '<script src=gsap.min.js></script>') == (['gsap.min.js'], [])
+
+
+def test_escaped_comment_marker_in_script_is_not_html_comment():
+    assert libs._html_references('<script>const x="&lt;!--";</script>') == ([], [])
+
+
+def test_html_parser_new_marked_section_recovery_is_not_silent(monkeypatch):
+    original = html.parser.HTMLParser.parse_html_declaration
+
+    def newer_parser(self, index):
+        if self.rawdata[index:index + 3] == '<![':
+            end = self.rawdata.find('>', index + 3)
+            self.handle_comment(self.rawdata[index + 2:end])
+            return end + 1
+        return original(self, index)
+
+    monkeypatch.setattr(html.parser.HTMLParser, 'parse_html_declaration', newer_parser)
+    _, violations = libs._html_references('<![IGNORE[><script src=https://example.invalid/x.js></script>]]>')
+    assert any('cấu trúc HTML/SVG chưa được hỗ trợ' in item for item in violations)
+
+
+def test_marked_section_text_in_plaintext_or_rcdata_is_not_a_declaration():
+    prefix = '<script src=gsap.min.js></script>'
+    assert libs._html_references(prefix + '<plaintext><![CDATA[><script src=fake.js></script>') == (['gsap.min.js'], [])
+    assert libs._html_references('<textarea><![IGNORE[><script src=fake.js></script></textarea>' + prefix) == (['gsap.min.js'], [])
+
+
+def test_incomplete_marked_section_fails_closed():
+    _, violations = libs._html_references('<![IGNORE[')
+    assert any('cấu trúc HTML/SVG chưa được hỗ trợ' in item for item in violations)
 
 
 @pytest.mark.skipif(os.name == 'nt', reason='POSIX FIFO required')

@@ -69,7 +69,7 @@
     "skills/video-routing/references/station-and-commands.md": "527e1a9f31eae8a8318a63d286a139934d66bfcea73ce1ece9976a79161d85e7",
     "skills/video-routing/references/video-workflow.md": "ed1791b60ea9bed8daa29d01fd6a3454ae0c2611d2c6b155975d454c0c4788eb",
     "skills/video-theme-library/SKILL.md": "da2f6890d55984bfad1f193c1b63c0f00a86a1ff372e5cc6807df4e48753b473",
-    "skills/video-theme-library/assets/effect-library/distribution-rights.json": "b905695a6328535bbbb2065ab20661f6f93082fc9e2968d8a2279d55f1182c0d",
+    "skills/video-theme-library/assets/effect-library/distribution-rights.json": "7a26cb5072cbc8d23371139b85dee8b678b45126b75aacec2ce25e217d7647b3",
     "skills/video-theme-library/assets/effect-library/entries.json": "26c4f1bd136d2f9f09e6c7606e080e6fc0036071f501dc71d3c05609c61bc54a",
     "skills/video-theme-library/assets/prompt-motion/ANALYSIS.md": "286b9f0404e0cedfa5d0f1d746a5cc1169d3405a087a451323d7fe20efd32f2f",
     "skills/video-theme-library/assets/prompt-motion/CATALOG.md": "fd1960f2a28964b4fe05cdfe172190c82dd233bb40027b8cd30e0912598ba419",
@@ -395,7 +395,7 @@
     "video_studio/effect_library/layout_search.py": "3f029da8e44ef3719a711571c8b8c180b06a67c77841d0558ee765a8a666a2fb",
     "video_studio/effect_library/template.py": "84789e0664d117bbf6487f38bb11703ff34c622e70f70428a59f96c73364e138",
     "video_studio/locks/runtime-libs.json": "7f3de84f41e3d659e2606686b1a310c665c6ed0e9f8fd9fad175ac370ce30979",
-    "video_studio/runtime_libs.py": "cb9826c8f852687c8cd4913bc5b20263b634ad273b84555cfc8fd8beefe7a39e",
+    "video_studio/runtime_libs.py": "c1f9c8f984167ef55628bf36b4d5185dceaea2359786c8a921bf0964cf85c7b6",
     "skills/video-theme-library/assets/gsap-recipes/core-draw.js": "6d6ccfd499b14c6160af703582263e04cf3ad65c51973e3f2bdebceda4ddfb2d",
     "skills/video-theme-library/references/gsap-core-draw.md": "31139ac1ff8717570b94c0567f2d87aa3e10f5061b9a832fcbca3c90c0b4e38c",
     "skills/video-theme-library/assets/gsap-recipes/draw-svg.mjs": "c48ea236dde928e669f04ab61f4499ed1b518f528c02f7777c95776791682dae",
@@ -410,7 +410,13 @@
     "skills/line-art-motion/assets/line-art.mjs": "e4197db231985545927d4b6716edb3fecb1bd5ae06177caf672929d648a9660b",
     "skills/line-art-motion/assets/walker.mjs": "42a69111695f5f1f8febb8a6902807a16ca3d70acc3d3afdb991db190a010e1a",
     "skills/line-art-motion/assets/hanging.mjs": "dcf041c8858d75b9b89ac3be499758f3038a585df786466742e3662d5ad34c06",
-    "skills/line-art-motion/assets/ink-scene.mjs": "d7bc5870d26f75814b3fa97d4afd2279595cf632aaf688f7d4725d50517fa6a6"
+    "skills/line-art-motion/assets/ink-scene.mjs": "d7bc5870d26f75814b3fa97d4afd2279595cf632aaf688f7d4725d50517fa6a6",
+    "skills/line-art-motion/SKILL.md": "9248bb850c3a6a97998c347f906ff75ba9cff9eda50dfcb446af5414e6c3172b",
+    "skills/line-art-motion/references/component-cards.md": "fad53117614e6d986f2ec0a6a8cc562fb8ead066749f8a2f9fe31caec9354efb",
+    "skills/line-art-motion/references/gait.md": "ccd168cca99bcc3947d393b047cb0ca648d274d7ed52f505c44caba0e3152604",
+    "skills/line-art-motion/references/seek-safe-physics.md": "7ab992603b23a762686a7d41d31c8af68a51ef6e8c5ade7d5548c08bdc2e00c0",
+    "skills/line-art-motion/references/style.md": "428593cbf302586bb81e65f29074b5b373e6078bf3eb00a212459d6317563274",
+    "skills/line-art-motion/references/verify.md": "879d50d7442304606e40ec821c3a6c437bdc9fd745117b55ce49be0f99857d21"
   },
   "resources": [
     "LICENSE",
@@ -755,6 +761,16 @@
     "skills/video-theme-library/assets/gsap-recipes/custom-ease.mjs",
     "skills/video-theme-library/assets/gsap-recipes/seeded-scramble.mjs",
     "skills/video-theme-library/assets/gsap-recipes/seek-check.mjs",
-    "skills/video-theme-library/references/gsap-recipes.md"
+    "skills/video-theme-library/references/gsap-recipes.md",
+    "skills/line-art-motion/SKILL.md",
+    "skills/line-art-motion/assets/hanging.mjs",
+    "skills/line-art-motion/assets/ink-scene.mjs",
+    "skills/line-art-motion/assets/line-art.mjs",
+    "skills/line-art-motion/assets/walker.mjs",
+    "skills/line-art-motion/references/component-cards.md",
+    "skills/line-art-motion/references/gait.md",
+    "skills/line-art-motion/references/seek-safe-physics.md",
+    "skills/line-art-motion/references/style.md",
+    "skills/line-art-motion/references/verify.md"
   ]
 }
