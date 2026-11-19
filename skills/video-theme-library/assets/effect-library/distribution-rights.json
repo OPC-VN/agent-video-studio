@@ -1,13 +1,103 @@
 {
   "schema": "effect-distribution-rights/1",
   "files": {
-    "skills/lyric-video-effects/assets/audio-visualizer.js": {"license": "MIT", "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md", "notices": ["LICENSE"]},
-    "skills/lyric-video-effects/assets/line-icons.mjs": {"license": "MIT", "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md", "notices": ["LICENSE"]},
-    "skills/lyric-video-effects/assets/motion-families.mjs": {"license": "MIT", "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md", "notices": ["LICENSE"]},
-    "skills/lyric-video-effects/assets/script-ink.css": {"license": "MIT", "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md", "notices": ["LICENSE"]},
-    "skills/lyric-video-effects/assets/soft-presets.js": {"license": "MIT", "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md", "notices": ["LICENSE"]},
-    "skills/photo-ambient-effects/assets/ambient-painter.js": {"license": "MIT; idea informed by Apache-2.0 HyperFrames registry", "provenance": "skills/photo-ambient-effects/references/provenance-and-coverage.md", "notices": ["LICENSE", "LICENSE-APACHE", "NOTICE"]},
-    "skills/photo-ambient-effects/assets/dust.js": {"license": "MIT", "provenance": "skills/photo-ambient-effects/references/provenance-and-coverage.md", "notices": ["LICENSE"]},
-    "skills/photo-ambient-effects/assets/envelope.js": {"license": "MIT", "provenance": "skills/photo-ambient-effects/references/provenance-and-coverage.md", "notices": ["LICENSE"]}
+    "skills/lyric-video-effects/assets/audio-visualizer.js": {
+      "license": "MIT",
+      "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE"
+      ]
+    },
+    "skills/lyric-video-effects/assets/line-icons.mjs": {
+      "license": "MIT",
+      "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE"
+      ]
+    },
+    "skills/lyric-video-effects/assets/motion-families.mjs": {
+      "license": "MIT",
+      "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE"
+      ]
+    },
+    "skills/lyric-video-effects/assets/script-ink.css": {
+      "license": "MIT",
+      "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE"
+      ]
+    },
+    "skills/lyric-video-effects/assets/soft-presets.js": {
+      "license": "MIT",
+      "provenance": "skills/lyric-video-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE"
+      ]
+    },
+    "skills/photo-ambient-effects/assets/ambient-painter.js": {
+      "license": "MIT; idea informed by Apache-2.0 HyperFrames registry",
+      "provenance": "skills/photo-ambient-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE",
+        "LICENSE-APACHE",
+        "NOTICE"
+      ]
+    },
+    "skills/photo-ambient-effects/assets/dust.js": {
+      "license": "MIT",
+      "provenance": "skills/photo-ambient-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE"
+      ]
+    },
+    "skills/photo-ambient-effects/assets/envelope.js": {
+      "license": "MIT",
+      "provenance": "skills/photo-ambient-effects/references/provenance-and-coverage.md",
+      "notices": [
+        "LICENSE"
+      ]
+    },
+    "skills/video-theme-library/assets/gsap-recipes/seek-check.mjs": {
+      "license": "MIT",
+      "provenance": "skills/video-theme-library/references/gsap-recipes.md",
+      "notices": [
+        "LICENSE",
+        "NOTICE"
+      ]
+    },
+    "skills/line-art-motion/assets/line-art.mjs": {
+      "license": "MIT; idea from JDhruv14/line-art-animation @c43d698 (MIT)",
+      "provenance": "skills/line-art-motion/references/seek-safe-physics.md",
+      "notices": [
+        "LICENSE",
+        "NOTICE"
+      ]
+    },
+    "skills/line-art-motion/assets/walker.mjs": {
+      "license": "MIT; idea from JDhruv14/line-art-animation @c43d698 (MIT)",
+      "provenance": "skills/line-art-motion/references/seek-safe-physics.md",
+      "notices": [
+        "LICENSE",
+        "NOTICE"
+      ]
+    },
+    "skills/line-art-motion/assets/hanging.mjs": {
+      "license": "MIT; idea from JDhruv14/line-art-animation @c43d698 (MIT)",
+      "provenance": "skills/line-art-motion/references/seek-safe-physics.md",
+      "notices": [
+        "LICENSE",
+        "NOTICE"
+      ]
+    },
+    "skills/line-art-motion/assets/ink-scene.mjs": {
+      "license": "MIT; idea from JDhruv14/line-art-animation @c43d698 (MIT)",
+      "provenance": "skills/line-art-motion/references/seek-safe-physics.md",
+      "notices": [
+        "LICENSE",
+        "NOTICE"
+      ]
+    }
   }
 }

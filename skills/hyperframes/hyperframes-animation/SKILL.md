@@ -28,6 +28,8 @@ Chỉ nạp một **blueprint** (bản thiết kế cảnh nhiều pha) khi cả
 bạn muốn giữ nguyên nhịp đã được thử: ví dụ mở màn tiêu đề, so sánh hai phía, hành trình camera,
 tiết lộ không gian làm việc, chữ gõ máy, sân khấu tiến trình.
 
+Khi hiện quy trình, ghi trạng thái trước → hành động → sau: ô xuất hiện rồi connector mới dẫn đến ô đó; ẩn mũi tên của bước tương lai. Với vật cần căn thẳng, kiểm trùng vị trí sau động tác; SVG biến hình cần giữ trục và hình dạng. Kiểm đầu, giữa, cuối và tua ngược tại cue thay vì suy từ một ảnh tĩnh.
+
 ## Chọn runtime
 
 | Runtime | Khi nào |

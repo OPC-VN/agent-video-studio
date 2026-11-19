@@ -7,6 +7,18 @@ kiểm).
 
 ## Chưa phát hành
 
+- Line-art: thêm toán chuyển động tua được, ba component và hướng dẫn lắp cảnh; component cần helper cùng thư mục. Đã dựng cảnh ba component và dùng lại walker trong project Windows riêng; chuẩn tất định chung, kiểm phát liên tục và bundle nhiều file còn mở.
+
+- SPR-16: bổ sung contract và giao diện template nhiều file, kiểm digest và snapshot bytes; writer hiện bị chặn trên Windows và macOS/Linux do chưa chứng minh được tạo đích an toàn. Chưa xác minh POSIX, host hoặc render thật; xem `docs/CONTRACT.md`.
+
+- SPR-15: từ chối hard link của file thường trong project tự dựng và kiểm snapshot trước/sau chép để giảm TOCTOU; đây không phải sandbox và có thể đã đọc trước khi phát hiện thay đổi. Hạn tổng của đường tải công khai không phải timeout cứng trong mọi pha: DNS đồng bộ có thể chờ quá hạn, socket khi kết nối/TLS có thể chưa được gắn để ngắt.
+
+- Project tự dựng khai `--lib NAME` khi cần cấp thư viện chỉ xuất hiện trong import; `--lib-file` chọn nguồn, không khai nhu cầu. Kiểm HTML giới hạn ở URL script trực tiếp, base, guard SVG bảo thủ và cấu trúc HTML chưa hỗ trợ (gồm marker `<!--` trong raw script, comment không chuẩn và marked section ngoài raw/RCDATA): template bị từ chối, project người dùng cảnh báo và ngừng tự dò nhưng vẫn có thể khai `--lib`; không quét JavaScript hoặc bảo đảm render ngoại tuyến.
+
+- **Thay đổi phá vỡ:** bốn template bản tin và seed dùng GSAP cục bộ thay cho CDN. Trước lần dựng đầu trên mỗi trạm, xem `video-studio libs plan gsap` rồi, sau khi đồng ý, chạy `video-studio libs fetch gsap --yes`; file được kiểm SHA-256. Chưa cấp thì doctor WARN và render bản tin dừng mã 3; file lệch hash bị từ chối.
+
+- SPR-13: cập nhật mô tả số skill trong `AGENTS.md`, bổ sung công cụ đếm và kiểm lệch tài liệu; ghi nhận giấy phép và các nguồn ý tưởng đã kiểm có điều kiện. Hồ sơ: `workshop/records/agent-video-studio/plans/2026-11-14-nen-a-so-giay-phep/`.
+
 - Gia cố đường nhận đầu vào ngoài: tải ảnh URL, ảnh B-ROLL Openverse và trang GitHub đi qua một hàm tải công khai (ghim địa chỉ chống DNS rebinding, kiểm lại từng chuyển hướng, trần byte, từ chối máy không phân giải được); URL ảnh vượt trần bị từ chối thay vì cắt cụt; đường tải này không dùng biến proxy.
 - Đường UNC/thiết bị Windows không bị chạm hệ tệp, tên ổ chỉ nhận chữ cái ASCII; `render --project-dir` so tệp trước và sau khi chép, ghi file ra qua tệp tạm không đoán được, từ chối liên kết/thư mục ở đích, cảnh báo khi ghi đè, hiện tối đa 60 dòng lỗi `check --strict`.
 

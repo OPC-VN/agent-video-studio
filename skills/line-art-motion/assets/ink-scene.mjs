@@ -1,0 +1,6 @@
+import {drawOn,palette,inkFilter} from './line-art.mjs';
+export const meta={id:'VE-line-art-ink-scene',kind:'component'};
+export function createInkScene({width,height,filterId,seed=3,dayLength=20,tau0=.4,draws=[]}) {
+  if(!Number.isFinite(dayLength)||dayLength<=0||!Number.isFinite(width)||width<=0||!Number.isFinite(height)||height<=0)throw RangeError('invalid scene'); const filter=inkFilter(filterId,{seed});let root;
+  return {mount(g){if(root)throw Error('mounted');const layer=g.querySelector('[data-ink-layer]');if(!layer)throw Error('missing ink layer');root=g;g.setAttribute('viewBox',`0 0 ${width} ${height}`);const defs=g.ownerDocument.createElementNS('http:'+'//www.w3.org/2000/svg','defs');defs.innerHTML=filter;g.insertBefore(defs,g.firstChild);layer.setAttribute('filter',`url(#${filterId})`);},render(t){if(!root)throw Error('not mounted');if(!Number.isFinite(t))throw RangeError('invalid time');const colors=palette(tau0+t/dayLength);for(const [k,v] of Object.entries(colors))root.style.setProperty('--'+k,v);for(const d of draws){if(!Number.isFinite(d.duration)||d.duration<=0)throw RangeError('invalid duration');const u=Math.max(0,Math.min(1,(t-d.start)/d.duration));drawOn(d.el,u*u*(3-2*u));}}};
+}

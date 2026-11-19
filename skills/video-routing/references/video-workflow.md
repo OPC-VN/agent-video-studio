@@ -53,7 +53,7 @@ chung. `reference init` hiện không tự sinh storyboard: agent tạo tài li�
    lập thẻ liên kết kèm provenance theo `video-theme-library` và kiểm tìm lại qua chỉ mục chung;
    không chép nội dung chưa rõ quyền.
    Phân biệt điều đã kiểm với gợi ý và dừng ở đầu ra người dùng yêu cầu.
-4. **Storyboard:** chọn mẫu theo nhánh bên dưới, tạo từng cảnh từ brief và treatment. Tra
+4. **Storyboard:** dùng `video-storyboard-design` phân tích brief, treatment, tài liệu và media đã có, chọn hướng kể rồi điền mẫu theo nhánh bên dưới. Tra
    `video-theme-library` qua chỉ mục chung repo, Prompt Motion và trạm được chỉ định tường minh;
    chọn layout và motion theo vai trò/vùng/tỷ lệ. Ghi ID và link tham chiếu,
    mô tả thích nghi, trạng thái đã/chưa kiểm, quyền media/font/nhạc. Chọn audio qua `media-use` và
@@ -63,10 +63,8 @@ chung. `reference init` hiện không tự sinh storyboard: agent tạo tài li�
    chuyên biệt. Dựng từ storyboard và tài sản được phép, không từ video mẫu. Đường tham chiếu phải
    khai tài sản và chạy `reference audit` trước dựng; mã 2 hoặc `checked` 0 thì không coi là sạch.
    Audit chỉ so trùng byte, không chứng minh các bản đã chuyển mã sạch; kiểm bằng mắt sau dựng.
-6. **Preview → review → tối ưu:** kiểm nội dung, bố cục, chữ, màu, khung an toàn, nhịp, âm thanh,
-   nguồn và mức độ phù hợp brief; ghi lỗi, sửa rồi kiểm lại phần liên quan. Không xem ảnh tĩnh là
-   bằng chứng motion hoặc một lần chạy công cụ là bằng chứng chất lượng video.
-7. **Finalize:** xuất theo yêu cầu, xem/nghe bản cuối theo phạm vi khả dụng, lưu QA và các quyết
+6. **Ba draft đầy đủ:** Dùng `video-storyboard-design` và [review sáng tạo](../../video-storyboard-design/references/creative-review.md) để lập bảng đánh giá và kế hoạch sửa trước mỗi lượt; khi cần khác biệt rõ, nêu thay đổi cụ thể theo cảnh, lý do và bằng chứng, không tính thay nhãn nhỏ là nâng cấp đủ. dựng draft 1 từ storyboard; agent xem trực tiếp và nghe bản encode, ghi lỗi và khuyến nghị có mốc thời gian, gom sửa thành draft 2. Xem/nghe draft 2, ghi lỗi và cơ hội sáng tạo phù hợp, gom sửa thành draft 3. Kiểm draft 3 và giao cả ba kèm khác biệt, giới hạn và đề xuất để người dùng chọn. Pilot 1–3 cảnh rủi ro là tùy chọn và không tính là draft. Không render toàn phim sau từng lỗi nhỏ; dừng sau draft 3 trừ khi người dùng giao thêm. Nếu không xem hoặc nghe trực tiếp được, đánh dấu rõ chưa kiểm và không giả review; không tự nhận đạt hay hứa bước phụ thuộc đã hoàn thành. Lỗi kỹ thuật khiến file không xem được: tối đa hai lần thử lại có ghi lý do, vẫn hỏng thì dừng và báo.
+7. **Finalize:** kiểm và bàn giao ba draft hiện có; chỉ xuất thêm nếu người dùng yêu cầu. Xem/nghe bản cuối theo phạm vi khả dụng, lưu QA và các quyết
    định, ghi rõ phần chưa kiểm, đường output và cách tái dựng. Không coi chưa kiểm là đạt. Khi người
    dùng chỉ giao đến một bước, bàn giao ở bước đó; không tự đăng hay xuất bản.
 

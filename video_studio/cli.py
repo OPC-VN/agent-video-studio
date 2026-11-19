@@ -14,6 +14,7 @@ from . import API_VERSION, __version__, contract
 COMMANDS = {
     "init":    ("video_studio.station:init_main",
                 "dựng trạm (embedded | separate) + station.json; --migrate nhận trạm cũ; --undo"),
+    "libs": ("video_studio.runtime_libs", "thư viện runtime ghim SHA-256: status | plan | fetch | path"),
     "doctor":  ("video_studio.doctor", "kiểm node, HyperFrames, Chromium, ffmpeg, font, trạm"),
     "render":  ("video_studio.render",
                 "spec JSON → video theo template (news | news-weekly | topstory | repo-today)"),

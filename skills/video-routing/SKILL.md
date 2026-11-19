@@ -45,6 +45,10 @@ skill `video-cleanup`. Không mở mọi thẻ nếu brief không gọi tới.
 Khi yêu cầu cần xử lý media bằng FFmpeg, tra danh mục `ffmpeg-tool-index.md` trong skill
 `video-edit` để chọn luồng đã có; không suy rằng mọi hiệu ứng đề xuất đã được triển khai.
 
+Khi cần thiết kế hoặc chỉnh storyboard, dùng `video-storyboard-design` để phân tích nguồn, tra motion và bàn giao thiết kế từng cảnh. Khi được giao dựng đầy đủ, dùng quy trình ba draft trong workflow chung; nếu chỉ giao storyboard thì dừng ở storyboard.
+
+Nhân vật hoặc vật nét mực chuyển động thủ tục, tua được: dùng `line-art-motion`.
+
 ## Bước 1 — chọn đúng tiền kiểm
 
 - Các lệnh cần HyperFrames hoặc trạm: chạy `video-studio doctor --json` trước. Mã `3` ⇒ đọc

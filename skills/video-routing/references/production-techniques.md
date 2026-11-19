@@ -206,3 +206,8 @@ contact sheet không đủ.
 
 Các liên kết trên không xác nhận license cho sao chép/chuyển thể và không ngụ ý Hypit đã cài,
 chạy hoặc benchmark. Mô tả sản phẩm và checklist này là văn bản độc lập.
+
+
+## Kiểm các lỗi đã gặp trong UAT
+
+Khi liên quan, xem caption nguồn có bị đốt sẵn trước khi thêm caption; kiểm panel trống, nhãn chỉ sai mục tiêu, vùng an toàn và chữ tiếng Việt. Với chuyển động theo cue, xem trước/sau và tua ngược; ảnh tĩnh không chứng minh được motion. Với footage, đối chiếu hình, đuôi lời và âm tại mối cắt: ASR/PCM/PTS chỉ hỗ trợ khoanh vùng, không thay việc xem và nghe bản encode. Ghi rõ điều chưa kiểm.

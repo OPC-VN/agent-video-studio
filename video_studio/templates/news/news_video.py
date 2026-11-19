@@ -264,7 +264,7 @@ SHORT_COMPONENT_CSS = """
 SLIDE = """<!doctype html>
 <html lang="vi" data-resolution="landscape">
 <head><meta charset="UTF-8"/>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="gsap.min.js"></script>
 <style>
   html,body{{margin:0;width:1920px;height:1080px;overflow:hidden;font-family:__FONT__}}
   #master-root{{width:1920px;height:1080px;position:relative;
@@ -316,7 +316,7 @@ def make(item, out_path, date, model=None, prompt=None, brand=None):
     proj = _proj()
     render.write_index(proj, SLIDE.format(dur=dur, date=_esc(date), title=_esc(title),
                                           summary=_esc(summary), ba=_esc(brand["a"]),
-                                          bb=_esc(brand["b"])))
+                                          bb=_esc(brand["b"])), libs=("gsap",))
     silent = os.path.join(proj, "_silent.mp4")
     render.render_project(proj, silent, timeout=420, label="tin")
 
@@ -995,7 +995,7 @@ def _wk_diagram_html(diag, did):
 _WEEKLY_HEAD = """<!doctype html>
 <html lang="vi" data-resolution="landscape">
 <head><meta charset="UTF-8"/>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="gsap.min.js"></script>
 <style>
   :root{--ac1:#00f0ff;--ac2:#bd00ff;--ac3:#39ff7a;--ac4:#ffd166;
         --tx:#eef3fb;--mut:#9db2d4;--bd:rgba(255,255,255,.14);--pan:#0e1730}
@@ -1184,7 +1184,7 @@ def make_weekly(video_obj, out_path, date, week="", range_="", model=None, promp
             .replace("{SEGS}", "\n  ".join(segs_html))
             .replace("{ANIM}", "\n".join(anim)))
     html = _brandify(html, brand)
-    render.write_index(proj, html)
+    render.write_index(proj, html, libs=("gsap",))
 
     # 4) render video câm (timeout dài: ~6 phút khung hình)
     silent = os.path.join(proj, "_silent.mp4")
@@ -1217,7 +1217,7 @@ def make_weekly(video_obj, out_path, date, week="", range_="", model=None, promp
 _SHORT_HEAD = """<!doctype html>
 <html lang="vi" data-resolution="portrait">
 <head><meta charset="UTF-8"/>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="gsap.min.js"></script>
 <style>
   :root{--ac1:#00f0ff;--ac2:#bd00ff;--ac3:#39ff7a;--pan:#0e1730;
         --bd:rgba(255,255,255,.14);--tx:#eaf2ff;--mut:#9db2d4}
@@ -1434,7 +1434,7 @@ def make_weekly_short(video_obj, out_path, date, week="", range_="", model=None,
             .replace("{CAPS}", "\n  ".join(caps_html))
             .replace("{ANIM}", "\n".join(anim)))
     html = _brandify(html, brand)
-    render.write_index(proj, html)
+    render.write_index(proj, html, libs=("gsap",))
 
     silent = os.path.join(proj, "_silent_short.mp4")
     print("  [short] rendering slides (HyperFrames) ...")

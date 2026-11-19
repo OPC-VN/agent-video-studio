@@ -62,7 +62,8 @@
           "path": "skills/hyperframes/faceless-explainer",
           "upstream_path": "skills/faceless-explainer",
           "upstream_hash": "39e1e4d42e9a5ebe",
-          "upstream_files": 24
+          "upstream_files": 24,
+          "local_skill_sha256": "52bcade06693e2f030f2b37b1da30ff11c44e356c5c5aa5d3cef3bf5f3844e9c"
         },
         "figma": {
           "path": "skills/hyperframes/figma",
@@ -88,7 +89,8 @@
           "path": "skills/hyperframes/hyperframes-animation",
           "upstream_path": "skills/hyperframes-animation",
           "upstream_hash": "479c716293a26531",
-          "upstream_files": 122
+          "upstream_files": 122,
+          "local_skill_sha256": "b923090de01c195eed6a57116ba9560da289f7eadf7632e98529459a9939127c"
         },
         "hyperframes-audio": {
           "path": "skills/hyperframes/hyperframes-audio",
@@ -112,7 +114,8 @@
           "path": "skills/hyperframes/hyperframes-creative",
           "upstream_path": "skills/hyperframes-creative",
           "upstream_hash": "0803c90800fda4ce",
-          "upstream_files": 79
+          "upstream_files": 79,
+          "local_skill_sha256": "1294f3b25e060e7cdd814a2f4450a00e1ea60d447039bef8c13da4a337494ef2"
         },
         "hyperframes-keyframes": {
           "path": "skills/hyperframes/hyperframes-keyframes",
@@ -341,6 +344,95 @@
       "license": "MIT",
       "copyright": "Copyright (c) 2026 leeoxiang",
       "how": "He thiet ke card cua skill `talking-head-recut` upstream phong theo du an nay; ghi cong bat buoc giu lai, xem NOTICE."
+    },
+    "gsap-runtime": {
+      "relationship": "runtime_dependency",
+      "license": "GreenSock Standard License (miễn phí, không phải giấy phép nguồn mở)",
+      "license_url": "https://gsap.com/community/standard-license/",
+      "terms_read_on": "2026-11-14",
+      "terms_read_via": "công cụ tóm tắt, chưa đối chiếu từng chữ",
+      "redistribution": "điều khoản không nêu rõ quyền phân phối lại; repo này không phân phối",
+      "code_copied": false,
+      "binaries_copied": 0,
+      "in_use": [
+        {
+          "where": "effect-preview, template news, news-weekly, topstory, repo-today và templates/_seed",
+          "version": "3.15.0",
+          "sha256": "92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb",
+          "delivery": "cấp vào trạm bằng video-studio libs hoặc file người dùng, kiểm SHA-256"
+        }
+      ],
+      "how": "Gọi lúc chạy; repo không chứa hay phân phối lại thư viện. Cấp theo hash vào trạm hoặc từ file người dùng, không khẳng định quyền phân phối lại."
+    },
+    "threejs-runtime": {
+      "relationship": "runtime_dependency",
+      "status": "planned",
+      "repo": "mrdoob/three.js",
+      "version": "0.187.0",
+      "license": "MIT",
+      "code_copied": false,
+      "binaries_copied": 0,
+      "pinned_sha256": null,
+      "how": "Chưa dùng; dự kiến người dùng cấp file theo hash vào trạm, không phân phối trong repo."
+    },
+    "openmotion-reference": {
+      "repo": "nexu-io/openmotion",
+      "ref": "d9ebe30bbcbb39e89bef9308d96e705cc06cc6be",
+      "license": "Apache-2.0",
+      "relationship": "idea_reference",
+      "status": "active",
+      "code_copied": false,
+      "assets_copied": false,
+      "inspect": {
+        "verdict": "Đạt có điều kiện",
+        "scanned_on": "2026-11-16",
+        "ancestry": "reachable"
+      },
+      "local_paths": [],
+      "upstream_paths": [],
+      "checked_on": null,
+      "how": "Nguồn tham khảo ý tưởng cho khuôn hợp đồng template; chưa chưng cất vào repo. Quét hết thời gian, phần chưa quét và gateway/runtime chưa được đánh giá; asset có giấy phép hỗn hợp. Không tiếp nhận mã, installer, config, catalog, media hay asset."
+    },
+    "rea-video-reference": {
+      "repo": "JuneYaooo/rea-video",
+      "ref": "b08faf2eb53690fc92ddf94576a8c7c3a4a87f89",
+      "license": "Apache-2.0",
+      "relationship": "idea_reference",
+      "status": "active",
+      "code_copied": false,
+      "assets_copied": false,
+      "inspect": {
+        "verdict": "Đạt có điều kiện",
+        "scanned_on": "2026-11-16",
+        "ancestry": "reachable"
+      },
+      "local_paths": [],
+      "upstream_paths": [],
+      "checked_on": null,
+      "how": "Nguồn tham khảo ý tưởng về cắt cảnh và schema theo cảnh; chưa chưng cất vào repo. Chín media bị cắt khi quét; không tiếp nhận mã, installer, config, CLI, VLM, prompt, trọng số hay media."
+    },
+    "line-art-animation-reference": {
+      "repo": "JDhruv14/line-art-animation",
+      "ref": "c43d698913cf0ad44f984c7ae14c5348010594d3",
+      "license": "MIT",
+      "relationship": "idea_reference",
+      "status": "active",
+      "code_copied": false,
+      "assets_copied": false,
+      "inspect": {
+        "verdict": "Đạt có điều kiện",
+        "scanned_on": "2026-11-16",
+        "ancestry": "reachable"
+      },
+      "local_paths": [
+        "skills/line-art-motion/assets/line-art.mjs",
+        "skills/line-art-motion/assets/walker.mjs",
+        "skills/line-art-motion/assets/hanging.mjs",
+        "skills/line-art-motion/assets/ink-scene.mjs"
+      ],
+      "upstream_paths": [],
+      "checked_on": "2026-11-19",
+      "how": "Nguồn tham khảo ý tưởng về chuyển động nét vẽ; các asset local được viết lại sạch từ mô tả toán, không chép mã hoặc asset nguồn. Một media bị cắt khi quét; không tiếp nhận mã, installer, config, package, script, media hay asset."
     }
   }
 }

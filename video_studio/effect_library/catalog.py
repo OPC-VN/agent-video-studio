@@ -13,6 +13,27 @@ KINDS = {"reference", "prompt", "preset", "component", "template", "media_asset"
 MATURITIES = {"reference_only", "candidate", "implemented", "verified"}
 
 
+def _owned_idea(entry):
+    """A logical identity for an author's idea, never a path or fetch target."""
+    return (entry.get("kind") == "reference" and entry.get("maturity") == "reference_only"
+            and entry.get("rights") == "owned" and entry.get("asset") is None
+            and "assets" not in entry and entry.get("source") == "urn:avs:idea:" + entry.get("id", ""))
+
+
+def _validate_idea_shape(entry):
+    allowed = {"id", "name", "kind", "maturity", "rights", "source", "runtime", "tags",
+               "roles", "techniques", "ratios", "checks", "asset", "description"}
+    if set(entry) - allowed or set(entry["checks"]) != set(CHECKS):
+        raise ContractError("Owned idea contains unsupported fields")
+    for field in ("name", "source", "runtime", "description"):
+        value = entry.get(field)
+        if value is not None and (not isinstance(value, str) or len(value) > 2048):
+            raise ContractError(f"Invalid owned idea metadata field: {field}")
+    for field in ("tags", "roles", "techniques", "ratios"):
+        if len(entry[field]) > 128 or any(len(item) > 256 for item in entry[field]):
+            raise ContractError(f"Owned idea metadata field exceeds limit: {field}")
+
+
 def validate_entry(entry):
     if not isinstance(entry, dict):
         raise ContractError("Entry must be an object")
@@ -28,7 +49,9 @@ def validate_entry(entry):
     if entry["kind"] not in KINDS or entry["maturity"] not in MATURITIES:
         raise ContractError("Invalid kind or maturity")
     source = entry["source"]
-    if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", source):
+    if any(ord(ch) < 32 or ord(ch) == 127 for ch in source):
+        raise ContractError("Invalid control character in source")
+    if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", source.lstrip()) and not _owned_idea(entry):
         try:
             parsed = urlsplit(source)
             if (parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname or
@@ -51,11 +74,16 @@ def validate_entry(entry):
     checks = entry.get("checks")
     if not isinstance(checks, dict) or any(checks.get(k) not in ("not_run", "pass", "fail") for k in CHECKS):
         raise ContractError("Missing or invalid checks")
+    if _owned_idea(entry):
+        _validate_idea_shape(entry)
     evidence = entry.get("evidence", {})
     if not isinstance(evidence, dict) or any(checks[k] == "pass" and (not isinstance(evidence.get(k), str) or not evidence[k].strip()) for k in CHECKS):
         raise ContractError("Passing checks require evidence")
     if entry["maturity"] == "verified" and (checks["render"] != "pass" or checks["reuse_evidence"] != "pass"):
         raise ContractError("verified needs render and reuse evidence")
+    if entry["kind"] == "template":
+        from .template import validate_template_entry
+        validate_template_entry(entry)
     asset = entry.get("asset")
     if "assets" in entry:
         if asset is not None or entry["kind"] in {"reference", "prompt"}:
@@ -86,7 +114,7 @@ def validate_entry(entry):
             if any(key == previous or key[:len(previous)] == previous or previous[:len(key)] == key for previous in paths):
                 raise ContractError("Conflicting bundle paths")
             paths.add(key)
-            if item.get("rights") not in {"owned", "licensed"}:
+            if not isinstance(item.get("rights"), str) or item["rights"] not in {"owned", "licensed"}:
                 raise ContractError("Every bundle asset requires owned or licensed rights")
             if item["rights"] == "licensed":
                 license_info = item.get("license")
@@ -150,11 +178,12 @@ def _validate_metadata_entry(entry):
                 if len(entry[field]) > 128 or any(len(item) > 256 for item in entry[field]):
                     raise ValueError(f"reference metadata field exceeds limit: {field}")
         source = entry["source"]
-        if "\\" in source or any(ch.isspace() or ord(ch) < 32 for ch in source):
-            raise ValueError("reference requires a valid HTTP(S) source")
-        parsed = urlsplit(source)
-        if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
-            raise ValueError("reference requires an HTTP(S) source")
+        if not _owned_idea(entry):
+            if "\\" in source or any(ch.isspace() or ord(ch) < 32 for ch in source):
+                raise ValueError("reference requires a valid HTTP(S) source")
+            parsed = urlsplit(source)
+            if parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname:
+                raise ValueError("reference requires an HTTP(S) source")
         if "license_url" in entry:
             value = entry["license_url"]
             try:

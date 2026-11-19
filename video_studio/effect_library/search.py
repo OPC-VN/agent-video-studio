@@ -7,9 +7,33 @@ from pathlib import Path
 import unicodedata
 
 from video_studio.contract import ContractError
-from .catalog import CHECKS, _safe_file, validate_entry
+from .catalog import CHECKS, validate_entry
 from .resources import resource_root
-import hashlib
+
+
+_IS_NT = os.name == "nt"
+
+# Explicit, phrase-level equivalents. Do not expand individual words such as
+# "light" or "so": they have unrelated meanings in many queries.
+_QUERY_ALIASES = (
+    ("so do", "diagram"),
+    ("loi bai hat", "lyric", "lyrics"),
+    ("chuyen canh", "transition"),
+    ("tia sang", "tia nang", "light ray", "light rays", "sun ray", "sun rays"),
+)
+
+
+def _repo_reader():
+    if _IS_NT:
+        from . import _native_windows as reader
+    else:
+        from . import _posix_fs as reader
+    return reader
+
+
+def _verify_repo_bundle(repo_root, record):
+    """Verify the entire bundle through the bounded platform reader."""
+    _repo_reader().read_repo_files(repo_root, record["assets"], max_total=64 * 1024 * 1024)
 
 
 def _strict_json_loads(text):
@@ -41,6 +65,40 @@ def _strict_json_loads(text):
 def _fold(value):
     value = unicodedata.normalize("NFD", str(value).lower().replace("đ", "d"))
     return "".join(c for c in value if unicodedata.category(c) != "Mn")
+
+
+def _query_groups(query):
+    """Produce AND groups of exact token phrases, with bounded alternatives."""
+    tokens = re.findall(r"\w+", _fold(query))
+    aliases = sorted(((tuple(alias.split()), group) for group in _QUERY_ALIASES
+                      for alias in group), key=lambda pair: -len(pair[0]))
+    groups = []
+    i = 0
+    while i < len(tokens):
+        match = next(((phrase, group) for phrase, group in aliases
+                      if tuple(tokens[i:i + len(phrase)]) == phrase), None)
+        if match:
+            phrase, group = match
+            groups.append(tuple(tuple(alias.split()) for alias in group))
+            i += len(phrase)
+        else:
+            groups.append(((tokens[i],),))
+            i += 1
+    return tokens, groups
+
+
+def _contains_phrase(tokens, phrase):
+    size = len(phrase)
+    return any(tuple(tokens[i:i + size]) == tuple(phrase) for i in range(len(tokens) - size + 1))
+
+
+def _text_values(value):
+    """Keep metadata values separate so phrases cannot cross field boundaries."""
+    if isinstance(value, (list, tuple)):
+        for item in value:
+            yield from _text_values(item)
+    elif value is not None:
+        yield str(value)
 
 
 def _ratio_matches(entry, ratio, include_unknown):
@@ -80,6 +138,7 @@ def _pm(path):
                        "rights": "unknown", "source": s.get("url"), "file": e.get("file"),
                        "tags": a.get("keywords", []), "roles": a.get("scene_roles", []),
                        "techniques": a.get("techniques", []),
+                       "coverage": a.get("coverage"),
                        "ratios": [k for k, v in a.get("ratio_fit", {}).items() if v.get("fit") in ("preferred", "adaptable")],
                        "ratio_fit": a.get("ratio_fit", {}),
                        "description": a.get("description", ""), "origin": "prompt_motion",
@@ -87,12 +146,12 @@ def _pm(path):
     return result
 
 
-def search(query="", filters=None, station=None, repo_entries=None, pm_index=None, limit=10, distilled_root=None, include_unknown_ratio=False):
+def search(query="", filters=None, station=None, repo_entries=None, pm_index=None, limit=10, distilled_root=None, include_unknown_ratio=False, layout_root=None, layout_station=None):
     """Return matching records; caller supplies each desired source, no network or writes."""
     if not isinstance(limit, int) or limit < 1:
         raise ContractError("limit must be a positive integer")
     filters = filters or {}
-    base_filters = {"kind", "maturity", "rights", "role", "technique", "ratio", "runtime"}
+    base_filters = {"kind", "maturity", "rights", "role", "technique", "ratio", "runtime", "origin", "coverage"}
     evidence_filters = {f"check.{key}" for key in CHECKS}
     if set(filters) - base_filters - evidence_filters:
         raise ContractError("Unknown filter")
@@ -113,52 +172,48 @@ def search(query="", filters=None, station=None, repo_entries=None, pm_index=Non
     if distilled_root is not None:
         from .distilled_sources import load_distilled
         entries.extend(load_distilled(distilled_root))
+    if layout_station is not None and layout_root is None:
+        raise ContractError("layout_station requires layout_root")
+    if layout_root is not None:
+        from .layout_search import load_layouts
+        entries.extend(load_layouts(layout_root, layout_station))
     if repo_entries:
-        handles = []
+        catalog_path = Path(os.path.abspath(os.fspath(repo_entries)))
         try:
-            if os.name == "nt":
-                from . import _native_windows as native
-                catalog_path = os.path.abspath(os.fspath(repo_entries))
-                parent = native.open_root(os.path.dirname(catalog_path))
-                handles.append(parent)
-                catalog_handle = native.open_file(parent, os.path.basename(catalog_path))
-                handles.append(catalog_handle)
-                data = _strict_json_loads(native.read_all(catalog_handle, limit=16 * 1024 * 1024).decode("utf-8-sig"))
-            else:
-                data = _load(repo_entries)
-            if not isinstance(data, list):
-                raise ContractError("Repo entries must be a list")
-            for record in data:
-                validate_entry(record)
-                if record.get("assets") is not None:
-                    if os.name != "nt":
-                        raise ContractError("Repo bundle verification unavailable on this platform")
-                    root = native.open_root(os.path.abspath(resource_root()))
-                    handles.append(root)
-                    native.verify_repo_bundle(root, record, handles)
-                if record.get("asset") is not None:
-                    if os.name == "nt":
-                        root = native.open_root(os.path.abspath(resource_root()))
-                        handles.append(root)
-                        native._verify_repo_assets(root, [record["asset"]], handles)
+            raw = _repo_reader().read_repo_file(catalog_path.parent, catalog_path.name,
+                                                limit=16 * 1024 * 1024)
+            data = _strict_json_loads(raw.decode("utf-8-sig"))
+        except (ContractError, OSError, ValueError, UnicodeError) as exc:
+            raise ContractError(f"Cannot read repo catalog {catalog_path}: {exc}") from exc
+        if not isinstance(data, list):
+            raise ContractError("Repo entries must be a list")
+        catalog_ids = set()
+        for record in data:
+            validate_entry(record)
+            key = record["id"].casefold()
+            if key in catalog_ids:
+                raise ContractError(f"Duplicate catalog ID: {record['id']}")
+            catalog_ids.add(key)
+        root = None
+        for record in data:
+            assets = record.get("assets")
+            if assets is None and record.get("asset") is not None:
+                assets = [record["asset"]]
+            if assets is not None:
+                try:
+                    if root is None:
+                        root = resource_root()
+                    if record.get("assets") is not None:
+                        _verify_repo_bundle(root, record)
                     else:
-                        repo_root = resource_root()
-                        path = _safe_file(repo_root, record["asset"]["path"])
-                        if hashlib.sha256(path.read_bytes()).hexdigest() != record["asset"]["sha256"]:
-                            raise ContractError(f"Repo asset hash mismatch: {record['id']}")
-                entries.append(dict(record, origin="repo"))
-        except (OSError, ValueError, UnicodeError) as exc:
-            raise ContractError(f"Cannot verify repo bundle or catalog: {exc}") from exc
-        finally:
-            if os.name == "nt":
-                close_error = None
-                for handle in reversed(handles):
-                    try:
-                        native.close(handle)
-                    except OSError as exc:
-                        close_error = exc
-                if close_error:
-                    raise ContractError("Cannot close repo verification handle") from close_error
+                        asset = assets[0]
+                        _repo_reader().read_repo_file(root, asset["path"], limit=64 * 1024 * 1024,
+                                                      expected_sha256=asset["sha256"])
+                except (ContractError, OSError, ValueError) as exc:
+                    category = "bundle" if record.get("assets") is not None else "asset"
+                    path = f" ({assets[0]['path']})" if category == "asset" else ""
+                    raise ContractError(f"Cannot verify repo {category} for {record['id']}{path}: {exc}") from exc
+            entries.append(dict(record, origin="repo"))
     if station is not None:
         station = Path(station)
         if station.is_symlink() or not station.is_dir() or (station / "effect-library").is_symlink():
@@ -181,10 +236,10 @@ def search(query="", filters=None, station=None, repo_entries=None, pm_index=Non
             raise ContractError("Station search unavailable: secure handle-relative reader not verified on this platform")
     seen = set()
     for e in entries:
-        if e["id"] in seen:
+        if e["id"].casefold() in seen:
             raise ContractError(f"Duplicate ID: {e['id']}")
-        seen.add(e["id"])
-    terms = re.findall(r"\w+", _fold(query))
+        seen.add(e["id"].casefold())
+    terms, groups = _query_groups(query)
     if query.strip() and not terms:
         return []
     matches = []
@@ -199,16 +254,19 @@ def search(query="", filters=None, station=None, repo_entries=None, pm_index=Non
                 v not in e.get({"role": "roles", "technique": "techniques"}.get(k, k), []) if k in {"role", "technique"} else
                 e.get(k) != v) for k, v in filters.items() if k != "runtime"):
             continue
-        hay = _fold(" ".join(str(e.get(k, "")) for k in (
+        fields = [re.findall(r"\w+", _fold(value)) for key in (
             "id", "name", "description", "tags", "roles", "techniques", "ratios",
-            "runtime", "source", "repository", "prompt_text")))
-        tokens = re.findall(r"\w+", hay)
-        words = set(tokens)
+            "runtime", "source", "repository", "prompt_text")
+                  for value in _text_values(e.get(key))]
+        assets = e.get("assets") or ([e["asset"]] if isinstance(e.get("asset"), dict) else [])
+        fields.extend(re.findall(r"\w+", _fold(asset["path"])) for asset in assets
+                      if isinstance(asset, dict) and isinstance(asset.get("path"), str))
         exact_id = bool(exact_query) and unicodedata.normalize("NFC", e["id"]).casefold() == exact_query
-        if not exact_id and any(term not in words for term in terms):
+        if not exact_id and any(not any(_contains_phrase(field, alternative)
+                                        for alternative in group for field in fields)
+                                for group in groups):
             continue
-        phrase = " ".join(terms)
-        consecutive = bool(phrase) and f" {phrase} " in f" {' '.join(tokens)} "
+        consecutive = bool(terms) and any(_contains_phrase(field, terms) for field in fields)
         matches.append((-exact_id, -consecutive, e["id"], e))
     matches.sort(key=lambda item: (item[0], item[1], item[2]))
     return [e for _, _, _, e in matches[:limit]]

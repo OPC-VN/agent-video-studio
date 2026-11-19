@@ -13,14 +13,10 @@ from video_studio.effect_library import _native_windows as nt
 
 
 def main():
-    root = nt.open_root(str(ROOT))
-    try:
-        data = json.loads(_read_relative(root, MANIFEST).decode("utf-8"))
-        if data.get("schema") != "effect-distribution-manifest/1" or any(not _source_allowed(p) for p in data["files"]):
-            raise ValueError("invalid manifest or forbidden input")
-        data["files"] = {name: hashlib.sha256(_read_relative(root, name)).hexdigest() for name in sorted(data["files"])}
-    finally:
-        nt.close(root)
+    data = json.loads(_read_relative(ROOT, MANIFEST).decode("utf-8"))
+    if data.get("schema") != "effect-distribution-manifest/1" or any(not _source_allowed(p) for p in data["files"]):
+        raise ValueError("invalid manifest or forbidden input")
+    data["files"] = {name: hashlib.sha256(_read_relative(ROOT, name)).hexdigest() for name in sorted(data["files"])}
     # Build scripts and the manifest are repo-owned development inputs, not
     # user data. Never let a reparse point redirect this write.
     directory = nt.open_root(str(ROOT / "scripts"))

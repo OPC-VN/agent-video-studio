@@ -10,12 +10,13 @@ from ._native_windows import PublishedButCloseFailed
 from .catalog import CHECKS, _relative, capture, materialize, materialize_repo
 from .search import search
 from .resources import resource_root
+from .template import DestinationStateUncertain, materialize_template
 
 
 _SUMMARY_FIELDS = ("id", "name", "kind", "maturity", "rights", "source", "file", "origin", "runtime", "checks", "checks_origin",
     "tags", "roles", "techniques", "ratios", "description", "asset",
     "assets", "evidence", "license", "license_note", "license_url", "repository", "details",
-    "prompt_text", "ratio_fit")
+    "prompt_text", "ratio_fit", "coverage", "layout_tier")
 
 
 def _summarize_value(value, path, changes, budget, depth=0):
@@ -168,6 +169,9 @@ def _action(argv):
     restore_repo.add_argument("--project", required=True)
     restore_repo.add_argument("--id", required=True)
     restore_repo.add_argument("--name", required=True)
+    restore_template = commands.add_parser("materialize-template")
+    restore_template.add_argument("--id", required=True)
+    restore_template.add_argument("--into", required=True)
     args = parser.parse_args(argv)
     try:
         if args.action == "capture":
@@ -176,12 +180,22 @@ def _action(argv):
         elif args.action == "materialize":
             identifier = args.id
             materialize(args.station, identifier, args.project, args.name)
-        else:
+        elif args.action == "materialize-repo":
             identifier = args.id
             materialize_repo(identifier, args.project, args.name)
+        else:
+            return _write_result(materialize_template(args.id, args.into))
     except PublishedButCloseFailed:
         try:
             print("Entry published, but finalization failed; verify the station or destination before retrying.", file=sys.stderr)
+        except (OSError, ValueError, UnicodeError):
+            pass
+        return 3
+    except DestinationStateUncertain as exc:
+        try:
+            print("Destination state uncertain or finalization failed; inspect the station or destination before retrying.", file=sys.stderr)
+            if exc.remaining:
+                print("Remaining relative paths: " + json.dumps(exc.remaining, ensure_ascii=True), file=sys.stderr)
         except (OSError, ValueError, UnicodeError):
             pass
         return 3
@@ -204,12 +218,12 @@ def main(argv=None):
                 pass
             return 2
     argv = sys.argv[1:] if argv is None else argv
-    if argv and argv[0] in {"capture", "materialize", "materialize-repo"}:
+    if argv and argv[0] in {"capture", "materialize", "materialize-repo", "materialize-template"}:
         return _action(argv)
     parser = argparse.ArgumentParser(
         description="Search video effects and Prompt Motion offline",
-        epilog=("Actions: capture --help; materialize --help; materialize-repo --help. "
-                "Action status 3 means the operation completed but finalization or reporting failed; "
+        epilog=("Actions: capture --help; materialize --help; materialize-repo --help; materialize-template --help. "
+                "Action status 3 means the destination state is uncertain or finalization or reporting failed; "
                 "verify the station or destination before retrying."),
     )
     parser.add_argument("--q", default="")
@@ -221,7 +235,9 @@ def main(argv=None):
     parser.add_argument("--pm-index")
     parser.add_argument("--repo-entries")
     parser.add_argument("--no-distilled", action="store_true", help="Search only other sources; omit distilled references")
-    for flag in ("kind", "maturity", "rights", "role", "technique", "ratio"):
+    parser.add_argument("--layout", action="store_true", help="Include partial layout catalog index")
+    parser.add_argument("--layout-station", help="Explicit station for layout catalog, falling back to repo only if absent; requires --layout")
+    for flag in ("kind", "maturity", "rights", "role", "technique", "ratio", "origin", "coverage"):
         parser.add_argument("--" + flag)
     parser.add_argument("--runtime", help="Match whole tokens in runtime metadata; does not verify installation")
     parser.add_argument("--include-unknown-ratio", action="store_true",
@@ -230,26 +246,34 @@ def main(argv=None):
                         help="Filter a check (not_run, pass, fail); may be repeated")
     parser.add_argument("--limit", type=int, default=10)
     args = parser.parse_args(argv)
-    filters = {key: getattr(args, key) for key in ("kind", "maturity", "rights", "role", "technique", "ratio") if getattr(args, key)}
+    filters = {key: getattr(args, key) for key in ("kind", "maturity", "rights", "role", "technique", "ratio", "origin", "coverage") if getattr(args, key)}
     if args.runtime is not None:
         filters["runtime"] = args.runtime
     try:
+        if args.layout_station and not args.layout:
+            raise ContractError("--layout-station requires --layout")
+        if args.layout_station and args.station and os.path.normcase(os.path.abspath(args.layout_station)) != os.path.normcase(os.path.abspath(args.station)):
+            raise ContractError("--layout-station and --station must identify the same station")
         for item in args.check:
             name, sep, state = item.partition("=")
             key = f"check.{name}"
             if not sep or name not in CHECKS or state not in {"not_run", "pass", "fail"} or key in filters:
                 raise ContractError("Invalid or duplicate evidence filter")
             filters[key] = state
-        root = resource_root() if not args.pm_index or not args.repo_entries or not args.no_distilled else None
+        root = resource_root() if not args.pm_index or not args.repo_entries or not args.no_distilled or args.layout else None
         pm = args.pm_index or root / "skills/video-theme-library/assets/prompt-motion/index.json"
         repo = args.repo_entries or root / "skills/video-theme-library/assets/effect-library/entries.json"
         if args.no_distilled:
             print("Warning: distilled references omitted from search.", file=sys.stderr)
         elif os.name != "nt":
             print("Warning: FFmpeg and Hypit distilled references omitted; search results are incomplete because the secure reader is not verified on this platform.", file=sys.stderr)
+        if args.layout:
+            print("Warning: layout index covers single-ID table rows in sections 2-5 and 8 only; grouped IDs and free-form media are omitted. Ratios come only from explicit IDs in section 1; role and technique are unknown.", file=sys.stderr)
         results = search(args.q, filters, station=args.station, repo_entries=repo, pm_index=pm, limit=args.limit,
                          distilled_root=root if not args.no_distilled and os.name == "nt" else None,
-                         include_unknown_ratio=args.include_unknown_ratio)
+                         include_unknown_ratio=args.include_unknown_ratio,
+                         layout_root=root if args.layout else None,
+                         layout_station=(args.layout_station or args.station) if args.layout else None)
     except (ContractError, OSError, ValueError, KeyError) as exc:
         print(str(exc), file=sys.stderr)
         return 2

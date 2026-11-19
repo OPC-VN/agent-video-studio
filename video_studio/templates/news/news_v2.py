@@ -58,7 +58,7 @@ def _caption_blocks(model, narration, voice_profile, gap=0.16):
 _TPL = """<!doctype html>
 <html lang="vi" data-resolution="landscape"><head><meta charset="UTF-8"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<script src="gsap.min.js"></script>
 <style>
  html,body{{margin:0;width:1920px;height:1080px;overflow:hidden;font-family:__FONT__}}
  #master-root{{width:1920px;height:1080px;position:relative;color:#F0F0F5;
@@ -255,7 +255,7 @@ def render_deepdive(scenes, out_path, epi="", model=None, voice_profile=None, br
 
     head = (f'<!doctype html><html lang="vi" data-resolution="landscape"><head><meta charset="UTF-8"/>'
             f'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">'
-            f'<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>{V2_CSS}</head><body>')
+            f'<script src="gsap.min.js"></script>{V2_CSS}</head><body>')
     body = (f'<div id="master-root" data-composition-id="master" data-width="1920" data-height="1080" '
             f'data-start="0" data-duration="{total}">'
             f'<div class="grid" id="grid"></div>'
@@ -280,7 +280,7 @@ def render_deepdive(scenes, out_path, epi="", model=None, voice_profile=None, br
 
     proj = _proj()
     spec_mod.copy_image_files(proj, image_files)     # ảnh người dùng (render --images)
-    render.write_index(proj, html)
+    render.write_index(proj, html, libs=("gsap",))
     silent = os.path.join(proj, "_silent_dd.mp4")
     print(f"[v2dd] {len(scenes)} cảnh ~{total:.0f}s — render ...")
     render.render_project(proj, silent, timeout=1800, label="deep-dive")
@@ -369,7 +369,7 @@ def render_story(item, out_path, date="", model=None, voice_profile=None, brand=
     )
 
     proj = _proj()
-    render.write_index(proj, html)
+    render.write_index(proj, html, libs=("gsap",))
     silent = os.path.join(proj, "_silent_v2.mp4")
     print(f"[v2] render slide ~{total:.0f}s ...")
     render.render_project(proj, silent, timeout=900, label="slide")

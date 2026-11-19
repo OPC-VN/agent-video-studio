@@ -38,16 +38,221 @@ def fixture(monkeypatch):
     def refresh():
         manifest["files"] = {k: hashlib.sha256(v).hexdigest() for k, v in content.items()}
 
-    def read(_root, path):
+    def read(_root, path, *, limit=64 * 1024 * 1024):
         if path == builder.MANIFEST:
             return json.dumps(manifest).encode()
+        if len(content[path]) > limit:
+            raise ValueError("source exceeds limit")
         return content[path]
 
     monkeypatch.setattr(builder, "_read_relative", read)
     # source.md is a representative local license/provenance document.
-    monkeypatch.setattr(builder, "_source_allowed", lambda path: path in content and '..' not in path)
+    allowed = builder._source_allowed
+    monkeypatch.setattr(builder, "_source_allowed", lambda path: path == "source.md" or allowed(path))
     refresh()
     return content, manifest, record, refresh
+
+
+def template_fixture(monkeypatch):
+    content, manifest, record, refresh = fixture(monkeypatch)
+    base = "templates/effect-library/VE-example"
+    assets = {base + "/project/index.html": b"<html></html>",
+              base + "/project/assets/style.css": b"body {}"}
+    contract = base + "/contract.md"
+    content.update(assets)
+    content[contract] = ("## 1. Nguồn gốc và quyền\nOwned\n"
+                         "## 2. Bất biến sáng tạo\nExample\n"
+                         "## 3. Hợp đồng câu chuyện và thay thế\n"
+                         "| chỗ thay | file | số lần xuất hiện | kiểu nội dung | giới hạn |\n"
+                         "| --- | --- | --- | --- | --- |\n"
+                         "| Title | index.html | 1 | Text | Short |\n"
+                         "## 4. Thời gian và khung hình\nExample\n"
+                         "## 5. Yêu cầu vật liệu\nExample\n"
+                         "## 6. Kiểm duyệt\nExample\n").encode("utf-8")
+    record.pop("asset")
+    del content["skills/sample.js"]
+    manifest["resources"].remove("skills/sample.js")
+    record.update(kind="template", template_root=base + "/project", contract_path=contract,
+                  contract_sha256=hashlib.sha256(content[contract]).hexdigest(),
+                  assets=[{"path": path, "sha256": hashlib.sha256(data).hexdigest(), "rights": "owned"}
+                          for path, data in assets.items()])
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record]).encode()
+    manifest["resources"].extend([*assets, contract])
+    refresh()
+    return content, manifest, record, refresh
+
+
+def test_template_bundle_and_contract_are_distributed(monkeypatch):
+    content, manifest, _, _ = template_fixture(monkeypatch)
+    loaded, resources = builder._inputs(None)
+    assert {path: loaded[path] for path in manifest["resources"] if path.startswith("templates/")} == {
+        path: value for path, value in content.items() if path.startswith("templates/")}
+    assert set(manifest["resources"]) == set(resources)
+
+
+@pytest.mark.parametrize("missing", ["asset", "contract"])
+def test_template_rejects_missing_bundle_resource(monkeypatch, missing):
+    _, manifest, record, refresh = template_fixture(monkeypatch)
+    path = record["assets"][0]["path"] if missing == "asset" else record["contract_path"]
+    manifest["resources"].remove(path)
+    refresh()
+    with pytest.raises(ValueError):
+        builder._inputs(None)
+
+
+@pytest.mark.parametrize("changed", ["asset", "contract"])
+def test_template_rejects_catalog_digest_mismatch(monkeypatch, changed):
+    content, _, record, refresh = template_fixture(monkeypatch)
+    if changed == "asset":
+        record["assets"][0]["sha256"] = "0" * 64
+    else:
+        record["contract_sha256"] = "0" * 64
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record]).encode()
+    refresh()
+    with pytest.raises(ValueError):
+        builder._inputs(None)
+
+
+@pytest.mark.parametrize("path", ["skills/rogue.html", "skills/rogue.svg",
+                                    "templates/effect-library/VE-example/project/rogue.html"])
+def test_manifest_rejects_uncatalogued_template_and_html_svg(monkeypatch, path):
+    content, manifest, _, refresh = template_fixture(monkeypatch)
+    content[path] = b"rogue"
+    manifest["resources"].append(path)
+    refresh()
+    with pytest.raises(ValueError):
+        builder._inputs(None)
+
+
+def test_manifest_rejects_duplicate_catalog_ids(monkeypatch):
+    content, _, record, refresh = template_fixture(monkeypatch)
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record, record]).encode()
+    refresh()
+    with pytest.raises(ValueError, match="[Dd]uplicate"):
+        builder._inputs(None)
+
+
+def test_template_rejects_missing_per_asset_license_provenance(monkeypatch):
+    content, _, record, refresh = template_fixture(monkeypatch)
+    record["assets"][0].update(rights="licensed", license={"id": "example", "terms": "example",
+                                                               "source": "skills/missing-license.md"})
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record]).encode()
+    refresh()
+    with pytest.raises(ValueError, match="license source missing"):
+        builder._inputs(None)
+
+
+def test_template_rejects_sensitive_asset_name(monkeypatch):
+    content, manifest, record, refresh = template_fixture(monkeypatch)
+    asset = record["assets"][1]
+    previous = asset["path"]
+    asset["path"] = previous.replace("style.css", "token.css")
+    content[asset["path"]] = content.pop(previous)
+    manifest["resources"].remove(previous)
+    manifest["resources"].append(asset["path"])
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record]).encode()
+    refresh()
+    with pytest.raises(ValueError):
+        builder._inputs(None)
+
+
+@pytest.mark.parametrize("target,payload", [("asset", b"\xff\xfe"), ("asset", b"html\x00binary"),
+                                              ("contract", b"\xff"), ("contract", b"text\x00binary")])
+def test_template_rejects_non_text_snapshot(monkeypatch, target, payload):
+    content, _, record, refresh = template_fixture(monkeypatch)
+    if target == "asset":
+        item = record["assets"][0]
+        path = item["path"]
+        item["sha256"] = hashlib.sha256(payload).hexdigest()
+    else:
+        path = record["contract_path"]
+        record["contract_sha256"] = hashlib.sha256(payload).hexdigest()
+    content[path] = payload
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record]).encode()
+    refresh()
+    with pytest.raises(ValueError, match="text"):
+        builder._inputs(None)
+
+
+def test_catalog_rejects_duplicate_json_member(monkeypatch):
+    content, _, _, refresh = template_fixture(monkeypatch)
+    path = "skills/video-theme-library/assets/effect-library/entries.json"
+    content[path] = content[path].replace(b'"id": "VE-example"', b'"id": "VE-other", "id": "VE-example"', 1)
+    refresh()
+    with pytest.raises(ValueError, match="[Dd]uplicate"):
+        builder._inputs(None)
+
+
+def test_manifest_rejects_unlisted_package_html(monkeypatch):
+    content, _, _, refresh = fixture(monkeypatch)
+    content["video_studio/rogue.html"] = b"rogue"
+    refresh()
+    with pytest.raises(ValueError, match="forbidden"):
+        builder._inputs(None)
+
+
+def test_template_contract_requires_valid_structure(monkeypatch):
+    content, _, record, refresh = template_fixture(monkeypatch)
+    content[record["contract_path"]] = b"incomplete"
+    record["contract_sha256"] = hashlib.sha256(b"incomplete").hexdigest()
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record]).encode()
+    refresh()
+    with pytest.raises(builder.ContractError):
+        builder._inputs(None)
+
+
+@pytest.mark.parametrize("target", ["catalog", "contract", "bundle"])
+def test_distribution_rejects_oversized_snapshot(monkeypatch, target):
+    content, _, record, refresh = template_fixture(monkeypatch)
+    catalog = "skills/video-theme-library/assets/effect-library/entries.json"
+    if target == "catalog":
+        content[catalog] += b" " * (16 * 1024 * 1024)
+    else:
+        path = record["contract_path"] if target == "contract" else record["assets"][0]["path"]
+        content[path] = b"a" * ((1024 * 1024 if target == "contract" else 32 * 1024 * 1024) + 1)
+        digest = hashlib.sha256(content[path]).hexdigest()
+        if target == "contract":
+            record["contract_sha256"] = digest
+        else:
+            record["assets"][0]["sha256"] = digest
+            other = record["assets"][1]
+            content[other["path"]] = b"b" * (32 * 1024 * 1024)
+            other["sha256"] = hashlib.sha256(content[other["path"]]).hexdigest()
+        content[catalog] = json.dumps([record]).encode()
+    refresh()
+    with pytest.raises(ValueError):
+        builder._inputs(None)
+
+
+def test_template_reader_uses_remaining_bundle_budget(monkeypatch):
+    _, _, record, _ = template_fixture(monkeypatch)
+    reader = builder._read_relative
+    limits = {}
+    def track(root, path, *, limit=64 * 1024 * 1024):
+        limits[path] = limit
+        return reader(root, path, limit=limit)
+    monkeypatch.setattr(builder, "_read_relative", track)
+    builder._inputs(None)
+    first, second = record["assets"]
+    assert limits[first["path"]] == 64 * 1024 * 1024
+    assert limits[second["path"]] == 64 * 1024 * 1024 - len(b"<html></html>")
+
+
+@pytest.mark.parametrize("excess,accepted", [(0, True), (1, False)])
+def test_template_bundle_total_boundary(monkeypatch, excess, accepted):
+    content, _, record, refresh = template_fixture(monkeypatch)
+    first, second = record["assets"]
+    content[first["path"]] = b"a" * (32 * 1024 * 1024)
+    content[second["path"]] = b"b" * (32 * 1024 * 1024 + excess)
+    for item in record["assets"]:
+        item["sha256"] = hashlib.sha256(content[item["path"]]).hexdigest()
+    content["skills/video-theme-library/assets/effect-library/entries.json"] = json.dumps([record]).encode()
+    refresh()
+    if accepted:
+        builder._inputs(None)
+    else:
+        with pytest.raises(ValueError, match="limit"):
+            builder._inputs(None)
 
 
 def test_manifest_closure_and_source_tampering(monkeypatch):
@@ -167,13 +372,23 @@ def test_source_reader_refuses_junction_to_external_file(tmp_path):
                             env=env, capture_output=True, timeout=20)
     if result.returncode:
         pytest.skip("Windows junction setup unavailable")
-    handle = builder.nt.open_root(str(root))
     try:
-        with pytest.raises(OSError, match="c000050b"):
-            builder._read_relative(handle, "redirect/private.json")
+        with pytest.raises(OSError):
+            builder._read_relative(root, "redirect/private.json")
+        with pytest.raises(OSError):
+            builder._read_relative(root / "redirect", "private.json")
     finally:
-        builder.nt.close(handle)
         (root / "redirect").rmdir()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Windows handle primitives required")
+def test_source_reader_rejects_hardlinked_file(tmp_path):
+    original = tmp_path / "original.txt"
+    original.write_bytes(b"synthetic")
+    linked = tmp_path / "linked.txt"
+    os.link(original, linked)
+    with pytest.raises((OSError, ValueError)):
+        builder._read_relative(tmp_path, "linked.txt")
 
 
 @pytest.mark.skipif(os.name != "nt" or os.environ.get("EFFECT_DIST_TEST") != "1",

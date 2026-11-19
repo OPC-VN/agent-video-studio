@@ -230,6 +230,39 @@ def reference_checks():
                    level="warn", hint=transcribe.INSTALL_HINT)]
 
 
+def runtime_libs_checks() -> list[dict]:
+    """Kiểm thư viện trong trạm bằng status cục bộ, không tải hoặc ghi file."""
+    from . import runtime_libs
+
+    st, _ = _env.resolve_station()
+    if not st or not os.path.isdir(st):
+        return [_skip("runtime-libs", "chưa có trạm để kiểm")]
+    checks = []
+    for lib in runtime_libs.status(st):
+        name, state = lib["name"], lib["state"]
+        check_name = f"runtime-libs/{name}"
+        if state == "ok":
+            checks.append(_check(check_name, True, f"{lib['version']} đã cấp"))
+        elif state == "missing":
+            checks.append(_check(check_name, False, "chưa cấp", level="warn",
+                                 hint=f"chạy `video-studio libs fetch {name}` để xem kế hoạch; "
+                                      f"sau khi người dùng đồng ý, chạy `video-studio libs fetch {name} --yes`"))
+        elif state == "mismatch":
+            lock = runtime_libs.load_lock()
+            files = []
+            for dependency in runtime_libs.resolve([name], lock):
+                for member in runtime_libs.members(dependency, lock):
+                    path = runtime_libs.station_path(dependency, member["dest"], st)
+                    files.append(f"{path} (SHA-256: {member['file_sha256']})")
+            checks.append(_check(check_name, False, "không đọc an toàn hoặc SHA-256 lệch khoá",
+                                 hint="kiểm tra các file và SHA-256 theo khoá: " + "; ".join(files)
+                                      + f". Xoá đúng file bị lỗi rồi chạy `video-studio libs fetch {name}`",
+                                 code=contract.CONTRACT_ERROR))
+        else:
+            raise contract.ContractError(f"Trạng thái runtime lib không hợp lệ: {state}")
+    return checks
+
+
 def _under_station(st, p):
     """Đường tuyệt đối (venv ngoài trạm, FR7.2) dùng nguyên; đường tương đối tính từ trạm."""
     p = str(p)
@@ -519,6 +552,7 @@ def run_checks(hf=None, offline=False, check_updates=False):
     checks.append(chromium_check(version))
     checks += tool_checks()
     checks += reference_checks()
+    checks += runtime_libs_checks()
     checks.append(font_check())
     checks += station_checks(st, src)
     checks += opcos_station_check(src)

@@ -26,7 +26,7 @@ SKIP_TOP = {"workspace"}
 # `.example` có trong danh sách vì `.env.example` là đúng loại file hay rò nhất: người ta
 # điền thử đường dẫn máy mình vào rồi quên gỡ.
 TEXT_EXT = {".py", ".md", ".json", ".toml", ".yml", ".yaml", ".txt", ".cfg", ".ini", ".sh",
-            ".ps1", ".html", ".css", ".js", ".svg", ".example", ".gitignore",
+            ".ps1", ".html", ".css", ".js", ".mjs", ".svg", ".example", ".gitignore",
             ".gitattributes", ""}
 
 
@@ -172,6 +172,18 @@ def test_scanner_sees_the_repo():
     for must in ("README.md", "video_studio/station.py", "pyproject.toml",
                  "templates/workspace/README.md", "skills/hyperframes/hyperframes/SKILL.md"):
         assert must in seen, f"cổng không nhìn thấy {must}"
+
+
+def test_scanner_checks_mjs_identity_and_email(tmp_path, monkeypatch):
+    """Module JavaScript cũng phải đi qua cả hai cổng nội dung."""
+    module = tmp_path / "bundle.mjs"
+    module.write_text(s(109, 121, 45, 118, 111, 105, 99, 101) + "\n" +
+                      "stranger" + "@" + "gmail" + ".com", encoding="utf-8")
+    monkeypatch.setitem(globals(), "ROOT", tmp_path)
+
+    assert ("bundle.mjs", "profile-a") in count_hits()
+    assert any(email_violations(rel, path.read_text(encoding="utf-8"))
+               for rel, path in repo_files())
 
 
 @pytest.mark.parametrize("rel,keep", [

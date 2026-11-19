@@ -87,6 +87,22 @@ máy, nên làm trước lần `doctor` đầu tiên (INSTALL.md mục 7).
 
 ## Bài mẫu đầu tiên
 
+Bản tin cần GSAP cục bộ đã kiểm SHA-256. Trước hết xem kế hoạch cấp thư viện:
+
+```text
+video-studio libs plan gsap
+```
+
+Sau khi đồng ý tải (địa chỉ, giấy phép và trần dung lượng có trong kế hoạch), chạy:
+
+```text
+video-studio libs fetch gsap --yes
+video-studio libs status
+```
+
+Không có `--yes`, `fetch` chỉ in kế hoạch rồi thoát mã 2, không tự hỏi hoặc tải. Thiếu GSAP
+thì doctor báo WARN và render bản tin dừng mã 3; file lệch hash bị từ chối.
+
 Lồng tiếng cần repo giọng `agent-voice-studio` clone **cạnh** repo này, cài `[engine]` vào
 **chính `.venv` của repo này**, cộng một giọng mặc định — lệnh cho từng hệ điều hành ở
 [INSTALL.md mục 5b](INSTALL.md#5b-lồng-tiếng-tuỳ-chọn-nặng--hỏi-trước). Có rồi thì dựng bản tin

@@ -1,0 +1,97 @@
+{
+  "status": "not_run",
+  "cases": [
+    {
+      "id": "LA-01",
+      "kind": "positive",
+      "prompt": "Nhân vật nét mực đi bộ procedural tua được",
+      "should_trigger": true,
+      "expected_behaviors": [
+        "Dùng gait và pose tua được."
+      ],
+      "quality_criteria": [
+        "Chọn đúng phạm vi và tránh nhầm skill lân cận."
+      ],
+      "fixtures": [
+        "Cảnh SVG nhân vật đi theo thời gian tuyệt đối."
+      ]
+    },
+    {
+      "id": "LA-02",
+      "kind": "positive",
+      "prompt": "Đèn lồng vẽ tay đung đưa theo gió",
+      "should_trigger": true,
+      "expected_behaviors": [
+        "Dùng component vật treo và gió seed."
+      ],
+      "quality_criteria": [
+        "Chọn đúng phạm vi và tránh nhầm skill lân cận."
+      ],
+      "fixtures": [
+        "Vật treo SVG chịu gió có seed."
+      ]
+    },
+    {
+      "id": "LA-03",
+      "kind": "positive",
+      "prompt": "Cảnh mực ngày chuyển đêm với vật chuyển động",
+      "should_trigger": true,
+      "expected_behaviors": [
+        "Dùng màu theo thời gian và component nét mực."
+      ],
+      "quality_criteria": [
+        "Chọn đúng phạm vi và tránh nhầm skill lân cận."
+      ],
+      "fixtures": [
+        "Cảnh SVG có vật chuyển động và màu theo thời gian."
+      ]
+    },
+    {
+      "id": "LA-04",
+      "kind": "negative",
+      "prompt": "Icon vẽ dần cạnh lời bài hát",
+      "should_trigger": false,
+      "expected_behaviors": [
+        "Chuyển lyric-video-effects."
+      ],
+      "quality_criteria": [
+        "Chọn đúng phạm vi và tránh nhầm skill lân cận."
+      ],
+      "fixtures": [
+        "Video lời nhạc có icon trang trí."
+      ]
+    },
+    {
+      "id": "LA-05",
+      "kind": "negative",
+      "prompt": "Đom đóm phủ ảnh tĩnh",
+      "should_trigger": false,
+      "expected_behaviors": [
+        "Chuyển photo-ambient-effects."
+      ],
+      "quality_criteria": [
+        "Chọn đúng phạm vi và tránh nhầm skill lân cận."
+      ],
+      "fixtures": [
+        "Ảnh tĩnh với đom đóm phủ phía trước."
+      ]
+    },
+    {
+      "id": "LA-06",
+      "kind": "negative",
+      "prompt": "Chọn tham chiếu chuyển động từ thư viện",
+      "should_trigger": false,
+      "expected_behaviors": [
+        "Chuyển video-theme-library."
+      ],
+      "quality_criteria": [
+        "Chọn đúng phạm vi và tránh nhầm skill lân cận."
+      ],
+      "fixtures": [
+        "Cần tra cứu mẫu motion trong catalog."
+      ]
+    }
+  ],
+  "skill_name": "line-art-motion",
+  "rubric": "rubric.md"
+}

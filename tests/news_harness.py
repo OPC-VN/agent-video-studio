@@ -21,7 +21,10 @@ def make_png(path):
 
 def install(monkeypatch, nv, project_dir, ts=None):
     """Thay phần chạm ngoài; trả `captured` (list HTML đã ghi qua `render.write_index`)."""
-    captured = []
+    class Captured(list):
+        libs = []
+    captured = Captured()
+    captured.libs = []
     os.makedirs(project_dir, exist_ok=True)
     monkeypatch.setattr(nv, "_proj", lambda: str(project_dir))
     monkeypatch.setattr(nv, "_synth_long", lambda model, text, prompt: [0] * 24000)
@@ -31,7 +34,10 @@ def install(monkeypatch, nv, project_dir, ts=None):
     monkeypatch.setattr(nv, "_local_filler", lambda *a, **k: None)
     monkeypatch.setattr(nv, "_broll_image", lambda *a, **k: False)   # không bao giờ ra mạng
     monkeypatch.setattr(nv, "av", types.SimpleNamespace(mux=lambda *a, **k: None))
-    monkeypatch.setattr(render, "write_index", lambda proj, html: captured.append(html))
+    def capture(proj, html, *, libs=()):
+        captured.append(html)
+        captured.libs.append(tuple(libs))
+    monkeypatch.setattr(render, "write_index", capture)
     monkeypatch.setattr(render, "render_project", lambda *a, **k: None)
     if ts is not None:
         monkeypatch.setattr(ts, "_proj", lambda: str(project_dir))

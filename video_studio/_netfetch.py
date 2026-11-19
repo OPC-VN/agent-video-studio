@@ -6,8 +6,8 @@ Một trách nhiệm: lấy về tối đa `max_bytes` từ một URL mà KHÔNG
     (không để `urlopen` phân giải lại → chống DNS rebinding); HTTPS bọc TLS với tên máy gốc (SNI + kiểm chứng chỉ);
   - chuyển hướng tự theo, MỖI bước kiểm lại đủ các luật TRƯỚC khi kết nối (SSRF mù qua `Location`); không hạ https
     xuống http;
-  - trần byte và hạn tổng thời gian (đồng hồ canh giữ ngắt socket, nên máy chủ nhỏ giọt cũng không kéo dài quá hạn);
-    vượt thì từ chối, không cắt cụt im lặng;
+  - trần byte và hạn tổng thời gian (đồng hồ canh giữ ngắt socket đang dùng khi hết hạn); phân giải DNS đồng bộ
+    không bị ngắt và có thể vượt hạn; vượt trần thì từ chối, không cắt cụt im lặng;
   - host không phân giải được thì từ chối (đóng).
 Không dùng biến proxy: ghim IP và proxy loại trừ nhau.
 Bộ phân giải (`resolver`) và bộ kết nối (`connector`) tiêm được để test không ra mạng ngoài.
@@ -56,7 +56,11 @@ def ip_is_internal(ip):
 
 
 class FetchError(Exception):
-    """Không tải được an toàn (URL sai, địa chỉ không công khai, vượt trần, hết hạn, lỗi mạng)."""
+    """Lỗi tải; ``kind`` phân biệt chính sách và mạng, giữ nguyên thông điệp cũ."""
+
+    def __init__(self, message, *, kind="policy"):
+        super().__init__(message)
+        self.kind = kind
 
 
 def _now():
@@ -194,13 +198,13 @@ def _addresses(host, port, resolver):
         try:
             raw = resolver(host, port)
         except (OSError, ValueError) as exc:
-            raise FetchError(f"không phân giải được {host}: {type(exc).__name__}") from None
+            raise FetchError(f"không phân giải được {host}: {type(exc).__name__}", kind="network") from None
         try:
             ips = [ipaddress.ip_address(str(i).split("%", 1)[0]) for i in raw]
         except ValueError:
             raise FetchError(f"địa chỉ của {host} không hợp lệ") from None
     if not ips:
-        raise FetchError(f"không phân giải được {host}")
+        raise FetchError(f"không phân giải được {host}", kind="network")
     for ip in ips:
         if ip_is_internal(ip):
             raise FetchError(f"{host} → {ip} không phải máy công khai")
@@ -215,9 +219,11 @@ def _declared_length(value, max_bytes):
     text = (value or "").strip()
     if not (text.isascii() and text.isdigit()):
         return None
-    if len(text.lstrip("0")) > 12 or int(text) > max_bytes:
+    normalized = text.lstrip("0") or "0"
+    limit = str(max_bytes)
+    if len(normalized) > len(limit) or (len(normalized) == len(limit) and normalized > limit):
         raise FetchError(f"phản hồi khai {text[:20]} byte, vượt trần {max_bytes}")
-    return int(text)
+    return int(normalized)
 
 
 def _read_body(resp, max_bytes, deadline):
@@ -225,7 +231,7 @@ def _read_body(resp, max_bytes, deadline):
     chunks, total = [], 0
     while True:
         if _now() >= deadline:
-            raise FetchError("quá hạn tổng thời gian tải")
+            raise FetchError("quá hạn tổng thời gian tải", kind="network")
         chunk = reader(min(65536, max_bytes + 1 - total))
         if not chunk:
             return b"".join(chunks)
@@ -241,7 +247,8 @@ def fetch_public(url, *, max_bytes, timeout=20, total_deadline=60, headers=None,
 
     `allowed_hosts`: `None` = mọi máy công khai; còn lại = chỉ các tên máy này (khớp nguyên tên, chỉ https),
     kiểm lại ở mỗi chuyển hướng. `resolver(host, port) -> [ip]` và `connector(scheme, host, ip, port, timeout)`
-    được tra lúc gọi. Hạn tổng `total_deadline` giây áp cho cả lần tải (kể cả chuyển hướng và pha đọc tiêu đề)."""
+    được tra lúc gọi. Hạn tổng `total_deadline` giây tính cả chuyển hướng và pha đọc tiêu đề; DNS đồng bộ
+    không bị ngắt khi hết hạn, nên lời gọi có thể trả về sau hạn nếu phân giải bị treo."""
     resolver = resolver or _default_resolver
     connector = connector or _default_connector
     deadline = _now() + total_deadline
@@ -270,12 +277,12 @@ def _fetch(url, max_bytes, timeout, deadline, headers, allowed_hosts, max_redire
         resp, conn, last = None, None, None
         for ip in ips:
             if _expired(watchdog, deadline):
-                raise FetchError("quá hạn tổng thời gian tải")
+                raise FetchError("quá hạn tổng thời gian tải", kind="network")
             conn = connector(scheme, host, ip, port, max(0.1, min(timeout, deadline - _now())))
             watchdog.conn = conn
             if watchdog.fired:                           # đồng hồ bắn đúng khe giữa kiểm hạn và gán `conn`
                 conn.close()
-                raise FetchError("quá hạn tổng thời gian tải")
+                raise FetchError("quá hạn tổng thời gian tải", kind="network")
             try:
                 conn.request("GET", path, headers=req_headers)
                 resp = conn.getresponse()
@@ -283,7 +290,7 @@ def _fetch(url, max_bytes, timeout, deadline, headers, allowed_hosts, max_redire
             except Exception as exc:                     # noqa: BLE001 — socket bị ngắt giữa chừng có thể ra lỗi lạ
                 if watchdog.fired:
                     conn.close()
-                    raise FetchError("quá hạn tổng thời gian tải") from None
+                    raise FetchError("quá hạn tổng thời gian tải", kind="network") from None
                 if isinstance(exc, ValueError):          # tiêu đề do nơi gọi đưa vào không hợp lệ
                     conn.close()
                     raise FetchError(f"yêu cầu không hợp lệ: {type(exc).__name__}") from None
@@ -294,8 +301,8 @@ def _fetch(url, max_bytes, timeout, deadline, headers, allowed_hosts, max_redire
                 conn = None
         if resp is None:
             if _expired(watchdog, deadline):
-                raise FetchError("quá hạn tổng thời gian tải")
-            raise FetchError(f"không kết nối được {host}: {type(last).__name__}")
+                raise FetchError("quá hạn tổng thời gian tải", kind="network")
+            raise FetchError(f"không kết nối được {host}: {type(last).__name__}", kind="network")
         try:
             status = resp.status
             if status in REDIRECT_STATUS:
@@ -305,18 +312,18 @@ def _fetch(url, max_bytes, timeout, deadline, headers, allowed_hosts, max_redire
                 current = urllib.parse.urljoin(current, location)
                 continue
             if not 200 <= status < 300:
-                raise FetchError(f"máy trả mã {status}")
+                raise FetchError(f"máy trả mã {status}", kind="network")
             declared_n = _declared_length(resp.getheader("Content-Length"), max_bytes)
             data = _read_body(resp, max_bytes, deadline)
             if _expired(watchdog, deadline):             # kết nối bị ngắt thì `read1` trả rỗng như hết dữ liệu
-                raise FetchError("quá hạn tổng thời gian tải")
+                raise FetchError("quá hạn tổng thời gian tải", kind="network")
             if declared_n is not None and not resp.getheader("Transfer-Encoding") and len(data) != declared_n:
-                raise FetchError(f"phản hồi cụt: khai {declared_n} byte, nhận {len(data)}")
+                raise FetchError(f"phản hồi cụt: khai {declared_n} byte, nhận {len(data)}", kind="network")
             return current, (resp.getheader("Content-Type") or "").lower(), data
         except (OSError, http.client.HTTPException) as exc:
             if _expired(watchdog, deadline):
-                raise FetchError("quá hạn tổng thời gian tải") from None
-            raise FetchError(f"đọc phản hồi từ {host} lỗi: {type(exc).__name__}") from None
+                raise FetchError("quá hạn tổng thời gian tải", kind="network") from None
+            raise FetchError(f"đọc phản hồi từ {host} lỗi: {type(exc).__name__}", kind="network") from None
         finally:
             conn.close()
     raise FetchError(f"quá {max_redirects} lần chuyển hướng")

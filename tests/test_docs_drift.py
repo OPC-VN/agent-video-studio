@@ -95,14 +95,20 @@ def test_page_states_the_exit_code_contract():
 
 def test_page_counts_the_skills_that_really_exist():
     """Con số '24 skill' trên trang phải khớp cây `skills/` trên đĩa, không phải trí nhớ."""
-    own = [p for p in (ROOT / "skills").iterdir() if p.is_dir() and p.name != "hyperframes"]
-    upstream = [p for p in (ROOT / "skills" / "hyperframes").iterdir() if p.is_dir()]
-    tong = len(own) + len(upstream)
+    from scripts.skill_counts import count_skills
+
+    _, upstream, tong = count_skills(ROOT)
     text = _page()
     assert f'data-to="{tong}"' in text, f"trang không nói đúng tổng số skill ({tong})"
-    assert f"{len(upstream)} skill chưng cất" in text or \
-           f"{len(upstream)} skill còn lại" in text, \
-           f"trang không nói đúng số skill chưng cất từ upstream ({len(upstream)})"
+    assert f"{upstream} skill chưng cất" in text or \
+           f"{upstream} skill còn lại" in text, \
+           f"trang không nói đúng số skill chưng cất từ upstream ({upstream})"
+
+
+def test_skill_counts_in_docs_match_tree():
+    from scripts import skill_counts
+
+    assert skill_counts.check(ROOT) == []
 
 
 # ── START-HERE + CHANGELOG ──────────────────────────────────────────────────────────────

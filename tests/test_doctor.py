@@ -588,3 +588,51 @@ def test_voice_hint_names_the_sibling_clone(tmp_path, monkeypatch):
     c = doctor.voice_check()
     assert c["level"] == "warn" and f"{voice}[engine]" in c["hint"]
     assert _env.sibling_repo("voice_studio") == str(voice)
+
+@pytest.mark.parametrize("content, expected_level, expected_rc", [
+    (None, "warn", 0),
+    (b"wrong", "error", 2),
+    (b"verified", "ok", 0),
+])
+def test_runtime_libs_status(machine, good_station, monkeypatch, capsys, content,
+                             expected_level, expected_rc):
+    """Kiểm qua status thật, dùng khoá giả và trạm riêng; doctor không tải gì."""
+    import copy
+    import hashlib
+    import socket
+    from video_studio import runtime_libs
+
+    monkeypatch.setattr(socket, "create_connection", lambda *args, **kwargs: pytest.fail("gọi mạng"))
+    monkeypatch.setattr(socket, "socket", lambda *args, **kwargs: pytest.fail("gọi mạng"))
+    lock = copy.deepcopy(runtime_libs.load_lock())
+    member = lock["libs"]["gsap"]["members"][0]
+    member["file_sha256"] = hashlib.sha256(b"verified").hexdigest()
+    monkeypatch.setattr(runtime_libs, "load_lock", lambda path=None: lock)
+    if content is not None:
+        path = good_station / "runtime-libs" / "gsap" / lock["packages"]["gsap"]["version"] / member["dest"]
+        path.parent.mkdir(parents=True)
+        path.write_bytes(content)
+    rc, out, _ = run(["--offline", "--json"], capsys)
+    check = _check(last_json(out), "runtime-libs/gsap")
+    assert rc == expected_rc and check["level"] == expected_level
+    if expected_level == "warn":
+        assert "video-studio libs fetch gsap" in check["hint"]
+        assert "để xem kế hoạch" in check["hint"]
+        assert "sau khi người dùng đồng ý" in check["hint"]
+        assert "video-studio libs fetch gsap --yes" in check["hint"]
+        assert "sẽ hỏi" not in check["hint"]
+    if expected_level == "error":
+        assert check["code"] == 2
+        assert str(path) in check["hint"]
+        assert member["file_sha256"] in check["hint"]
+        assert "Xoá đúng file bị lỗi" in check["hint"]
+        assert "video-studio libs fetch gsap" in check["hint"]
+    assert not any("npm" in argv[0] or "npx" in argv[0] for argv, _ in machine.calls)
+
+
+def test_runtime_libs_skip_without_station(machine, monkeypatch, capsys):
+    from video_studio import runtime_libs
+    monkeypatch.setattr(runtime_libs, "status", lambda *args: pytest.fail("không được kiểm khi thiếu trạm"))
+    rc, out, _ = run(["--offline", "--json"], capsys)
+    assert rc == 3
+    assert _check(last_json(out), "runtime-libs")["level"] == "skip"
