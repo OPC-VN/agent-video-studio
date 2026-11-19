@@ -1,0 +1,205 @@
+{
+ "_ghi_chu": "Mỗi mục là một spec cho camera_path_capture.mjs (đặt vào tệp riêng, thêm out/fps). z = zoom ô 256 px. Toạ độ là của dự án mẫu: thay bằng toạ độ dự án của bạn.",
+ "D1_toan_quoc_toi_tinh": {
+  "secs": 5,
+  "buildings": false,
+  "keys": [
+   {
+    "t": 0,
+    "lat": 17.0,
+    "lon": 106.5,
+    "z": 5.0,
+    "pitch": 0,
+    "bearing": 0,
+    "rise": 1,
+    "sat": 1
+   },
+   {
+    "t": 5,
+    "lat": 20.78,
+    "lon": 106.12,
+    "z": 10.8,
+    "pitch": 0,
+    "bearing": 0,
+    "rise": 1,
+    "sat": 1
+   }
+  ]
+ },
+ "D2_tinh_toi_xa": {
+  "secs": 3.2,
+  "buildings": false,
+  "keys": [
+   {
+    "t": 0,
+    "lat": 20.78,
+    "lon": 106.12,
+    "z": 10.8,
+    "pitch": 0,
+    "bearing": 0,
+    "rise": 1,
+    "sat": 1
+   },
+   {
+    "t": 3.2,
+    "lat": 20.95655,
+    "lon": 105.93502,
+    "z": 14.5,
+    "pitch": 0,
+    "bearing": 0,
+    "rise": 1,
+    "sat": 1
+   }
+  ]
+ },
+ "D3_xa_toi_du_an": {
+  "secs": 4.5,
+  "buildings": false,
+  "keys": [
+   {
+    "t": 0,
+    "lat": 20.95655,
+    "lon": 105.93502,
+    "z": 14.5,
+    "pitch": 0,
+    "bearing": 0,
+    "rise": 1,
+    "sat": 1
+   },
+   {
+    "t": 4.5,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 17.2,
+    "pitch": 0,
+    "bearing": 0,
+    "rise": 1,
+    "sat": 1
+   }
+  ]
+ },
+ "E1_3d_moc_len_va_xoay": {
+  "secs": 6,
+  "buildings": true,
+  "keys": [
+   {
+    "t": 0,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 17.2,
+    "pitch": 0,
+    "bearing": 0,
+    "rise": 0,
+    "sat": 1
+   },
+   {
+    "t": 2,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 17.2,
+    "pitch": 50,
+    "bearing": 20,
+    "rise": 0.5,
+    "sat": 1
+   },
+   {
+    "t": 4,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 17.0,
+    "pitch": 58,
+    "bearing": 60,
+    "rise": 1,
+    "sat": 1
+   },
+   {
+    "t": 6,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 17.0,
+    "pitch": 58,
+    "bearing": 100,
+    "rise": 1,
+    "sat": 0.5
+   }
+  ]
+ },
+ "E2_bay_thap_tu_phia_ho": {
+  "secs": 5,
+  "buildings": true,
+  "keys": [
+   {
+    "t": 0,
+    "lat": 20.9588,
+    "lon": 105.9331,
+    "z": 17.6,
+    "pitch": 68,
+    "bearing": 175,
+    "rise": 1,
+    "sat": 0.85
+   },
+   {
+    "t": 5,
+    "lat": 20.9546,
+    "lon": 105.9328,
+    "z": 17.8,
+    "pitch": 66,
+    "bearing": 195,
+    "rise": 1,
+    "sat": 0.85
+   }
+  ]
+ },
+ "E3_xoay_toan_canh": {
+  "secs": 6,
+  "buildings": true,
+  "keys": [
+   {
+    "t": 0,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 16.6,
+    "pitch": 52,
+    "bearing": 0,
+    "rise": 1,
+    "sat": 0.85
+   },
+   {
+    "t": 6,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 16.6,
+    "pitch": 52,
+    "bearing": 200,
+    "rise": 1,
+    "sat": 0.85
+   }
+  ]
+ },
+ "E4_nghieng_tu_tren_xuong": {
+  "secs": 5,
+  "buildings": true,
+  "keys": [
+   {
+    "t": 0,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 17.6,
+    "pitch": 0,
+    "bearing": 20,
+    "rise": 1,
+    "sat": 0.85
+   },
+   {
+    "t": 5,
+    "lat": 20.95374525,
+    "lon": 105.93237025,
+    "z": 17.6,
+    "pitch": 62,
+    "bearing": 70,
+    "rise": 1,
+    "sat": 0.85
+   }
+  ]
+ }
+}

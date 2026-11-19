@@ -5,8 +5,8 @@ import sys
 from pathlib import Path
 
 WORDS = {
-    "en": ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"),
-    "vi": ("một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín", "mười", "mười một", "mười hai"),
+    "en": ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"),
+    "vi": ("một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín", "mười", "mười một", "mười hai", "mười ba", "mười bốn"),
 }
 NUM_WORDS = {word: n for words in WORDS.values() for n, word in enumerate(words, 1)}
 CLAIMS = [

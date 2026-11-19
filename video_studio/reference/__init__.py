@@ -10,6 +10,8 @@
     video-studio reference fetch --url U --allow-url U --project P   # tải có cổng (mặc định chỉ in kế hoạch)
     video-studio reference audit --project P                         # kiểm tài sản với hồ sơ
     video-studio reference audit --spec FILE                         # spec/EDL chỉ được trỏ tệp trong assets/
+    video-studio reference decompose --input V --out DIR             # rea-video: VIDEO.md, cảnh, nhịp, màu (VLM luôn tắt)
+    video-studio reference review|apply-review|compare|videomd ...   # agent nhìn ảnh · so bản dựng · kiểm VIDEO.md
 """
 import argparse
 import datetime
@@ -19,9 +21,9 @@ import shutil
 
 from .. import _env, _paths, contract
 from ..contract import ContractError
-from . import gate, media, subs
+from . import gate, media, rea, subs
 
-ACTIONS = ("init", "frames", "tiles", "transcribe", "fetch", "audit", "lyric-audit")
+ACTIONS = ("init", "frames", "tiles", "transcribe", "fetch", "audit", "lyric-audit", *rea.ACTIONS)
 
 TEMPLATE_FILES = ("reference-map.md", "brief.md", "treatment.md")
 PROJECT_DIRS = ("source", os.path.join("evidence", "frames"), os.path.join("evidence", "tiles"),
@@ -99,6 +101,36 @@ def build_parser(prog="video-studio reference"):
     p = sub.add_parser("lyric-audit", parents=[common], help="kiểm tài sản lyric khai báo; không kiểm runtime")
     p.add_argument("--project", required=True, help="thư mục project tham chiếu")
     p.add_argument("--manifest", required=True, help="JSON khai audio và assets")
+
+    p = sub.add_parser("decompose", parents=[common],
+                       help="rea-video: tách video mẫu thành cảnh, nhịp, màu, chữ phủ, VIDEO.md (VLM luôn tắt)")
+    p.add_argument("--input", required=True, help="video mẫu (tệp cục bộ)")
+    p.add_argument("--out", required=True, help="thư mục nhận breakdown.json, VIDEO.md, shots/…")
+    p.add_argument("--lang", default="en", choices=("zh", "en"), help="ngôn ngữ báo cáo của rea-video")
+    p.add_argument("--ocr", action="store_true", help="bật OCR (cần extra ocr; chỉ zh/ja/ko, KHÔNG đọc tiếng Việt)")
+    p.add_argument("--stems", action="store_true", help="tách giọng/nhạc (tải model ~216 MB lần đầu)")
+    p.add_argument("--no-packaging", action="store_true", help="bỏ lớp chữ phủ/nhãn/âm nhấn (nhanh hơn)")
+
+    p = sub.add_parser("review", parents=[common], help="rea-video: sinh nhiệm vụ để agent nhìn ảnh từng cảnh")
+    p.add_argument("--dir", required=True, help="thư mục decompose")
+    p.add_argument("--force", action="store_true", help="ghi đè review_answers.json")
+
+    p = sub.add_parser("apply-review", parents=[common], help="rea-video: gộp câu trả lời của agent vào kết luận")
+    p.add_argument("--dir", required=True, help="thư mục decompose")
+    p.add_argument("--answers", help="review_answers.json (mặc định trong --dir)")
+    p.add_argument("--by", default="agent", help="tên người/agent duyệt")
+    p.add_argument("--lang", default="en", choices=("zh", "en"))
+
+    p = sub.add_parser("compare", parents=[common], help="rea-video: so bản dựng với video mẫu, nêu thời điểm lệch nhất")
+    p.add_argument("--ref", required=True, help="video mẫu")
+    p.add_argument("--remake", required=True, help="bản dựng của mình")
+    p.add_argument("--out", required=True, help="thư mục nhận compare.json + compare_worst.jpg")
+    p.add_argument("--every", type=float, default=0.5, help="giây giữa hai lần lấy mẫu")
+    p.add_argument("--worst", type=int, default=8, help="số thời điểm lệch nhất đưa vào ảnh")
+
+    p = sub.add_parser("videomd", parents=[common], help="rea-video: sinh lại hoặc kiểm VIDEO.md của thư mục decompose")
+    p.add_argument("--dir", required=True, help="thư mục decompose")
+    p.add_argument("--check", action="store_true", help="chỉ kiểm hợp lệ, không ghi lại")
     return ap
 
 
@@ -194,6 +226,8 @@ def do_reference(args):
             result = {"ok": result["ok"] and extra["ok"], "checked": result["checked"] + extra["checked"],
                       "findings": result["findings"] + extra["findings"]}
         return result
+    if action in rea.ACTIONS:
+        return rea.run(args)
     if action == "lyric-audit":
         from . import lyric_guard
         try:

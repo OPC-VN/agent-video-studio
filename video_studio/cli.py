@@ -24,7 +24,7 @@ COMMANDS = {
     "cleanup": ("video_studio.cleanup", "sửa một vùng video local (inspect/preview/apply/verify)"),
     "reference": ("video_studio.reference",
                   "video mẫu → khung, lưới, transcript, hồ sơ quyền, kiểm tài sản "
-                  "(init|frames|tiles|transcribe|fetch|audit|lyric-audit)"),
+                  "(init|frames|tiles|transcribe|fetch|audit|lyric-audit|decompose|review|apply-review|compare|videomd)"),
     "preview": ("video_studio.preview", "xem trước một project HyperFrames"),
     "narrate": ("video_studio.narrate", "video câm + lời dẫn → MP4 có giọng (qua voice-studio)"),
     "export":  ("video_studio.station:export_main",
