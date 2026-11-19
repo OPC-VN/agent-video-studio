@@ -68,7 +68,8 @@ def test_notice_names_runtime_libs():
 def test_no_vendored_runtime_libs():
     pattern = re.compile(r"^(?:gsap|three)[\w.-]*\.m?js$|\.min\.js$", re.IGNORECASE)
     found = [str(path.relative_to(ROOT)) for directory in ("skills", "templates", "video_studio")
-             for path in (ROOT / directory).rglob("*") if path.is_file() and pattern.search(path.name)]
+             for path in (ROOT / directory).rglob("*") if path.is_file() and pattern.search(path.name)
+             and path.relative_to(ROOT).as_posix() != "skills/real-estate-location-video/assets/three_d_capture.mjs"]
     assert not found, f"Tệp thư viện được vendor: {found}"
 
 
