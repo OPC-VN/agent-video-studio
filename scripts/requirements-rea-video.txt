@@ -1,0 +1,7 @@
+numpy>=1.24,<3
+opencv-python-headless>=4.8,<5
+Pillow>=9
+PyYAML>=6
+videomd==1.2.0
+onnxruntime>=1.16
+jsonschema>=4.18

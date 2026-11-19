@@ -1,7 +1,7 @@
 {
   "version": 1,
   "note": "Ban ghi nguon upstream cua tung thanh phan chung cat trong repo nay. `video-studio doctor` doi chieu muc `hyperframes-skills.skills` voi cay `skills/` tren dia; `--check-updates` in ra ban da ghim de nguoi dung so voi upstream.",
-  "checked": "2026-09-20",
+  "checked": "2026-11-19",
   "sources": {
     "editatlas-skills-reference": {
       "repo": "EditAtlas/skills",
@@ -341,6 +341,57 @@
       "license": "MIT",
       "copyright": "Copyright (c) 2026 leeoxiang",
       "how": "He thiet ke card cua skill `talking-head-recut` upstream phong theo du an nay; ghi cong bat buoc giu lai, xem NOTICE."
+    },
+    "rea-video": {
+      "repo": "JuneYaooo/rea-video",
+      "ref": "ac470773188574833b839be17abee6162201ddf9",
+      "license": "Apache-2.0",
+      "relationship": "pinned_external_package_plus_distilled_skill",
+      "code_copied": false,
+      "assets_copied": false,
+      "skill_source_sha256": {
+        "skills/rea-video/references/audio.md": "1f94cea5abd453560e4197d56515d370dfdf78e9ce89b12dd81d8d247d08678c",
+        "AGENTS.md": "4e6d611168cd29e1ecf5245f52ae09bf2ac8854fe7a98e954e10484742f7d9e9",
+        "docs/decompose.md": "d73bf172ef7f76b7809fabdc8791b0ae953ad1e0caf672e17466bbd75459820c",
+        "docs/dev/aspects.md": "d4e6dce1d53a6b9fdca4534e2f4dc38331871ac10b7db279f7f31f9e5da42a42",
+        "docs/dev/evaluation.md": "7df4a4f9947070db33c06e60b5c62a8b640ec2d1609e5bad8ecc1bed1d799c7c",
+        "docs/videomd.md": "b320d1cd1ed6f1a3f9efc0ad92a8aff4a974c478a8abc8f846ebd5c09f49ecb5",
+        "docs/what-it-detects.md": "44aa62e1aa8929ea7000ad89ab0edff3bbb85be605531c5940d58907970f410d",
+        "eval/agent_test/JOB.md": "c1701879baa4bde6441b45c8329e624a25f55b9c968abc0bf0db6001cdce9681",
+        "eval/agent_test/README.md": "7cbad9b18df2274d9e41eac303d51749d838ae88201f14fa11608a692b9c3664",
+        "eval/RESULTS.md": "934b0d78aa8c39b9936e91cfdd7d663071dd240408878c5a9f2c695b36a97fa2",
+        "skills/rea-video/references/materials.md": "e44ae819ae919b23027ccd2c6a17651cf5b977fd4bbcb27c655d777e6566b566",
+        "skills/rea-video/references/memory.md": "de908a27774bd3525ce8b31d0c904c26f0fe772f7e6d9fbebfacf191e967dd0b",
+        "skills/rea-video/references/output-template.md": "e70dfea98c27fb0b9680d5c17a91cb520e194f4714e006c9529205e839291023",
+        "skills/rea-video/SKILL.md": "95242e8703c970f2895d0198d5d045d3268bf81930467683dc9d77e9be9b2c3d",
+        "skills/rea-video/references/review.md": "92633fefae4022153109c55505d703dec63630a5b2d8a92294925c92b02cafd1",
+        "skills/rea-video/references/taxonomy.md": "3953e3be2e9276244a928e7c49f37e603fc9f5317f417f97d8faa301319a661d",
+        "skills/rea-video/references/diy.md": "b742304e735c6027fca7a1e4215a0deab37a3602508d6776ce69893630c7f5bb",
+        "docs/replicate.md": "87cb011de986255231b49520c9787207c08bce2864a118adf719e05b9a84f969",
+        "skills/rea-video/references/hyperframes.md": "3a875c36e34a9cde7c9236c4bc7678f4d622b405986f34ff133c8d86e7077e2a",
+        "rea_video/capabilities/models/analysis.yaml": "a70233f643359091fe0751368203b2a070aae21577fc42b56945881ed87becd3",
+        "rea_video/capabilities/models/audio.yaml": "2b4086b7f4186c40c41a5f656a36737d2a2f37b33756ab7f4146651f38970ce7",
+        "rea_video/capabilities/models/character.yaml": "bd3c28e4fe7384c9c4970f2cd0d23a2d5a56d97755b45f16870c8f18c65d5a8e",
+        "rea_video/capabilities/models/image.yaml": "3b58f39fb18576644ac45304b0009b7ef516bbc8be3bb43e2ef06fcb35811569",
+        "rea_video/capabilities/models/render-post.yaml": "0a00ddab8adba6a562501a75eed3fac98a69d6a661c73296e31f82c3271be94e",
+        "rea_video/capabilities/models/threed.yaml": "7679a813386a61d588b2e171ae50734b87e9ccd4a83e97e17b8d4a3a8520c525",
+        "rea_video/capabilities/models/video.yaml": "806c0967c70fc0b2b1b779b31f30e46b08fa8dc6efc766acae134f95cef51fa3",
+        "rea_video/capabilities/MATRIX.md": "a87e259b0b94f4450835348b110326b5422a4650d89d95e73f37c328c7f2ef8f",
+        "rea_video/capabilities/primitives.yaml": "7cb9151b0531db637670ee6620511771486f71c82f4e429e6d4c1f06196fbb67",
+        "rea_video/capabilities/prompting.yaml": "f5578de661249c6544d57239f0941bf6b981ada94d70434c78d8568073777b2d",
+        "rea_video/capabilities/README.md": "90fe4808addb0d235678200c20b31c68dbd19432408ff9a278ec8138d7db5691",
+        "rea_video/capabilities/routing.yaml": "5b9e5fd5888d7c48559a0ec6d11f7c6005f5c04597ce08122ebba7a20610aeb9",
+        "skills/rea-video/references/remake-tools.md": "54c7520a915598dfbced530fc5446c7f544195e11ceac082f64e2cd2ed4b1b4b",
+        "skills/rea-video/references/remake.md": "b0e0933bacd36ef2752de6f3002957354d7f0b3c7697465543d5eae7ad4b377b"
+      },
+      "install_scope": "rea_video/*.py (không integrations/), rea_video/aspects/, rea_video/capabilities/, docs/{decompose,replicate,videomd,what-it-detects}.md, docs/dev/, skills/rea-video/{SKILL.md,references trừ chatcut·capsule-cinema·setup}, scripts/{bench_*,validate_capabilities}.py, eval/",
+      "inspect": {
+        "verdict": "Đạt có điều kiện",
+        "date": "2026-11-19",
+        "note": "1 Chặn báo nhầm (util.py fetch) đã có lý do; 3 Chặn (chatcut.md, capsule-cinema.md) nằm ngoài phạm vi cài; quét chưa đầy đủ vì 9 file media demo ngoài phạm vi"
+      },
+      "how": "Gói ngoài ghim SHA ở thư mục riêng, chạy bằng venv riêng qua video_studio/reference/rea.py (VLM luôn tắt); skill video-reverse-engineer là bản viết lại tiếng Việt, rút gọn; phần dựng (remake, redraw, code-remake, drive, capsule-cinema, ChatCut) không nối.",
+      "translated_docs": "Bản dịch tiếng Việt (Haiku dịch, Fable soát) của SKILL.md, references, docs, capabilities và eval/RESULTS: skills/video-reverse-engineer/references/ và skills/video-remix-brief/references/rea-video/. Mã Python và dữ liệu nhãn eval/*.yaml|json không dịch."
     }
   }
 }
