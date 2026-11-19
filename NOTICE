@@ -70,6 +70,12 @@ Baseline, đích local và quy trình kiểm cập nhật: upstream.json và doc
   Prompt HyperFrames trong tài liệu là bản viết mới, không phải prompt của tác giả nguồn và
   không cấp quyền với tài sản của họ. Xem INDEX và provenance của từng entry.
 
+- rea-video (https://github.com/JuneYaooo/rea-video) — Copyright 2026 JuneYaooo, Apache-2.0, commit
+  ac470773188574833b839be17abee6162201ddf9. Repo này KHÔNG chép code của nó: nó chạy như gói ngoài
+  ghim SHA qua `video_studio/reference/rea.py`. `skills/video-reverse-engineer/` là bản ĐÃ DỊCH sang tiếng Việt,
+  rút gọn và biên tập lại từ `skills/rea-video/SKILL.md` (sửa đổi theo Apache-2.0 §4(b)); phần dựng và
+  chỉ dẫn cài app thương mại của upstream không được mang theo. Giấy phép: LICENSE-APACHE.
+
 Quy tắc cho các bản sau: mọi phần CHƯNG CẤT từ nguồn ngoài (skill, seed project, helper) phải được
 liệt kê ở đây kèm repo · commit/phiên bản · giấy phép, và phần phỏng theo nguồn Apache-2.0 phải
 kèm LICENSE-APACHE cùng ghi chú "đã sửa" trong chính file đó.

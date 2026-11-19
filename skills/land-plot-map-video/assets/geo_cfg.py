@@ -161,8 +161,8 @@ DEFAULT_COPY = {
     "cta2": "[1 video] như vậy",
     "cta_sub": "Liên hệ ngay",
 }
-TIMES = {"hook": (0, 6.8), "intro": (6.8, 9.4), "where": (9.4, 14.6), "size": (14.6, 20.4),
-         "city": (20.4, 23.4), "radius": (23.4, 27.4), "cta": (27.4, 31.0)}
+TIMES = {"hook": (0, 7.17), "intro": (7.17, 9.57), "where": (9.57, 14.63), "size": (14.63, 20.9),
+         "city": (20.9, 23.67), "radius": (23.67, 27.97), "cta": (27.97, 30.8)}  # đo từ video mẫu bằng rea-video (rhythm.md)
 
 
 def build(site: dict, radius_m: float, copy: dict | None = None) -> tuple[dict, dict, dict]:
@@ -237,7 +237,7 @@ def build(site: dict, radius_m: float, copy: dict | None = None) -> tuple[dict, 
     cfg = {
         "brand": c["brand"], "person": "assets/person.png",
         "hook": {**box("hook", 0), "bg": "assets/plot.jpg", "poly": lot_px, "line1": c["line1"], "line2": c["line2"],
-                 "say": c["say"], "sayAt": 5.3},
+                 "say": c["say"], "sayAt": 5.6},
         "intro": {**box("intro", 0), "bg": "assets/area.jpg", "text": c["intro"]},
         "where": {**box("where", 0), "bg": "assets/region.jpg",
                   "pin": to_frame(cen[0], cen[1], cen, z_where), "pinLabel": c["pin_label"],
@@ -290,6 +290,10 @@ def main(argv=None) -> int:
     ap.add_argument("--radius-m", type=float, required=True, help="bán kính vùng 5 phút, mét (do người dùng cấp)")
     ap.add_argument("--copy", help="JSON ghi đè chữ hiển thị")
     a = ap.parse_args(argv)
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")  # console Windows mặc định cp1252, nhãn tiếng Việt sẽ lỗi
+    except (AttributeError, OSError):
+        pass
     try:
         site = parse_kml(Path(a.kml).read_text(encoding="utf-8"))
         copy = json.loads(Path(a.copy).read_text(encoding="utf-8")) if a.copy else None

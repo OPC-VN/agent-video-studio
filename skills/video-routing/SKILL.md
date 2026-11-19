@@ -79,6 +79,7 @@ Trên máy có `OPCOS_WORKSPACES`, `--mode embedded --yes` chọn trạm trong r
   ROI, thời gian và method rõ ràng, xem preview, rồi apply ra file mới và verify manifest.
 - **"Làm video giống video này" (link hoặc tệp mẫu)**: đọc `video-reference-analysis` → `video-remix-brief` → `render`/`edit`; quy trình ở `docs/reference-to-remix.md`. Chỉ tải khi người dùng nói đúng URL; ý tưởng, hook, lịch đăng thì sang `agent-marketing-team`; nhân bản người trong mẫu thì từ chối.
 - **Video giới thiệu lô đất / BĐS dọc 9:16 trên ảnh vệ tinh** (ghim, ranh xã–tỉnh, A×B, khoảng cách, bán kính 5 phút): đọc skill `land-plot-map-video` — template `index.html` + `CFG`, dựng bằng `render --project-dir`; cổng quyền ảnh nền trước.
+- **Mổ xẻ video mẫu từng cảnh bằng máy** (cảnh, nhịp, khung đổi, chữ phủ, camera, màu; so bản dựng với mẫu): đọc skill `video-reverse-engineer` (rea-video offline, VLM tắt) rồi `video-reference-analysis`/`video-remix-brief`.
 - **Sắp chế một layout mới**: đọc skill `video-theme-library` + `docs/THEME-LIBRARY.md` TRƯỚC —
   chọn từ thư viện rồi mới sáng tác.
 - **Người dùng hỏi "đồ của tôi nằm đâu / xoá được không"**: `docs/WORKSPACE.md`.
