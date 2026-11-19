@@ -1,10 +1,12 @@
 // Lấy ranh hành chính (admin_level 4, 6) và đường chính từ OpenFreeMap theo khung nhìn MapLibre. Ra JSON toạ độ lon/lat.
-// Dùng: node extract_osm.mjs out.json
+// Dùng: node extract_osm.mjs out.json [views.json]
+//   views.json: {"N02": {"c":[lon,lat], "z": <zoom ô 256 px>}, ...}  (MapLibre dùng z-1, script tự trừ). Không đưa thì dùng VIEWS mẫu bên dưới.
+// Ra mỗi khung: b4/b6 (ranh), roads (đường chính), rnames (tên đường: name, ref, class, cầu = brunnel bridge, nhiều mảnh/đường).
 import { chromePath, loadPuppeteer, LAUNCH_ARGS } from "./_paths.mjs";
 import fs from "node:fs";
 const puppeteer = loadPuppeteer();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const VIEWS = {
+const VIEWS = process.argv[3] ? Object.fromEntries(Object.entries(JSON.parse(fs.readFileSync(process.argv[3], "utf8"))).map(([k, v]) => [k, { c: v.c, z: v.z - 1 }])) : {
   M01: { c: [106.27, 20.62], z: 10.8 - 1, want: ["b4"] },
   M02: { c: [105.93502, 20.95655], z: 14.5 - 1, want: ["b6", "b4"] },
   M03: { c: [105.9530, 20.9738], z: 14.4 - 1, want: ["b6"] },
@@ -25,10 +27,12 @@ for (const [id, v] of Object.entries(VIEWS)) {
     const bnd = lvl => map.querySourceFeatures(src, { sourceLayer: "boundary", filter: ["all", ["==", ["get", "admin_level"], lvl], ["!=", ["get", "maritime"], 1]] }).flatMap(lines);
     const roads = map.querySourceFeatures(src, { sourceLayer: "transportation", filter: ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary", "secondary", "tertiary"]]] })
       .map(f => ({ cls: f.properties.class, name: f.properties["name:vi"] || f.properties.name || "", lines: lines(f) })).filter(r => r.lines.length);
-    return { b4: bnd(4), b6: bnd(6), roads };
+    const rnames = map.querySourceFeatures(src, { sourceLayer: "transportation_name" })
+      .map(f => ({ cls: f.properties.class, name: f.properties["name:vi"] || f.properties.name || "", ref: f.properties.ref || "", bridge: f.properties.brunnel === "bridge", lines: lines(f) })).filter(r => r.lines.length && (r.name || r.ref));
+    return { b4: bnd(4), b6: bnd(6), roads, rnames };
   });
   const r = result[id];
-  console.log(id, "b4:", r.b4.length, "b6:", r.b6.length, "roads:", r.roads.length);
+  console.log(id, "b4:", r.b4.length, "b6:", r.b6.length, "roads:", r.roads.length, "rnames:", r.rnames.length);
 }
 fs.writeFileSync(process.argv[2], JSON.stringify(result));
 await browser.close();

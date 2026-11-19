@@ -7,7 +7,9 @@ const OUT = process.argv[2]; fs.mkdirSync(OUT, { recursive: true });
 const here = path.dirname(url.fileURLToPath(import.meta.url));
 const page_url = url.pathToFileURL(path.join(here, "geo-capture.html")).href;
 const P = [20.95374525, 105.93237025];
-const shots = [
+// Danh sách shot: mặc định là ví dụ dưới; hoặc đưa tệp JSON làm đối số 3: [["N01", lat, lon, zoom256, mode?, pitch?, bearing?], ...]
+// mode: esri | osm | esri3d | osm3d | mask-water (đa giác nước trắng trên nền đen, dùng để lấy viền hồ: xem water_outline.py)
+const shots = process.argv[3] ? JSON.parse(fs.readFileSync(process.argv[3], "utf8")) : [
   ["M01", 20.62, 106.27, 10.8], ["M02", 20.95655, 105.93502, 14.5], ["M03", 20.9738, 105.9530, 14.4],
   ["M04", P[0], P[1], 15.6], ["M05", 20.9596, 105.9322, 16.8], ["M06", 20.9732, 105.9381, 14.0],
   ["M07", P[0], P[1], 16.5, "esri3d", 55, 40],

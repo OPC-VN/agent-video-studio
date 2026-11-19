@@ -49,3 +49,45 @@ def test_skill_files_exist():
         assert (SK / n).is_file(), n
     head = (SK / "SKILL.md").read_text(encoding="utf-8").split("---")[1]
     assert "name: real-estate-location-video" in head
+
+
+def test_water_outline_traces_lake_from_mask(tmp_path):
+    import pytest
+    pytest.importorskip("numpy")
+    pytest.importorskip("scipy")
+    from PIL import Image, ImageDraw
+    spec = importlib.util.spec_from_file_location("water_outline", SK / "assets" / "water_outline.py")
+    wo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(wo)
+    im = Image.new("L", (1080, 1920), 0)
+    ImageDraw.Draw(im).ellipse([200, 300, 400, 500], fill=255)       # hồ cần lấy
+    ImageDraw.Draw(im).ellipse([800, 1200, 860, 1260], fill=255)     # hồ khác, không được lẫn vào
+    p = tmp_path / "w.png"
+    im.save(p)
+    pts, comp = wo.outline(str(p), (300, 400))
+    xs, ys = [q[0] for q in pts], [q[1] for q in pts]
+    assert 195 <= min(xs) <= 205 and 395 <= max(xs) <= 405 and 295 <= min(ys) <= 305
+    assert comp[1230, 830] == 0                                      # không lẫn hồ thứ hai
+    assert wo.outline(str(p), (300, 240), max_gap=90) is not None     # seed sát hồ: lấy hồ gần nhất
+    assert wo.outline(str(p), (600, 900), max_gap=90) is None        # seed xa mọi nước
+    assert wo.to_svg_d(pts).startswith("M") and wo.to_svg_d(pts).endswith("Z")
+
+
+def test_camera_path_examples_are_valid():
+    """camera_paths.example.json: mỗi spec có khoá camera tăng dần theo t và z/lat/lon hợp lệ."""
+    data = json.loads((SK / "assets" / "camera_paths.example.json").read_text(encoding="utf-8"))
+    specs = {k: v for k, v in data.items() if not k.startswith("_")}
+    assert len(specs) >= 6
+    for name, sp in specs.items():
+        ts = [k["t"] for k in sp["keys"]]
+        assert ts == sorted(ts) and ts[0] == 0 and ts[-1] == sp["secs"], name
+        for k in sp["keys"]:
+            assert 0 < k["z"] <= 19 and -90 < k["lat"] < 90 and -180 < k["lon"] < 180 and 0 <= k["pitch"] <= 75, name
+            assert 0 <= k["sat"] <= 1 and 0 <= k["rise"] <= 1, name
+
+
+def test_template_has_no_infinite_repeat_or_pulsing_pin():
+    html = (SK / "assets" / "draft2_template.html").read_text(encoding="utf-8")
+    assert "repeat: -1" not in html and "repeat:-1" not in html
+    pin = html[html.index('e.t === "pin"'):html.index('e.t === "dash"')]
+    assert "repeat" not in pin   # ghim không còn vòng sóng lặp

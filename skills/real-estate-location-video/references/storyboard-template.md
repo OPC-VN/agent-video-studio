@@ -288,3 +288,16 @@ Ghi chú: không khâu nào tự đăng/gửi; phát hành là quyết định r
 3. Phân vai duyệt mục 5 (Fable / Opus / người dùng) có đúng ý không.
 4. Dự án đầu tiên để chạy thử và tình huống (đề xuất: khu Swan Lake – Ecopark theo T1, làm trước bản T7 30 s).
 5. Ai quay các shot Earth cần thao tác tay (Map + 3D buildings, orbit): người dùng quay hay agent click theo toạ độ (chưa kiểm)?
+
+
+## Bổ sung theo bài học bản v2 (nhịp và độ rõ)
+
+Chi tiết số đo ở [`pacing-and-clarity.md`](pacing-and-clarity.md). Khi điền mẫu này cho dự án mới:
+
+- **Thời lượng mỗi cảnh** tính từ sàn thời gian đọc, không từ độ dài lời: bậc hành chính ≥ 4 s, bậc zoom ≥ 1,2 s, tag ≥ 2 s, thẻ số ≥ 2,5 s; bản dài 60–75 s.
+- **S-02/S-03 (tỉnh, xã):** giữ khung đứng yên ≥ 2 s sau khi viền vẽ xong rồi mới zoom tiếp; thêm 2–3 địa bàn chính của tỉnh chỉ khi research có nguồn.
+- **S-20 (ảnh toà nhà):** ảnh thật có quyền, hoặc Earth 3D cận cảnh gắn «minh hoạ».
+- **S-09/S-14 (lân cận, bán kính):** vòng bán kính + biểu tượng nhóm + chú giải là cảnh chính; mọi nhãn xa điểm có vạch nối và số km.
+- **S-10 (3D):** thêm một câu bố cục chỉ khi có nguồn (toà nào ở mặt hồ…); chưa có thì chú thích «minh hoạ».
+- **S-11 (đường):** nêu tên trục chính + cầu vào nội thành (tên theo OSM, người xác nhận), không nói chung chung «các tuyến đường bao quanh».
+- **S-19 (mốc trung tâm):** luôn kèm khoảng cách; ảnh thật nếu có quyền.

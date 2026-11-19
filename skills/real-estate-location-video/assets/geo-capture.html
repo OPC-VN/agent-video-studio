@@ -16,6 +16,10 @@ const sources = {
 };
 const layers = [];
 const base = mode.startsWith("esri") ? "esri" : "osm";
+if (mode === "mask-water") {  // mặt nạ nước: trắng trên đen, cùng phép chiếu với ảnh nền
+  layers.push({ id: "bg", type: "background", paint: { "background-color": "#000" } });
+  layers.push({ id: "w", type: "fill", source: "omt", "source-layer": "water", paint: { "fill-color": "#fff", "fill-antialias": false } });
+} else
 layers.push({ id: "base", type: "raster", source: base });
 if (mode.endsWith("3d")) {
   layers.push({ id: "b3d", type: "fill-extrusion", source: "omt", "source-layer": "building", minzoom: 14,

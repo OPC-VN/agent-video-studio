@@ -25,6 +25,9 @@ description: Use when making a vertical (9:16) real-estate project or location v
 5. **Dữ liệu bản đồ có tuổi khác nhau:** ảnh Esri cũ hơn OSM; Google «Map 3D» thiếu toà mới. Chọn nguồn theo câu hỏi cần trả lời và **gắn nhãn minh hoạ** khi chưa chắc.
 6. **Đo bằng máy + xem bằng mắt + người chốt.** Máy chỉ là chỉ dấu; không tuyên bố «giống» hay «đúng vị trí» khi người dùng chưa xác nhận.
 7. **Một agent làm, một agent khác duyệt**, mỗi cổng có tiêu chí đo được; agent duyệt chỉ sửa đúng file được giao.
+8. **Có sàn thời gian đọc, không chỉ trần tốc độ lời.** Người xem không hình dung được thứ lướt qua dưới ~2 s: mỗi bậc hành chính ≥ 4 s (≥ 2 s đứng yên), tag ≥ 2 s, thẻ số ≥ 2,5 s; bản dài 60–75 s, bản 30 s chỉ là bản cắt ([`pacing-and-clarity.md`](references/pacing-and-clarity.md), bài học từ bản draft 1).
+9. **Một câu về khoảng cách = một khung đủ ba thứ:** điểm đầu, điểm cuối (hồ, công viên… được **bo viền**) và con số, đứng yên đủ lâu. Gọi tên được thì khoanh được: hồ, trục đường, cầu được nhắc phải hiện và có tên trên bản đồ.
+10. **Chuyển động camera phải mượt:** zoom, orbit, nhà 3D quay **từng khung** bằng `camera_path_capture.mjs`; không quay màn hình Google Earth cho chuyển động (chỉ ~6 khung/giây thật → giật). Không vòng nhấp nháy lặp; mọi lặp hữu hạn ([`pacing-and-clarity.md`](references/pacing-and-clarity.md) mục 7–8).
 
 ## Quy trình 9 khâu (chi tiết + cổng: [`references/workflow.md`](references/workflow.md))
 
@@ -37,13 +40,16 @@ description: Use when making a vertical (9:16) real-estate project or location v
 | `earth_run.mjs` + `earth_job.example.json` | quay Google Earth hàng loạt: shot tĩnh theo URL + chuyển động (dolly/lia/xoay) bằng screencast, khung dọc 1080×1920, nền Clean | `R*.png`, `MV*.mp4` |
 | `maplibre_shots.mjs` + `geo-capture.html` | ảnh top-down Esri / nhà 3D OSM theo (lat, lng, zoom, pitch, bearing) | `M01…Mxx.png` |
 | `three_d_capture.mjs` | **hiệu ứng vệ tinh → nhà 3D mọc lên → kiểu Map**, quay từng khung | `f0000…png` → clip |
-| `extract_osm.mjs` + `osm_overlay.py` | **ranh hành chính** (cấp 4, 6) và đường chính theo khung nhìn → đường SVG đúng toạ độ | `osm_overlays.json`, `d=` SVG |
+| `extract_osm.mjs` + `osm_overlay.py` | **ranh hành chính** (cấp 4, 6), đường chính và **tên đường/cầu** (`rnames`) theo khung nhìn (`views.json` tuỳ chọn) → đường SVG đúng toạ độ | `osm_overlays.json`, `d=` SVG |
 | `build_composition.example.py` | dựng composition HyperFrames raw từ bảng cảnh (ảnh + clip + GSAP) | `comp/index.html` |
 | `build_draft2.example.py` + `draft2_template.html` | dựng draft 2: lớp phủ theo toạ độ (ranh, ghim, đường nét đứt, tag, thẻ số, nhãn, chữ gõ) từ một danh sách dữ liệu `FX` | `comp2/index.html` |
+| `build_v2.example.py` (cùng template) | bản **nhịp chậm 76 s**: thêm viền hồ, vòng bán kính + biểu tượng nhóm + chú giải, hộp số giữa đường nối, tên đường/cầu + mũi tên, màn tối | `comp3/index.html` |
+| `camera_path_capture.mjs` + `camera_paths.example.json` | **chuyển động camera mượt** (zoom liền mạch nhiều bậc, orbit, nghiêng, nhà 3D mọc) quay từng khung theo các khoá camera; ghép bằng `ffmpeg -framerate 30 -i f%04d.png` | `f*.png` → clip mp4 |
+| `water_outline.py` | viền một mặt nước từ mặt nạ `mask-water` (numpy + scipy + Pillow) | `d=` SVG khép kín |
 | `voice_batch.example.py` | thu lời dẫn từng câu (nạp engine một lần, ghim seed, tự khớp thời lượng cảnh) | `V*.wav`, `manifest.json` |
 | `_paths.mjs` | tìm Chrome + puppeteer-core không gắn đường dẫn máy | — |
 
-Cài đặt, phiên bản ghim, nơi lấy và cách kiểm: [`references/setup.md`](references/setup.md) · công thức hiệu ứng (tô viền, 3D) kèm quy tắc: [`references/effects-recipes.md`](references/effects-recipes.md) · thao tác Earth và bẫy: [`references/earth-capture.md`](references/earth-capture.md) · chữ động, giọng, ghép âm thanh: [`references/voice-and-mix.md`](references/voice-and-mix.md) · mẫu storyboard nhiều tình huống: [`references/storyboard-template.md`](references/storyboard-template.md) · mẫu brief research: [`references/research-brief.md`](references/research-brief.md).
+Cài đặt, phiên bản ghim, nơi lấy và cách kiểm: [`references/setup.md`](references/setup.md) · công thức hiệu ứng (tô viền, 3D) kèm quy tắc: [`references/effects-recipes.md`](references/effects-recipes.md) · thao tác Earth và bẫy: [`references/earth-capture.md`](references/earth-capture.md) · chữ động, giọng, ghép âm thanh: [`references/voice-and-mix.md`](references/voice-and-mix.md) · nhịp và độ rõ (sàn thời gian đọc, khung quan hệ, ảnh có quyền): [`references/pacing-and-clarity.md`](references/pacing-and-clarity.md) · checklist duyệt cổng từ các lỗi đã gặp: [`references/review-lessons.md`](references/review-lessons.md) · ví dụ đã chạy thật qua ba bản (khuôn storyboard v1→v3): [`references/worked-example.md`](references/worked-example.md) · mẫu storyboard nhiều tình huống: [`references/storyboard-template.md`](references/storyboard-template.md) · mẫu brief research: [`references/research-brief.md`](references/research-brief.md).
 
 ## Luật cứng
 

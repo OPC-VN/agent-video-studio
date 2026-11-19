@@ -4,13 +4,13 @@ Nguyên tắc: **mỗi khâu có đầu ra rõ, một cổng duyệt có tiêu c
 
 | # | Khâu | Ai làm | Đầu ra | Cổng duyệt (ai · tiêu chí) |
 |---|---|---|---|---|
-| 0 | Intake | agent + người | tên dự án, địa chỉ, toạ độ, mục đích video (bán hàng?), độ dài 30/45/60 s, kênh/CTA, quyền ảnh nền | người: xác nhận tên dự án, đơn vị hành chính hiện hành, quyết định điều khoản Google |
+| 0 | Intake | agent + người | tên dự án, địa chỉ, toạ độ, mục đích video (bán hàng?), độ dài (mặc định **60–75 s**; 30 s là bản cắt), kênh/CTA, quyền ảnh nền, **ảnh thật có quyền** của toà nhà và mốc trung tâm (có/không) | người: xác nhận tên dự án, đơn vị hành chính hiện hành, quyết định điều khoản Google |
 | 1 | **Research** có nguồn | Opus (có WebSearch) | `research-<dự án>.md`: hành chính hiện hành, chỉ số khu vực, hạ tầng, điểm mạnh/yếu, 3–5 địa điểm kèm toạ độ + khoảng cách, câu không nên nói | Opus tự chấm + **người** xác nhận mục «chưa xác minh». Mọi số có URL + ngày + mức tin cậy |
 | 2 | **Mẫu storyboard** (dùng lại) | Fable | thư viện cảnh, tình huống, bảng lựa chọn: [`storyboard-template.md`](storyboard-template.md) | chỉ làm một lần; sửa khi có kinh nghiệm mới |
 | 3 | **Storyboard dự án** | Fable | bảng cảnh (giây, lời, camera, hiệu ứng, chữ, cách quay), danh sách shot raw R/M, bảng dữ liệu, kịch bản lời | **Opus**: kiểm từng số với research, haversine ±3 %, câu cấm, khả thi, thời lượng cộng đúng, tốc độ lời ≤ ~4 âm tiết/giây |
 | 4 | **Quay raw** | agent (script) | shot Earth (tĩnh + chuyển động), MapLibre M01–Mxx, clip 3D, `osm_overlays.json` | tự kiểm: ảnh sạch (không nhãn/UI/thẻ mẹo), tâm đúng dự án, không vỡ ảnh |
 | 5 | **Ghép raw** | agent | `comp/` HyperFrames raw (đúng giây bảng cảnh) → `out-raw` | **Opus** xem lưới khung + shot: khớp storyboard, lặp hình, cảnh nào sẵn cho lớp phủ; người xem bản raw |
-| 6 | **Hiệu ứng** (draft 2) | agent | ranh, ghim, khoảng cách + tag, thẻ số, nhãn bậc zoom, hiệu ứng 3D | **Opus** + đo: phủ đúng 4 yêu cầu, số trên khung = số có nguồn, nhãn không đè, `check --strict` sạch; người chốt hiệu ứng |
+| 6 | **Hiệu ứng** (draft 2) | agent | ranh, ghim, khoảng cách + tag, thẻ số, nhãn bậc zoom, hiệu ứng 3D | **Opus** + đo: phủ đúng 4 yêu cầu, số trên khung = số có nguồn, nhãn không đè, `check --strict` sạch, **đạt sàn thời gian đọc** ([`pacing-and-clarity.md`](pacing-and-clarity.md)), mọi đối tượng được nhắc có viền/tên trên bản đồ; người chốt hiệu ứng |
 | 7 | **Chữ động + giọng** | agent | chữ gõ, thẻ, giọng đọc từng câu khớp cảnh (đo TTS thật, ASR ngược), nhạc nền: [`voice-and-mix.md`](voice-and-mix.md) | Opus: lời khớp cảnh (±), không câu cấm; **người** nghe thử |
 | 8 | Bản cuối | agent | MP4 cuối + bản nén 540p | đo nhịp bằng `video-reverse-engineer` nếu có video mẫu; Opus soát bản cuối; **người** duyệt phát hành |
 | 9 | Bàn giao + học | agent | báo cáo, nhật ký quay, nguồn/quyền từng tài sản; cập nhật skill nếu có bài học | — |
@@ -30,6 +30,11 @@ Nguyên tắc: **mỗi khâu có đầu ra rõ, một cổng duyệt có tiêu c
 3. Mọi số/khẳng định truy được về research; không có số «chưa xác minh» trên màn hình; không câu cấm.
 4. Tổng thời lượng bản dài và bản cắt cộng đúng; tag ≤ 25 ký tự/dòng; tốc độ lời ≤ ~4 âm tiết/giây (3,3–4 là vùng an toàn; đo lại bằng TTS thật).
 5. Shot nào cần hiệu ứng chưa có trong template, shot nào chưa kiểm → ghi rõ mức rủi ro và đường lùi.
+6. **Sàn thời gian đọc** (bảng ở `pacing-and-clarity.md`): mỗi bậc hành chính ≥ 4 s (≥ 2 s đứng yên), bậc zoom ≥ 1,2 s, tag ≥ 2 s, thẻ số ≥ 2,5 s, lời 3,0–3,6 tiếng/s; tổng 60–75 s.
+7. **Khung quan hệ đủ ba thứ** cho mọi câu khoảng cách (điểm đầu, điểm cuối được khoanh/bo viền, số km) và **tên cụ thể** cho trục đường, cầu, hồ được nhắc; chưa có nguồn tên thì ghi «[CẦN KIỂM]», không bịa.
+8. Có cảnh **vòng bán kính + nhóm tiện ích** và cảnh **mốc trung tâm kèm khoảng cách**; ảnh thật chỉ khi có quyền, chưa có thì Earth 3D cận cảnh gắn «minh hoạ».
+
+Checklist duyệt cổng gom từ các lỗi đã gặp: [`review-lessons.md`](review-lessons.md). Ví dụ ba bản v1→v3: [`worked-example.md`](worked-example.md).
 
 ## Vòng lặp «đo + xem»
 
