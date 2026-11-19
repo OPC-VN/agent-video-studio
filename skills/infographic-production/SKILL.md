@@ -1,0 +1,14 @@
+---
+name: infographic-production
+description: Use when creating a reusable static infographic, diagram-led social visual, or infographic layer for video from a brief: choose the information layout, generate bespoke visual assets, composite editable text, and QA the export. Not for campaign publishing, full slide decks, or general video editing.
+---
+
+# Sản xuất infographic dạng ghép lớp
+
+Infographic phải nói được ý bằng bố cục trước. Hình làm rõ hành động; hiệu ứng chỉ dẫn mắt. Skill này tạo tài sản tĩnh hoặc lớp dùng trong video, không lập lịch hay đăng nội dung.
+
+1. **Chốt ý và khung.** Ghi người xem, một ý chính, dữ kiện/nguồn, khổ đích, màu/font và logo bản gốc nếu cần. Chọn quan hệ thông tin trước khi chọn hình: chuỗi bước → quy trình; diễn tiến → timeline; hai góc nhìn → cột đối chiếu cùng tiêu chí; cấp bậc → cây; quan hệ nhiều chiều → bản đồ hệ thống; nhóm ý ngang hàng → lưới. Phác các khối theo thứ tự đọc như SmartArt, nối có nghĩa và xác định chỗ đặt chủ thể. Nếu các ý khác nhau, đừng áp một layout lặp lại. Đọc đúng tài liệu thương hiệu và mẫu của chính dự án.
+2. **Thiết kế từng hình đúng nghĩa.** Đặt mục đích cho mỗi icon/ảnh: động từ, đối tượng, đạo cụ, góc nhìn, vùng chừa chữ. Với người, dùng kiểu render chân thực, đúng hành động và tư thế: tìm hồ sơ thì thấy tay mở hồ sơ/tương tác với kết quả, không dùng chân dung đứng cho có. Đổi cử chỉ, đối tượng và góc nhìn giữa các bước và bài; không thay màu cho cùng một hình rồi coi là hình mới. Tạo cảnh/cutout riêng bằng trình tạo ảnh được cấp quyền; dùng ảnh hợp lệ hoặc icon tự vẽ rõ nét nếu phù hợp hơn. Không tạo nguệch ngoạc, không yêu cầu công cụ sinh tiêu đề/nhãn dữ liệu, logo hay giao diện chữ giả. Logo được nhập từ tài sản được duyệt, không vẽ lại.
+3. **Ghép, kiểm và bàn giao.** Dùng lớp độc lập cho nền, đường nối/khối, ảnh, chữ và logo; nhập nội dung duyệt dưới dạng chữ có thể sửa trong công cụ bố cục. Hướng mũi tên, số bước, nhịp tương phản và điểm nhấn thống nhất; nếu chuyển sang video, hiện theo trình tự đọc và giữ đủ thời gian đọc, không thêm hiệu ứng trang trí làm nhiễu. Duyệt chữ có dấu, khung an toàn, tương phản, điểm bị che/cắt, nhãn và số liệu ở kích thước xuất lẫn preview nhỏ. Khổ tham chiếu cho ảnh ngang 16:9 là 1920×1080, duyệt thêm ở rộng 560–620 px; dùng khổ thực tế đã chốt và xem cả trên thiết bị/kênh đích khi khả dụng.
+
+Đọc [hướng dẫn tạo và ghép ảnh](references/asset-and-compositing.md) để lấy mẫu brief, prompt và mẫu bàn giao có thể tái tạo. Đặt project, ảnh nguồn và render trong trạm làm việc, không commit nội dung/nhận diện thật vào repo. Nêu rõ phần nào chưa tạo hoặc chưa xem thực tế. Nếu xuất video từ lớp minh họa, quay về [video-routing](../video-routing/SKILL.md) và dùng luồng HyperFrames của repo; tạo infographic tĩnh tự nó không cần chạy engine video.

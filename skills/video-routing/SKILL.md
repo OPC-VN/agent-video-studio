@@ -84,6 +84,7 @@ Trên máy có `OPCOS_WORKSPACES`, `--mode embedded --yes` chọn trạm trong r
 - **Sắp chế một layout mới**: đọc skill `video-theme-library` + `docs/THEME-LIBRARY.md` TRƯỚC —
   chọn từ thư viện rồi mới sáng tác.
 - **Người dùng hỏi "đồ của tôi nằm đâu / xoá được không"**: `docs/WORKSPACE.md`.
+- **Infographic tĩnh hoặc lớp infographic dùng trong video**: đọc [infographic-production](../infographic-production/SKILL.md) để thiết kế quan hệ thông tin, tạo ảnh thành phần và ghép chữ chỉnh sửa được. Với infographic tĩnh thì không chạy engine video.
 - **Deck HTML bài giảng/trình chiếu cần QA bố cục**: ngoài phạm vi video — plugin `agent-design-studio`, skill `design-routing`, mode `static-artifact`.
 
 ## Biến môi trường
