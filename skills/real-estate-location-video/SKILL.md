@@ -39,9 +39,11 @@ description: Use when making a vertical (9:16) real-estate project or location v
 | `three_d_capture.mjs` | **hiệu ứng vệ tinh → nhà 3D mọc lên → kiểu Map**, quay từng khung | `f0000…png` → clip |
 | `extract_osm.mjs` + `osm_overlay.py` | **ranh hành chính** (cấp 4, 6) và đường chính theo khung nhìn → đường SVG đúng toạ độ | `osm_overlays.json`, `d=` SVG |
 | `build_composition.example.py` | dựng composition HyperFrames raw từ bảng cảnh (ảnh + clip + GSAP) | `comp/index.html` |
+| `build_draft2.example.py` + `draft2_template.html` | dựng draft 2: lớp phủ theo toạ độ (ranh, ghim, đường nét đứt, tag, thẻ số, nhãn, chữ gõ) từ một danh sách dữ liệu `FX` | `comp2/index.html` |
+| `voice_batch.example.py` | thu lời dẫn từng câu (nạp engine một lần, ghim seed, tự khớp thời lượng cảnh) | `V*.wav`, `manifest.json` |
 | `_paths.mjs` | tìm Chrome + puppeteer-core không gắn đường dẫn máy | — |
 
-Cài đặt, phiên bản ghim, nơi lấy và cách kiểm: [`references/setup.md`](references/setup.md) · công thức hiệu ứng (tô viền, 3D) kèm quy tắc: [`references/effects-recipes.md`](references/effects-recipes.md) · thao tác Earth và bẫy: [`references/earth-capture.md`](references/earth-capture.md) · mẫu storyboard nhiều tình huống: [`references/storyboard-template.md`](references/storyboard-template.md) · mẫu brief research: [`references/research-brief.md`](references/research-brief.md).
+Cài đặt, phiên bản ghim, nơi lấy và cách kiểm: [`references/setup.md`](references/setup.md) · công thức hiệu ứng (tô viền, 3D) kèm quy tắc: [`references/effects-recipes.md`](references/effects-recipes.md) · thao tác Earth và bẫy: [`references/earth-capture.md`](references/earth-capture.md) · chữ động, giọng, ghép âm thanh: [`references/voice-and-mix.md`](references/voice-and-mix.md) · mẫu storyboard nhiều tình huống: [`references/storyboard-template.md`](references/storyboard-template.md) · mẫu brief research: [`references/research-brief.md`](references/research-brief.md).
 
 ## Luật cứng
 

@@ -11,7 +11,7 @@ Nguyên tắc: **mỗi khâu có đầu ra rõ, một cổng duyệt có tiêu c
 | 4 | **Quay raw** | agent (script) | shot Earth (tĩnh + chuyển động), MapLibre M01–Mxx, clip 3D, `osm_overlays.json` | tự kiểm: ảnh sạch (không nhãn/UI/thẻ mẹo), tâm đúng dự án, không vỡ ảnh |
 | 5 | **Ghép raw** | agent | `comp/` HyperFrames raw (đúng giây bảng cảnh) → `out-raw` | **Opus** xem lưới khung + shot: khớp storyboard, lặp hình, cảnh nào sẵn cho lớp phủ; người xem bản raw |
 | 6 | **Hiệu ứng** (draft 2) | agent | ranh, ghim, khoảng cách + tag, thẻ số, nhãn bậc zoom, hiệu ứng 3D | **Opus** + đo: phủ đúng 4 yêu cầu, số trên khung = số có nguồn, nhãn không đè, `check --strict` sạch; người chốt hiệu ứng |
-| 7 | **Chữ động + giọng** | agent | chữ gõ, thẻ, giọng đọc (đo thời lượng TTS thật), nhạc nếu có | Opus: lời khớp cảnh (±), không câu cấm; **người** nghe thử |
+| 7 | **Chữ động + giọng** | agent | chữ gõ, thẻ, giọng đọc từng câu khớp cảnh (đo TTS thật, ASR ngược), nhạc nền: [`voice-and-mix.md`](voice-and-mix.md) | Opus: lời khớp cảnh (±), không câu cấm; **người** nghe thử |
 | 8 | Bản cuối | agent | MP4 cuối + bản nén 540p | đo nhịp bằng `video-reverse-engineer` nếu có video mẫu; Opus soát bản cuối; **người** duyệt phát hành |
 | 9 | Bàn giao + học | agent | báo cáo, nhật ký quay, nguồn/quyền từng tài sản; cập nhật skill nếu có bài học | — |
 
