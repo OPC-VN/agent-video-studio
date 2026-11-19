@@ -7,6 +7,7 @@ kiểm).
 
 ## Chưa phát hành
 
+- Dịch sang tiếng Việt toàn bộ tài liệu tiếng Trung của rea-video (SKILL.md, 10 references, docs, capabilities, eval/RESULTS: 33 file; Haiku dịch, Fable soát thuật ngữ và đối chiếu): 16 file vào `skills/video-reverse-engineer/references/`, 17 file (kèm `INDEX.md`) vào `skills/video-remix-brief/references/rea-video/`. Mã Python và nhãn eval không dịch. Token `@<ảnh>N`/`@<video>N` ghi bằng điểm mã Unicode vì model chỉ nhận chữ Hán gốc.
 - Skill mới `video-reverse-engineer` (31 skill) + lệnh `video-studio reference decompose|review|apply-review|compare|videomd`: nối rea-video (JuneYaooo, Apache-2.0, SHA ghim) như gói ngoài ở venv riêng, VLM luôn tắt, môi trường lọc, không chép code; bỏ phần dựng của upstream. `assets/rhythm_align.py` đo độ khớp nhịp mẫu ↔ bản dựng. ASR/OCR gốc không đọc tiếng Việt.
 - `land-plot-map-video`: ranh scene mặc định theo số đo từ video mẫu, chuyển cảnh nhòe ở cuối mỗi scene + hoà trộn chọn lọc 0,25 s ở 2 ranh bản đồ→bản đồ (rea-video thấy 4 cảnh/3 cắt cứng như mẫu), `geo_cfg.py` luôn in UTF-8.
 - Skill mới `land-plot-map-video` (30 skill): video giới thiệu lô đất 9:16 trên bản đồ thật. Toạ độ KML → `geo_cfg.py` chiếu Web Mercator ra pixel và sinh CFG của template; `geo-capture.html` (MapLibre) chụp ảnh vệ tinh Esri top-down và nhà 3D OSM đúng toạ độ. Đã thử Esri + OpenFreeMap (chạy), OSM raster (không tải được), Mapbox/MapTiler/Google Static (chưa thử, cần key); điều khoản video thương mại của các nguồn ảnh chưa kiểm.

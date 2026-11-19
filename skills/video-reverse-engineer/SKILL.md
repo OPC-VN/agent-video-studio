@@ -50,6 +50,33 @@ Skill này **bổ trợ** `video-reference-analysis` (bản đồ beat có bằn
   Lấy thêm **các thời điểm «change»** trong `video/rhythm.md` làm ứng viên ranh beat.
 - Số liệu chất lượng của upstream được tinh chỉnh trên chính bộ mẫu của nó: chỉ là chỉ dấu, không phải bằng chứng độc lập.
 
+## Tài liệu tham khảo (bản dịch tiếng Việt từ rea-video)
+
+Các file dưới đây là bản **đã dịch và biên tập** từ tài liệu tiếng Trung của upstream (SHA ghim ở `upstream.json`); Haiku dịch, Fable soát thuật ngữ và đối chiếu từng mục các file lõi. Đọc đúng file cần dùng, không đọc hết.
+
+| File | Dùng khi |
+|---|---|
+| [`audio.md`](references/audio.md) | nguồn âm thanh: giọng, nhạc, âm nhấn; cách soát |
+| [`docs-agents.md`](references/docs-agents.md) | hướng dẫn phát triển của upstream |
+| [`docs-decompose.md`](references/docs-decompose.md) | `decompose` làm gì, từng bước |
+| [`docs-dev-aspects.md`](references/docs-dev-aspects.md) | cách thêm khía cạnh phân tích (dev) |
+| [`docs-dev-evaluation.md`](references/docs-dev-evaluation.md) | cách đánh giá độ chính xác (dev) |
+| [`docs-videomd.md`](references/docs-videomd.md) | định dạng gói VIDEO.md |
+| [`docs-what-it-detects.md`](references/docs-what-it-detects.md) | những gì máy phát hiện được và giới hạn |
+| [`eval-agent-test-job.md`](references/eval-agent-test-job.md) | đề bài thử nghiệm agent |
+| [`eval-agent-test-readme.md`](references/eval-agent-test-readme.md) | thử nghiệm agent của upstream |
+| [`eval-results.md`](references/eval-results.md) | kết quả đánh giá của upstream (tinh chỉnh trên chính bộ mẫu, chỉ là chỉ dấu) |
+| [`materials.md`](references/materials.md) | tư liệu thật của người dùng: nhận biết và soát |
+| [`memory.md`](references/memory.md) | ghi nhớ điều người dùng sửa và tuỳ chọn |
+| [`output-template.md`](references/output-template.md) | khuôn bàn giao cho người dùng |
+| [`quy-trinh-chi-tiet.md`](references/quy-trinh-chi-tiet.md) | quy trình gốc đầy đủ của skill upstream (dịch) |
+| [`review.md`](references/review.md) | xem ảnh rồi gộp kết luận; luật dung hợp; video đã chuyển mã |
+| [`taxonomy.md`](references/taxonomy.md) | 11 loại cách làm một cảnh, gia công AI, bảng dễ nhầm, ngưỡng |
+| [`install.md`](references/install.md) | cài rea-video ghim SHA vào venv riêng |
+| [`copy-pipeline.md`](references/copy-pipeline.md) | quy trình «copy → dựng giống» và tiêu chí đo |
+
+Tri thức về **phục dựng bằng model AI sinh video** (khả năng từng model, mẫu prompt, định tuyến) nằm ở `skills/video-remix-brief/references/rea-video/INDEX.md`: chỉ để lập kế hoạch, không chạy. Thuật ngữ đã chốt: 拆解 = phân rã, 复刻 = phục dựng, 实拍 = quay thật, 花字 = chữ nhấn, 转场 = chuyển cảnh.
+
 ## Dừng khi
 
 - Chưa rõ quyền dùng video mẫu mà sắp tái dùng tư liệu của nó.

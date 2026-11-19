@@ -73,7 +73,7 @@ Baseline, đích local và quy trình kiểm cập nhật: upstream.json và doc
 - rea-video (https://github.com/JuneYaooo/rea-video) — Copyright 2026 JuneYaooo, Apache-2.0, commit
   ac470773188574833b839be17abee6162201ddf9. Repo này KHÔNG chép code của nó: nó chạy như gói ngoài
   ghim SHA qua `video_studio/reference/rea.py`. `skills/video-reverse-engineer/` là bản ĐÃ DỊCH sang tiếng Việt,
-  rút gọn và biên tập lại từ `skills/rea-video/SKILL.md` (sửa đổi theo Apache-2.0 §4(b)); phần dựng và
+  rút gọn và biên tập lại từ `skills/rea-video/SKILL.md`; các file trong `skills/video-reverse-engineer/references/` và `skills/video-remix-brief/references/rea-video/` là bản dịch tiếng Việt (Haiku dịch, Fable soát) của tài liệu tiếng Trung, references, docs, capabilities và eval/RESULTS.md của upstream, mỗi file ghi rõ nguồn và SHA ở đầu, (sửa đổi theo Apache-2.0 §4(b)); phần dựng và
   chỉ dẫn cài app thương mại của upstream không được mang theo. Giấy phép: LICENSE-APACHE.
 
 Quy tắc cho các bản sau: mọi phần CHƯNG CẤT từ nguồn ngoài (skill, seed project, helper) phải được

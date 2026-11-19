@@ -130,3 +130,7 @@ spec rồi **dựng lại đủ**. Dựng lại riêng phần đổi: `chưa h�
 `T3`, `T4`, `T7` (nhân vật nhất quán, dùng khi quay phim ngắn) và `T8` ở
 [`production-techniques.md`](../video-routing/references/production-techniques.md). Dựng từ footage
 người dùng: [`video-edit`](../video-edit/SKILL.md).
+
+## Tri thức phục dựng từ rea-video (tham khảo)
+
+Khả năng từng model AI sinh video, mẫu prompt, định tuyến và cách chia đơn vị sinh: `references/rea-video/INDEX.md` (bản dịch tiếng Việt, chỉ để lập kế hoạch; repo này không chạy phần sinh video). Cách phân tích video mẫu bằng máy: skill `video-reverse-engineer`.
