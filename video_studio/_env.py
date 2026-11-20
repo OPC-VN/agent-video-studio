@@ -346,6 +346,22 @@ def runtime_venv_python(resource_key):
     return os.path.abspath(py) if os.path.isfile(py) else None
 
 
+def musetalk_child_env():
+    """Minimal process environment; no inherited credentials or user configuration."""
+    allowed = ("SystemRoot", "WINDIR", "PATH", "PATHEXT", "TEMP", "TMP", "USERNAME")
+    result = {name: os.environ[name] for name in allowed if name in os.environ}
+    result.update({"HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1",
+                   "HF_HUB_DISABLE_TELEMETRY": "1", "DO_NOT_TRACK": "1"})
+    return result
+
+
+def musetalk_ffmpeg_tools():
+    """Resolve tools without loading repository dotenv configuration."""
+    directory = (os.environ.get("FFMPEG_DIR") or "").strip()
+    search_path = _expand(directory) if directory else None
+    return shutil.which("ffmpeg", path=search_path), shutil.which("ffprobe", path=search_path)
+
+
 def has_marker(path):
     """Thư mục có phải một trạm video không: có station.json, có projects/, hoặc là trạm đời
     cũ (trước khi có station.json) có seed `demo/hyperframes.json`."""

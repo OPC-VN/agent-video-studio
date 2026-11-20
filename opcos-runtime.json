@@ -13,6 +13,22 @@
         "constraints": {"windows": ["locks/video-use-windows.txt"]}
       },
       "paths": {"dir_rel": 95, "file_rel": 149}
+    },
+    {
+      "scope": "own",
+      "category": "venvs",
+      "key": "musetalk-1-5",
+      "python": "3.12",
+      "install": {
+        "requirements": ["locks/musetalk-windows-cp312.txt"]
+      },
+      "paths": {"dir_rel": 115, "file_rel": 170}
+    },
+    {
+      "scope": "own",
+      "category": "engines",
+      "key": "musetalk-1-5",
+      "install": {"kind": "files"}
     }
   ]
 }

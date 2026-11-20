@@ -83,7 +83,7 @@ def test_needs_file_schema():
     doc = json.loads((ROOT / "opcos-runtime.json").read_text(encoding="utf-8"))
     assert doc["schema"] == "opcos-runtime-needs/1"
     assert doc["repoKey"] == "agent-video-studio" == _env.RUNTIME_REPO_KEY
-    (need,) = doc["needs"]
+    (need,) = [entry for entry in doc["needs"] if entry["key"] == "video-use"]
     assert (need["scope"], need["category"], need["key"]) == ("own", "venvs", "video-use")
     assert need["paths"] == {"dir_rel": 95, "file_rel": 149}
     inst = need["install"]

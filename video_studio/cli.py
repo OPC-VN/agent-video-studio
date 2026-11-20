@@ -26,6 +26,7 @@ COMMANDS = {
                   "video mẫu → khung, lưới, transcript, hồ sơ quyền, kiểm tài sản "
                   "(init|frames|tiles|transcribe|fetch|audit|lyric-audit|decompose|review|apply-review|compare|videomd)"),
     "preview": ("video_studio.preview", "xem trước một project HyperFrames"),
+    "avatar": ("video_studio.musetalk_cmd", "MuseTalk cục bộ — doctor | render"),
     "narrate": ("video_studio.narrate", "video câm + lời dẫn → MP4 có giọng (qua voice-studio)"),
     "export":  ("video_studio.station:export_main",
                 "đóng gói trạm (hoặc --personal: tài sản project) để chuyển máy"),

@@ -1,0 +1,14 @@
+# Inputs for the Windows x86-64 CPython 3.12 MuseTalk wheel lock.
+# CUDA wheels come from the PyTorch publisher index. All other wheels are from PyPI.
+torch @ https://download-r2.pytorch.org/whl/cu128/torch-2.10.0%2Bcu128-cp312-cp312-win_amd64.whl#sha256=fbde8f6a9ec8c76979a0d14df21c10b9e5cab6f0d106a73ca73e2179bc597cae
+torchvision @ https://download-r2.pytorch.org/whl/cu128/torchvision-0.25.0%2Bcu128-cp312-cp312-win_amd64.whl#sha256=068e519838b4a8b32a09521244b170edd8c2ac9eeb6538b7bf492cd70e57ebf5
+accelerate==1.12.0
+diffusers==0.36.0
+numpy==2.2.6
+onnxruntime==1.24.4
+opencv-python-headless==4.13.0.92
+pillow==12.1.1
+safetensors==0.7.0
+soundfile==0.13.1
+tqdm==4.67.3
+transformers==4.57.6
