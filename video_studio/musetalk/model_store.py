@@ -130,9 +130,11 @@ def verify(path: Path, item: Artifact) -> None:
     regular_path(path)
     if not path.is_file() or path.stat().st_size != item.size:
         raise ValueError(f"Missing or wrong-sized model: {item.dest}.")
+    digest = hashlib.sha256()
     with path.open("rb") as src:
-        digest = hashlib.file_digest(src, "sha256").hexdigest()
-    if digest != item.digest:
+        while block := src.read(CHUNK_SIZE):
+            digest.update(block)
+    if digest.hexdigest() != item.digest:
         raise ValueError(f"SHA-256 mismatch for {item.dest}.")
 
 
