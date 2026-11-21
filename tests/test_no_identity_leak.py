@@ -67,8 +67,8 @@ EMAIL_ALLOW = {
 ALLOW = {
     # Ghi công tác giả + địa chỉ repo công khai: đúng chỗ, là điều kiện của license.
     (".claude-plugin/marketplace.json", "tac-gia"): 4,
-    (".claude-plugin/plugin.json", "tac-gia"): 3,
-    (".codex-plugin/plugin.json", "tac-gia"): 3,
+    (".claude-plugin/plugin.json", "tac-gia"): 2,
+    (".codex-plugin/plugin.json", "tac-gia"): 2,
     # `author.url` của manifest — cùng loại với ghi công ở trên, và CHỈ ở đó.
     (".claude-plugin/marketplace.json", "mien"): 2,
     (".claude-plugin/plugin.json", "mien"): 1,
@@ -92,8 +92,8 @@ ALLOW = {
     ("NOTICE", "tac-gia"): 1,
     # +2: URL repo và URL INSTALL.md trong prompt cài đặt chép từ INSTALL.md.
     # +4 mỗi README: mục Author/Tác giả (website, GitHub, email) — chủ dự án chủ động công khai (18/10).
-    ("README.md", "tac-gia"): 9,
-    ("README.vi.md", "tac-gia"): 9,
+    ("README.md", "tac-gia"): 6,
+    ("README.vi.md", "tac-gia"): 6,
     # Liên kết tới trang giới thiệu công khai của chính repo này, ở đầu README và
     # trong danh sách tài liệu — cùng loại với `author.url` của manifest.
     ("README.md", "mien"): 3,       # +1: website trong mục Author
@@ -101,20 +101,16 @@ ALLOW = {
     # Trang giới thiệu công khai (GitHub Pages): địa chỉ kho mã, tài liệu và các trang cùng họ
     # là NỘI DUNG của trang, không phải rò rỉ. Vẫn khoá theo số đếm: thêm một liên kết là đỏ,
     # nên không ai nhét được đường dẫn máy hay tên thật vào đây mà không bị nhìn thấy.
-    ("docs/index.html", "tac-gia"): 22,
+    ("docs/index.html", "tac-gia"): 9,
     ("docs/index.html", "mien"): 9,
     # Địa chỉ kho mã công khai trong lệnh `git clone` (Windows + macOS) — người mới chép
     # nguyên lệnh, nên nó phải là URL thật của repo, không phải chỗ trống để tự điền.
     # Hai lệnh clone + hai URL trong prompt cài đặt (bản gốc của prompt ở INSTALL.md, các nơi
     # khác chép nguyên văn — tests/test_install_docs.py giữ chúng khớp nhau).
-    ("START-HERE.md", "tac-gia"): 4,
     # INSTALL.md thêm hai lệnh clone repo giọng `agent-voice-studio` cạnh repo này (mục 5b).
-    ("INSTALL.md", "tac-gia"): 10,
     # Cổng tài liệu cài đặt khai đúng hai URL chính thức mà prompt được phép trỏ tới.
     # + mẫu URL GitHub để đối chiếu link của trang /install/ với file thật trong repo.
-    ("tests/test_install_docs.py", "tac-gia"): 3,
     # Trang /install/: hai prompt chép từ INSTALL.md (4 URL) + 4 liên kết tới file của repo.
-    ("docs/install/index.html", "tac-gia"): 8,
 }
 
 
