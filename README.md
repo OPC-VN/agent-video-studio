@@ -99,9 +99,9 @@ means your video carries somebody else's name.
 
 ```text
 Install Agent Video Studio on this machine (Windows or macOS) for the AI app you are running in.
-Single source: https://github.com/ducnguyen221/agent-video-studio
+Single source: https://github.com/OPC-VN/agent-video-studio
 First read the agent guide at
-https://raw.githubusercontent.com/ducnguyen221/agent-video-studio/main/INSTALL.md
+https://raw.githubusercontent.com/OPC-VN/agent-video-studio/main/INSTALL.md
 (if the link cannot be opened, clone the repo and read its INSTALL.md), then follow every step:
 check the machine, ask me before installing software or anything needing admin rights, clone to a
 safe folder (not OneDrive/iCloud/Desktop), install into the repo's .venv, set up the station, run
@@ -115,7 +115,7 @@ do next.
 Or by hand ([START-HERE.md](START-HERE.md) has the exact Windows and macOS commands):
 
 ```bash
-git clone https://github.com/ducnguyen221/agent-video-studio
+git clone https://github.com/OPC-VN/agent-video-studio
 cd agent-video-studio
 python3.12 -m venv .venv && . .venv/bin/activate   # Windows: py -3 -m venv .venv; .venv\Scripts\activate
 pip install -e ".[test]"

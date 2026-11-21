@@ -10,9 +10,9 @@ Mở ứng dụng AI bạn đang dùng (Claude Code, Codex hoặc Antigravity) v
 
 ```text
 Hãy cài Agent Video Studio lên máy này (Windows hoặc macOS) cho chính ứng dụng AI bạn đang chạy.
-Nguồn duy nhất: https://github.com/ducnguyen221/agent-video-studio
+Nguồn duy nhất: https://github.com/OPC-VN/agent-video-studio
 Đọc trước hướng dẫn dành cho agent tại
-https://raw.githubusercontent.com/ducnguyen221/agent-video-studio/main/INSTALL.md
+https://raw.githubusercontent.com/OPC-VN/agent-video-studio/main/INSTALL.md
 (không mở được link thì clone repo rồi đọc INSTALL.md trong đó) và làm đúng, đủ các bước:
 kiểm máy, hỏi tôi trước khi cài phần mềm hoặc cần quyền admin, clone vào thư mục an toàn
 (không OneDrive/iCloud/Desktop), cài vào .venv của repo, dựng trạm, chạy doctor, thử bài mẫu.
@@ -33,7 +33,7 @@ Windows (PowerShell):
 
 ```powershell
 $Parent = $HOME          # thư mục cha bạn chọn cho các repo studio (tên gì cũng được)
-git clone https://github.com/ducnguyen221/agent-video-studio (Join-Path $Parent 'agent-video-studio')
+git clone https://github.com/OPC-VN/agent-video-studio (Join-Path $Parent 'agent-video-studio')
 cd (Join-Path $Parent 'agent-video-studio')
 py -3 -m venv .venv
 .\.venv\Scripts\python -m pip install -e .
@@ -49,7 +49,7 @@ macOS (Terminal) — cần trước Xcode Command Line Tools (`xcode-select --in
 
 ```sh
 PARENT="$HOME"           # thư mục cha bạn chọn cho các repo studio (tên gì cũng được)
-git clone https://github.com/ducnguyen221/agent-video-studio "$PARENT/agent-video-studio"
+git clone https://github.com/OPC-VN/agent-video-studio "$PARENT/agent-video-studio"
 cd "$PARENT/agent-video-studio"
 python3.12 -m venv .venv
 .venv/bin/python -m pip install -e .

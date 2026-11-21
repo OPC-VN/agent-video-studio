@@ -15,8 +15,8 @@ import pytest
 from video_studio import cli
 
 ROOT = Path(__file__).resolve().parent.parent
-OFFICIAL_REPO = "https://github.com/ducnguyen221/agent-video-studio"
-RAW_INSTALL_URL = "https://raw.githubusercontent.com/ducnguyen221/agent-video-studio/main/INSTALL.md"
+OFFICIAL_REPO = "https://github.com/OPC-VN/agent-video-studio"
+RAW_INSTALL_URL = "https://raw.githubusercontent.com/OPC-VN/agent-video-studio/main/INSTALL.md"
 PROMPT_START = {
     "vi": "Hãy cài Agent Video Studio lên máy này",
     "en": "Install Agent Video Studio on this machine",
@@ -225,7 +225,7 @@ def test_install_page_is_host_neutral_and_honest_about_claude_desktop():
 def test_install_page_links_only_to_real_repo_files():
     """Pages chỉ phục vụ `docs/`, nên trang trỏ file ở gốc repo qua URL GitHub — file đó phải có."""
     missing = []
-    for path in re.findall(r"github\.com/ducnguyen221/agent-video-studio/(?:blob|tree)/main/([^\"#]+)",
+    for path in re.findall(r"github\.com/OPC-VN/agent-video-studio/(?:blob|tree)/main/([^\"#]+)",
                            read(PAGE)):
         if not (ROOT / path).exists():
             missing.append(path)
