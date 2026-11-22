@@ -40,6 +40,8 @@ python -m video_studio avatar render --source footage.mp4 --audio narration.wav 
 
 Truyền đường dẫn trong project ở trạm video đã chọn. Dùng video MP4/MOV hoặc ảnh PNG/JPEG có một mặt rõ, tối đa 1280×720, cùng WAV PCM16 mono 16 kHz. Mỗi lần chạy nhận tối đa 30 giây lời thoại và 30 giây footage. Chuẩn hóa footage về 25 fps. Chọn tên MP4 chưa tồn tại. Với audio 30 giây, kiểm đủ 750 khung hình ở 25 fps, tiếng và hình cùng bắt đầu gần mốc 0 và kết thúc gần mốc 30 giây. Soi đoạn mở đầu, giữa, cuối và mép lặp, chú ý môi khi nghỉ, cử chỉ và viền ghép mặt.
 
+`--bbox-shift N` (số nguyên −30..30, mặc định 0) dịch điểm giữa mặt như tham số `bbox_shift` của MuseTalk gốc: số âm cắt khung mặt cao hơn để miệng mở ít, lộ răng ít; số dương làm miệng mở nhiều hơn. Thử 22/11/2026 trên một clip 720×720 có giọng tiếng Việt: −10 đến −15 giảm lộ răng thấy được bằng mắt, nhưng môi vẫn hé khi nghỉ.
+
 Worker có trần tổng thời gian 60 phút và trần 5 phút không thấy tiến độ. Khi quá hạn, lệnh dừng cây tiến trình và báo rõ loại timeout.
 
 ## Bản thử trên Windows

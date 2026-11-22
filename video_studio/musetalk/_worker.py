@@ -18,7 +18,7 @@ def _command(argv):
     return result.stdout
 
 
-def render(source, audio, output, models, ffmpeg, ffprobe, expected_frames, source_kind):
+def render(source, audio, output, models, ffmpeg, ffprobe, expected_frames, source_kind, bbox_shift="0"):
     started = time.monotonic()
     print("Avatar: loading the engine", file=sys.stderr, flush=True)
     def deny_network(event, args):
@@ -84,7 +84,7 @@ def render(source, audio, output, models, ffmpeg, ffprobe, expected_frames, sour
             for index, frame in enumerate(frames):
                 if index % 25 == 0:
                     print(f"Avatar: locating face {index + 1}/{len(frames)}", file=sys.stderr, flush=True)
-                boxes.append(estimator.crop(frame))
+                boxes.append(estimator.crop(frame, int(bbox_shift)))
             latents = []
             for frame, (x1, y1, x2, y2) in zip(frames, boxes):
                 crop = cv2.resize(frame[y1:y2, x1:x2], (256, 256), interpolation=cv2.INTER_LANCZOS4)

@@ -21,7 +21,7 @@ class PoseEstimator:
             "", (320, 320), score_threshold=0.9,
         )
 
-    def crop(self, frame):
+    def crop(self, frame, bbox_shift=0):
         import numpy as np
 
         height, width = frame.shape[:2]
@@ -38,4 +38,4 @@ class PoseEstimator:
         tensor = np.ascontiguousarray(image.transpose(2, 0, 1)[None])
         x_scores, y_scores = self.session.run(None, {"input": tensor})
         points = decode_simcc(x_scores[0, 23:91], y_scores[0, 23:91], width, height)
-        return face_box(points, detected, width, height)
+        return face_box(points, detected, width, height, bbox_shift)

@@ -42,6 +42,16 @@ def test_face_box_uses_landmark_midpoint_and_v15_margin():
     assert geometry.face_box(points, (10, 10, 90, 95), 100, 100) == (20, 10, 80, 100)
 
 
+def test_face_box_bbox_shift_moves_upper_bound_like_upstream():
+    geometry = importlib.import_module("video_studio.musetalk.geometry")
+    points = [(20, 30)] * 68
+    points[29] = (40, 50)
+    points[67] = (80, 90)
+    # midpoint 50-5=45, upper = 45-(90-45) = 0; midpoint 50+5=55, upper = 55-35 = 20
+    assert geometry.face_box(points, (10, 10, 90, 95), 100, 100, -5) == (20, 0, 80, 100)
+    assert geometry.face_box(points, (10, 10, 90, 95), 100, 100, 5) == (20, 20, 80, 100)
+
+
 def test_face_box_uses_detector_for_invalid_landmarks():
     geometry = importlib.import_module("video_studio.musetalk.geometry")
     assert geometry.face_box([(10, 10)] * 68, (5, 5, 40, 40), 100, 100) == (5, 5, 40, 50)

@@ -57,3 +57,11 @@ def test_image_source_requires_matching_magic(tmp_path):
     image.write_bytes(b"not a png")
     with pytest.raises(ValueError):
         source.kind(image)
+
+
+@pytest.mark.parametrize("shift", [31, -31, 2.5, True])
+def test_runner_rejects_bbox_shift_outside_contract(tmp_path, shift):
+    from video_studio.musetalk import runner
+
+    with pytest.raises(contract.ContractError):
+        runner.run(tmp_path / "s.mp4", tmp_path / "a.wav", tmp_path / "o.mp4", shift)

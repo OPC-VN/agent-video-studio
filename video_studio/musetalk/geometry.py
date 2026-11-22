@@ -30,13 +30,17 @@ def decode_simcc(x, y, width: int, height: int) -> list[tuple[float, float]]:
     return result
 
 
-def face_box(points, detector_box, width, height):
-    """Derive the v1.5 crop from 68 face points, falling back to detection."""
+def face_box(points, detector_box, width, height, bbox_shift=0):
+    """Derive the v1.5 crop from 68 face points, falling back to detection.
+
+    bbox_shift moves the nose midpoint like upstream MuseTalk: negative values
+    give a taller crop and a less open mouth, positive values open it more.
+    """
     if len(points) != 68 or len(detector_box) != 4 or width <= 0 or height <= 0:
         raise ValueError("invalid landmarks, detector box or frame dimensions")
     xs = [int(p[0]) for p in points]
     ys = [int(p[1]) for p in points]
-    midpoint = ys[29]
+    midpoint = ys[29] + int(bbox_shift)
     x1, y1, x2, y2 = min(xs), max(0, midpoint - (max(ys) - midpoint)), max(xs), max(ys)
     if x1 < 0 or x2 <= x1 or y2 <= y1:
         x1, y1, x2, y2 = map(int, detector_box)

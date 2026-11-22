@@ -34,7 +34,12 @@ def _check_path(path: Path, station: Path) -> Path:
     return path
 
 
-def run(source: Path, audio: Path, output: Path):
+BBOX_SHIFT_LIMIT = 30
+
+
+def run(source: Path, audio: Path, output: Path, bbox_shift: int = 0):
+    if isinstance(bbox_shift, bool) or not isinstance(bbox_shift, int) or abs(bbox_shift) > BBOX_SHIFT_LIMIT:
+        raise ContractError(f"bbox_shift must be an integer from -{BBOX_SHIFT_LIMIT} to {BBOX_SHIFT_LIMIT}.")
     station_value, _ = _env.resolve_station()
     if not station_value or not Path(station_value).is_dir():
         raise StationMissing("Select an existing video station before running the avatar engine.")
@@ -71,7 +76,7 @@ def run(source: Path, audio: Path, output: Path):
     _verify_models(engine)
     worker = Path(__file__).with_name("_worker.py")
     command = [python, "-I", "-B", str(worker), str(source), str(audio), str(output),
-               str(engine / "models"), ffmpeg, ffprobe, str(expected_frames), source_kind]
+               str(engine / "models"), ffmpeg, ffprobe, str(expected_frames), source_kind, str(bbox_shift)]
     completed = worker_process.run(command, _env.musetalk_child_env(), output.parent)
     if completed.timeout:
         label = "inactivity" if completed.timeout == "idle" else "total duration"

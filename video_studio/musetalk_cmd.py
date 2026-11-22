@@ -16,7 +16,7 @@ def _execute(args):
         contract.log("MuseTalk 1.5 sẵn sàng.")
         return info
 
-    result = runner.run(args.source, args.audio, args.out) or {}
+    result = runner.run(args.source, args.audio, args.out, args.bbox_shift) or {}
     contract.log(f"Đã xuất avatar: {args.out}")
     return {**result, "output": str(args.out)}
 
@@ -30,6 +30,8 @@ def main(argv=None):
     render.add_argument("--source", "--video", required=True, type=Path, help="Ảnh hoặc video local")
     render.add_argument("--audio", required=True, type=Path, help="File WAV lời thoại")
     render.add_argument("--out", required=True, type=Path, help="File MP4 mới")
+    render.add_argument("--bbox-shift", type=int, default=0,
+                        help="Dịch điểm giữa mặt (px, -30..30): âm = miệng mở ít hơn, dương = mở nhiều hơn")
     render.add_argument("--json", action="store_true")
     args, rc = contract.parse(parser, argv)
     if args is None:
