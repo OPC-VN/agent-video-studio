@@ -77,7 +77,7 @@ Trên máy có `OPCOS_WORKSPACES`, `--mode embedded --yes` chọn trạm trong r
   [tìm ảnh cho video tin](references/news-image-search.md). Project HyperFrames tự dựng: `render --project-dir`.
 - **Đã có video câm, cần giọng**: `narrate`. Ghim `--profile`, đừng dùng `--instruct` cho bản
   giao (mỗi câu một giọng khác).
-- **Ảnh hoặc footage cần nói theo WAV mới**: dùng skill `local-avatar` và `video-studio avatar`. Chạy `avatar doctor` cho engine MuseTalk cục bộ rồi `avatar render`.
+- **Avatar nói** (mặt người dùng hoặc người đã đồng ý nói theo WAV mới; mở bài, kết bài, khung góc xen slide; hồ sơ avatar dùng lại): đọc skill `avatar-create` TRƯỚC, kể cả khi chỉ cần một lệnh `video-studio avatar`. Skill sở hữu cổng đồng ý, lối đi optimize → render → qa và hồ sơ trong trạm.
 - **Có footage quay thật**: `edit` → đọc skill `video-edit` trước khi cắt; quy trình là hỏi →
   chốt → dựng, không phải một nút bấm.
 - **Cần xử lý một vùng hoặc logo nhìn thấy trong video đã có**: đọc skill `video-cleanup`; chọn

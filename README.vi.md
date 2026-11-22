@@ -59,7 +59,7 @@ Các mẫu là tham chiếu để chuyển thể, không phải template đã ki
 | `video-studio init` | Dựng trạm (`embedded` trong repo, hoặc `separate` ngoài repo), ghi `station.json`. `--migrate` nhận một trạm bố cục cũ (và gỡ bản skill bản cũ đã chép vào đó), `--dry-run` in kế hoạch không ghi gì, `--undo` đảo lần chạy gần nhất theo nhật ký. |
 | `video-studio render` | spec JSON (`schema_version: 1`) → MP4 theo template: `news`, `news-weekly`, `topstory`, `repo-today`, hoặc `effect-preview`. Template tin cần `[voice]` và GSAP ghim trong trạm (hoặc file thay thế đã kiểm); thiếu GSAP trả mã 3. `effect-preview` cũng dùng GSAP ghim và dựng lớp hiệu ứng tổng hợp 16:9 không âm thanh. Kiểm HTML giới hạn không phải sandbox mạng. |
 | `video-studio probe` | Render thử một trang 320×180 dài 0,5 s, không tài nguyên ngoài (vài giây trên máy khoẻ). Môi trường render kẹt (quá giờ hoặc `Navigation timeout`) ⇒ mã 1, lỗi mở đầu `RENDER_STUCK:` — khởi động lại máy. `--heal` chụp gói chẩn đoán, giết Chrome/HyperFrames mồ côi, xoá profile tạm cũ rồi thử lại (60 s, rồi 600 s) trước khi chịu thua. Pipeline chạy lệnh này trước các bước tốn kém. |
-| `video-studio avatar` | Ảnh hoặc footage + WAV → video nhép theo giọng bằng MuseTalk cục bộ trên Windows. [Cài và kiểm](docs/MUSETALK.md). |
+| `video-studio avatar` | Avatar nói từ footage của chính bạn + WAV, chạy cục bộ trên Windows: `doctor`, `render --engine latentsync\|musetalk`, `optimize --task normalize\|mouth`, `qa` (SyncNet), `profile` (hồ sơ dùng lại, có bản ghi đồng ý, nằm trong trạm). [LatentSync + GFPGAN](docs/LATENTSYNC.md) · [MuseTalk bản nháp](docs/MUSETALK.md) · skill `avatar-create`. |
 | `video-studio narrate` | video câm (hoặc cả một project, render trước) + lời dẫn → một MP4 hoàn chỉnh có giọng và nhạc nền tuỳ chọn, qua trạm giọng. |
 | `video-studio preview` | Mở studio xem trước của HyperFrames cho một project — bằng **đúng bản đã ghim**, nên thứ bạn soi chính là thứ sẽ render. |
 | `video-studio edit` | Cắt footage quay thật: bóc lời tại máy, gom cụm thành markdown đọc được, rồi dựng theo EDL kèm chỉnh màu, overlay, phụ đề và chuẩn âm lượng. Cache kiểm tra snapshot tạm của bytes nguồn và cài đặt ASR; mỗi lượt đều chép source vào ổ tạm, kể cả cache hit, nên vẫn tốn I/O. Nếu source lớn hơn một nửa dung lượng trống của ổ tạm, lệnh dừng với lỗi rõ ràng. Model/đường dẫn weights tùy biến được xem là chưa rõ và không dùng cache; batch có tên transcript bị trùng sẽ bị từ chối trước khi đổi output. Transcript cũ chưa có metadata cache sẽ được bóc lại. Helper chưng cất từ `video-use` (MIT); cũng gọi được bản upstream đã cài ở trạm. |
@@ -151,7 +151,7 @@ chỉ nơi đặt reference, mã dùng lại và template mới, cùng cách ghi
 [Recipe GSAP core draw](skills/video-theme-library/references/gsap-core-draw.md) hiện là một
 preset candidate, chưa phải thư viện template GSAP hoàn chỉnh.
 
-`skills/` có **36 skill**: mười lăm skill của chính repo này (`video-routing`, `video-edit`, `local-avatar`,
+`skills/` có **36 skill**: mười lăm skill của chính repo này (`video-routing`, `video-edit`, `avatar-create`,
 `video-cleanup`, `video-theme-library`, `video-reference-analysis`,
 `video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `video-storyboard-design`, `line-art-motion`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, [`infographic-production`](skills/infographic-production/SKILL.md)) và **21 skill chưng cất từ bộ skill hiện hành của HyperFrames**
 (`skills/hyperframes/`). Bộ 21 này là bản **đã dịch sang tiếng Việt, rút gọn và biên tập lại** từ

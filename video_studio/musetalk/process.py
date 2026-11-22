@@ -29,7 +29,7 @@ def _tail(file):
     return file.read(TAIL_BYTES).decode("utf-8", "replace")
 
 
-def run(argv, env, directory: Path, *, total=TOTAL_SECONDS, idle=IDLE_SECONDS):
+def run(argv, env, directory: Path, *, total=TOTAL_SECONDS, idle=IDLE_SECONDS, cwd=None):
     """Keep worker logs inside the station and return elapsed time, deadline and exit separately."""
     started = time.monotonic()
     with tempfile.TemporaryFile(dir=directory) as output, tempfile.TemporaryFile(dir=directory) as errors:
@@ -39,7 +39,7 @@ def run(argv, env, directory: Path, *, total=TOTAL_SECONDS, idle=IDLE_SECONDS):
         )
         try:
             process = subprocess.Popen(
-                argv, env=env, stdin=subprocess.DEVNULL, stdout=output, stderr=errors, **group
+                argv, env=env, cwd=cwd, stdin=subprocess.DEVNULL, stdout=output, stderr=errors, **group
             )
         except OSError as exc:
             return WorkerOutcome(None, time.monotonic() - started, None, "", str(exc), spawn_failed=True)

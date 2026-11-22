@@ -1,5 +1,7 @@
 # MuseTalk 1.5 trên Windows
 
+> Từ bản này `avatar render` mặc định dùng LatentSync; MuseTalk cần `--engine musetalk`. Cần khẩu hình khớp hơn và miệng khép khi im lặng: xem [LatentSync 1.5 + GFPGAN](LATENTSYNC.md) (chậm hơn khoảng 6–9 lần). Quy trình đầy đủ: skill `avatar-create`.
+
 Lệnh `video-studio avatar` nhận footage hoặc ảnh và file giọng thật. MuseTalk chỉnh khẩu hình theo WAV. Footage ngắn có thể chạy xuôi rồi ngược để phủ thời lượng audio. Chọn đoạn ít động tác lớn để điểm đổi chiều ít lộ.
 
 ## Bố trí
@@ -34,8 +36,8 @@ Dùng `python -I -B scripts/install_musetalk_models.py --engine-dir $engine --ve
 ## Chạy và nghiệm thu
 
 ```powershell
-python -m video_studio avatar doctor --json
-python -m video_studio avatar render --source footage.mp4 --audio narration.wav --out avatar.mp4 --json
+python -m video_studio avatar doctor --engine musetalk --json
+python -m video_studio avatar render --engine musetalk --source footage.mp4 --audio narration.wav --out avatar.mp4 --json
 ```
 
 Truyền đường dẫn trong project ở trạm video đã chọn. Dùng video MP4/MOV hoặc ảnh PNG/JPEG có một mặt rõ, tối đa 1280×720, cùng WAV PCM16 mono 16 kHz. Mỗi lần chạy nhận tối đa 30 giây lời thoại và 30 giây footage. Chuẩn hóa footage về 25 fps. Chọn tên MP4 chưa tồn tại. Với audio 30 giây, kiểm đủ 750 khung hình ở 25 fps, tiếng và hình cùng bắt đầu gần mốc 0 và kết thúc gần mốc 30 giây. Soi đoạn mở đầu, giữa, cuối và mép lặp, chú ý môi khi nghỉ, cử chỉ và viền ghép mặt.

@@ -7,6 +7,8 @@ kiểm).
 
 ## Chưa phát hành
 
+- **Avatar:** skill `local-avatar` đổi tên thành `avatar-create` (nhánh của `video-routing`), kèm 3 reference: `avatar-profile` (đồng ý, tự quay clip nền, chuẩn hoá, prompt cho công cụ tạo video AI, mẫu hồ sơ), `avatar-quality` (cổng tối thiểu, thang SyncNet, A/B, triệu chứng → sửa), `avatar-voice` (nhận giọng từ voice-studio, chuẩn hoá WAV, ghép bản mix). Lệnh `video-studio avatar` thêm `render --engine latentsync|musetalk` (**thay đổi phá vỡ:** mặc định đổi từ MuseTalk sang LatentSync; MuseTalk cần `--engine musetalk`), `optimize --task normalize|mouth`, `qa` (SyncNet), `profile new|list|show|update|revoke` (hồ sơ trong `<trạm>/avatars/`, bắt buộc bản ghi đồng ý; `render --profile` từ chối hồ sơ đã thu hồi hoặc clip đã đổi). LatentSync và GFPGAN vẫn cài tay theo `docs/LATENTSYNC.md`, chưa có receipt `opcos-runtime`. Đã chạy thật `qa`, `optimize`, `render` trên RTX 4070.
+
 - Line-art: thêm toán chuyển động tua được, ba component và hướng dẫn lắp cảnh; component cần helper cùng thư mục. Đã dựng cảnh ba component và dùng lại walker trong project Windows riêng; chuẩn tất định chung, kiểm phát liên tục và bundle nhiều file còn mở.
 
 - SPR-16: bổ sung contract và giao diện template nhiều file, kiểm digest và snapshot bytes; writer hiện bị chặn trên Windows và macOS/Linux do chưa chứng minh được tạo đích an toàn. Chưa xác minh POSIX, host hoặc render thật; xem `docs/CONTRACT.md`.
