@@ -57,6 +57,7 @@ import soundfile as sf
 from voice_studio import av, engine, profiles
 
 from ... import _env, _paths, projects, render
+from ... import voice as _voice
 from ...contract import ContractError, StationMissing
 from . import news_video as nv
 
@@ -640,7 +641,7 @@ def _caption_chunks(text, max_len=68):
     """Tách narration thành các MẨU PHỤ ĐỀ ngắn (theo câu; câu dài cắt tiếp theo dấu phẩy/
     khoảng trắng) để mỗi dòng caption ngắn gọn, vừa khung short."""
     out = []
-    for s in _CAP_SPLIT.split((text or "").strip()):
+    for s in _CAP_SPLIT.split(_voice.strip_markers((text or "").strip())):
         s = s.strip()
         while len(s) > max_len:
             cut = s.rfind(",", 30, max_len)
@@ -706,7 +707,7 @@ def _synth_section_beats(model, sec, prompt, sr, gap=0.3):
     def add(kind, idx, text):
         nonlocal off
         a = nv._synth_long(model, text, prompt)
-        beats.append((kind, idx, off, (text or "").strip()))  # keep text for transcript caption
+        beats.append((kind, idx, off, _voice.strip_markers((text or "").strip())))  # chữ phụ đề, đã gỡ marker
         parts.append(a)
         parts.append(z)
         off += len(a) / sr + gap
@@ -1248,8 +1249,7 @@ def main():
     args = ap.parse_args()
 
     model = engine.load()
-    prompt = (profiles.get_clone_prompt(model, args.profile or None) or
-              profiles.get_clone_prompt(model, profiles.ensure_default(model)))
+    prompt = _voice.load_voice(model, args.profile or None)
     print(f"[top-story] voice: {args.profile or profiles.get_default()}", flush=True)
 
     if args.batch:

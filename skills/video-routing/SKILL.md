@@ -92,6 +92,23 @@ Trên máy có `OPCOS_WORKSPACES`, `--mode embedded --yes` chọn trạm trong r
 - **Infographic tĩnh hoặc lớp infographic dùng trong video**: đọc [infographic-production](../infographic-production/SKILL.md) để thiết kế quan hệ thông tin, tạo ảnh thành phần và ghép chữ chỉnh sửa được. Với infographic tĩnh thì không chạy engine video.
 - **Deck HTML bài giảng/trình chiếu cần QA bố cục**: ngoài phạm vi video — plugin `agent-design-studio`, skill `design-routing`, mode `static-artifact`.
 
+## Bước 4 — lời đọc (narration) bằng giọng clone
+
+Mọi video có giọng đọc cần lời viết cho **tai**, không chép văn viết. Trước khi soạn `narration`, `say`,
+`lead`, `intro`, `outro`, `narration_short` hay file `--text`, đọc skill `voice-routing` của repo
+`agent-voice-studio` (nguồn chuẩn duy nhất, đừng chép lại ở đây):
+
+- **Chuẩn hoá từ nước ngoài, số phiên bản, ngày giờ, tên miền** ngay trong lời đọc (`vietnamese-tts-script.md`).
+- **Sắc thái = marker trong lời, không phải đổi giọng.** Đa dạng đến từ `[ten-marker]` đặt ở đầu câu; giọng
+  giữ nguyên. Tên marker lấy từ profile (`voice-studio profiles list --json` cho số marker;
+  tên nằm trong `<profile>.profile.json` của thư mục giọng), **không tự đặt tên**. Phân bổ theo bố cục
+  video, kiểm danh sách ở mục "Phân bổ sắc thái theo bố cục video" của `vietnamese-tts-script.md`.
+- Marker chỉ đặt ở **trường chỉ để đọc** (`narration`, `say`, `intro`, `outro`, `narration_short`, nội dung
+  `narrate --text/--file`). Trường vừa đọc vừa hiện lên màn hình hay web (`summary`/`tldr` của bản tin
+  ngày) thì KHÔNG đặt marker. Engine dựng bản tin gỡ marker khỏi phụ đề và gạch đầu dòng, nhưng đó là
+  lưới an toàn, không phải lý do để viết marker vào chữ hiển thị.
+- Profile không có marker thì viết lời không marker; marker lạ bị gỡ, không bao giờ được đọc to.
+
 ## Biến môi trường
 
 `VIDEO_STATION` (gốc trạm; tên cũ `VIDEO_ROOT`) · `HYPERFRAMES_VERSION` (bản cụ thể x.y.z) ·

@@ -48,6 +48,7 @@ except Exception:
 
 from voice_studio import engine, profiles
 
+from ... import voice as _voice
 from . import news_video
 
 
@@ -118,8 +119,7 @@ def main():
 
     print(f"[daily-video] {len(vo['segments'])} segments · date {display}", flush=True)
     model = engine.load()
-    prompt = (profiles.get_clone_prompt(model, args.profile or None) or
-              profiles.get_clone_prompt(model, profiles.ensure_default(model)))
+    prompt = _voice.load_voice(model, args.profile or None)
     print(f"[daily-video] voice profile: {args.profile or profiles.get_default()}", flush=True)
 
     # range_ carries the display date so the cover sub2 / epi show it (week left empty).

@@ -84,7 +84,8 @@ def test_generated_news_html_keeps_supported_svg(news, tmp_path, monkeypatch):
     import news_harness as harness
 
     captured = harness.install(monkeypatch, news, tmp_path / 'generated')
-    monkeypatch.setattr(news.engine, 'synth', lambda *args, **kwargs: ([0] * 24000, 24000), raising=False)
+    from video_studio import voice as voice_mod
+    monkeypatch.setattr(voice_mod, 'synth_text', lambda *args, **kwargs: [0] * 24000)
     news.make({'title': 'Tin', 'summary': 'Tin mới.'}, str(tmp_path / 'daily.mp4'), '2026-01-02',
               model=harness.MODEL, brand=harness.MIN_BRAND)
     for short in (False, True):

@@ -38,6 +38,7 @@ import numpy as np
 import soundfile as sf
 from voice_studio import engine, profiles
 
+from ... import voice as _voice
 from . import news_video
 
 LANG = "Vietnamese"
@@ -66,7 +67,9 @@ def _synth(model, text, prompt):
     if not text:
         return np.zeros(int(model.sampling_rate * 0.2), dtype=np.float32)
     if prompt is not None:
-        a = model.generate(text=text, language=LANG, voice_clone_prompt=prompt)[0]
+        # `_voice.synth_text`: marker (nếu có) được gỡ/áp đúng, không bao giờ bị đọc to. Bản tóm tắt tin
+        # còn hiện trên web nên KHÔNG soạn marker vào đó — xem skill video-routing.
+        a = _voice.synth_text(model, text, prompt, language=LANG)
     else:
         a = model.generate(text=text, language=LANG, instruct=FALLBACK_INSTRUCT)[0]
     return np.asarray(a, dtype=np.float32)
@@ -222,8 +225,7 @@ def main():
 
     model = engine.load()
     sr = model.sampling_rate
-    prompt = profiles.get_clone_prompt(model, args.profile or None) or (
-        profiles.get_clone_prompt(model, profiles.ensure_default(model)))
+    prompt = _voice.load_voice(model, args.profile or None)
     print(f"[news-media] voice profile: {args.profile or profiles.get_default()}")
 
     audio_dir = os.path.join(args.repo, "audio", args.date)

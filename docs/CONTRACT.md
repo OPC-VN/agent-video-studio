@@ -279,6 +279,11 @@ hiện hành — để `cd` ở đâu thì kết quả vẫn như nhau.
 loại thiết bị khác nhau (CUDA vs MPS) vẫn cho waveform khác — tái lập chỉ có nghĩa trên cùng
 một loại thiết bị.
 
+Lời đọc (`narration`, `say`, `intro`, `outro`, `narration_short`) có thể mang marker sắc thái của profile
+(`[ten-marker] câu…`, hiệu lực tới marker kế). Template bản tin chuyển marker cho parser của repo giọng (marker
+lạ bị gỡ, không bao giờ đọc to) và gỡ marker khỏi phụ đề/gạch đầu dòng. Đừng đặt marker vào trường vừa đọc
+vừa hiện (`summary`/`tldr` của `daily_news_media`). Cách soạn: skill `voice-routing`.
+
 ## 5. `brand` bắt buộc — và vì sao
 
 Engine **không có thương hiệu mặc định**. Thiếu `brand.a`, `brand.b` hay `brand.site` là mã 2,

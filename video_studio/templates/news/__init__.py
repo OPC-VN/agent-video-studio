@@ -79,8 +79,8 @@ def _voice(spec):
     if v.get("seed") is not None:
         engine.seed_all(v["seed"])
     name = (v.get("profile") or "").strip() or None
-    prompt = (profiles.get_clone_prompt(model, name)
-              or profiles.get_clone_prompt(model, profiles.ensure_default(model)))
+    from ... import voice as _voice
+    prompt = _voice.load_voice(model, name, seed=v.get("seed", _voice.DEFAULT_SEED))
     return name, prompt, model
 
 
@@ -171,11 +171,11 @@ def render_repo_today(spec, out_dir):
     scenes = spec.get("scenes")
     if not scenes:
         raise ContractError("spec thiếu \"scenes\" (danh sách cảnh của bản deep-dive)")
-    name, _prompt, _model = _voice(spec)
+    _name, voice_obj, _model = _voice(spec)
     epi = spec.get("epi") or spec.get("display_date") or ""
     stem = _plain_name(spec.get("date") or "deep-dive", "date")
     default = out_name(spec, "long", f"{stem}.mp4")
     p = _out_path(out_dir, default, "outputs.long")
-    news_v2.render_deepdive(scenes, p, epi=epi, voice_profile=name,
+    news_v2.render_deepdive(scenes, p, epi=epi, voice_profile=voice_obj,
                             brand=spec.get("brand"), image_files=spec.get("_image_files"))
     return [_result("long", p)]

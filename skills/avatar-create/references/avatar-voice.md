@@ -8,7 +8,7 @@ Giọng cũng phải theo cùng luật đồng ý với khuôn mặt. Người t
 
 ## 2. Tạo WAV từ kịch bản
 
-1. Kịch bản viết theo `voice-routing` → `references/vietnamese-tts-script.md`: số, chữ viết tắt, tên nước ngoài viết lại cho engine đọc đúng.
+1. Kịch bản viết theo `voice-routing` → `references/vietnamese-tts-script.md`: số, chữ viết tắt, tên nước ngoài viết lại cho engine đọc đúng. Gắn marker sắc thái (`[ten-marker]`) theo manifest của profile, không đổi profile giữa bài; `voice-studio speak` đọc marker, marker lạ bị gỡ.
 2. Đọc bằng profile giọng ghi trong hồ sơ avatar (`voice.profile`), ghim seed:
    ```
    voice-studio speak --file loi.txt --profile <profile> --seed <số> --out <trạm-video>/avatars/<id>/renders/loi.wav --json
@@ -47,7 +47,7 @@ Engine đọc khẩu hình từ **giọng**. Nhạc và hiệu ứng làm khẩu
 - Mặc định giữ `speed` 1.0 trong hồ sơ giọng và hồ sơ avatar.
 - **Giả thuyết, chưa đo:** LatentSync làm mượt theo nhóm 16 khung, nên đọc chậm hơn có thể giúp môi theo kịp đoạn nhanh.
 - Chỉ thử khi SyncNet < 7 hoặc thấy môi trễ ở đoạn nhanh:
-  1. dùng sắc thái đọc chậm của profile giọng (nếu có marker);
+  1. đổi sang marker sắc thái có nhịp chậm hơn ở đầu đoạn đọc nhanh (tên marker lấy từ `<profile>.profile.json`, nhịp từng marker xem báo cáo kiểm thử của profile; phân bổ theo `voice-routing`, `vietnamese-tts-script.md`, mục "Phân bổ sắc thái theo bố cục video"); profile không có marker thì bỏ bước này;
   2. rồi mới thử `speed` 0,95, sau đó 0,9, cùng seed.
 - Giữ mức mới khi SyncNet tăng ≥ 0,3 **và** ASR vẫn nghe đúng. Ghi mức đã chọn vào `voice.speed` của hồ sơ, kèm điểm đo.
 

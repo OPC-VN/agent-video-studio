@@ -33,6 +33,7 @@ import soundfile as sf
 from voice_studio import av, engine, profiles
 
 from ... import _env, _netfetch, _paths, projects, render
+from ... import voice as _voice
 from ...contract import ContractError
 from ...spec import MAX_SCENE_IMAGES, REQUIRED_BRAND, USER_IMAGE_KEY
 
@@ -130,6 +131,7 @@ def asr_drift_warn(words, spoken, label=""):
     """E — lưới an toàn: so khớp ASR (giọng đã render) vs lời ĐỊNH đọc. Lệch nhiều
     = giọng/đọc lỗi (nuốt chữ, sai từ) -> cảnh báo trước khi publish. words từ
     _asr_words [(w,start,end)]; spoken = text đưa vào TTS. Best-effort, không chặn."""
+    spoken = _voice.strip_markers(spoken)       # marker sắc thái không phải chữ được đọc
     if not words or not spoken:
         return None
     norm = lambda s: set(re.findall(r"\w+", (s or "").lower()))
@@ -301,7 +303,7 @@ SLIDE = """<!doctype html>
 
 
 def make(item, out_path, date, model=None, prompt=None, brand=None):
-    title = item.get("title") or item.get("summary", "")[:80]
+    title = _voice.strip_markers(item.get("title") or item.get("summary", "")[:80])
     summary = item.get("summary", "")
     brand = resolve_brand(brand)
     model = model or engine.load()
@@ -309,8 +311,8 @@ def make(item, out_path, date, model=None, prompt=None, brand=None):
 
     # 1) lồng tiếng trước, để thời lượng slide khớp lời dẫn
     narration = _tts_normalize(summary or title)
-    audio, _sr = engine.synth(narration, prompt=prompt, language="Vietnamese", model=model)
-    audio = np.asarray(audio, dtype=np.float32)
+    audio = _voice.synth_text(model, narration, prompt)     # marker-aware (voice.py)
+    summary = _voice.strip_markers(summary)                 # chữ trên slide không mang marker
     dur = max(6.0, round(len(audio) / sr + 1.0, 1))
 
     proj = _proj()
@@ -389,6 +391,7 @@ def _words_from_text(audio, sr, spoken):
     ASR hỏng/trống -> chia đều theo độ dài ký tự: kém chuẩn về giờ nhưng CHỮ VẪN ĐÚNG,
     mà chữ đúng mới là thứ đang phải sửa.
     """
+    spoken = _voice.strip_markers(spoken)       # chữ hiển thị không bao giờ mang marker sắc thái
     src = (spoken or "").split()
     if not src:
         return []
@@ -575,6 +578,7 @@ def _broll_image(query, out_path, min_bytes=9000):
 def _caps_events(words, spoken, t, dur):
     """[(start_abs, text)] cho phụ đề short: ưu tiên ASR word-level gom ~7 từ/dòng (mốc theo từ),
     fallback tách câu canh tuyến tính theo độ dài."""
+    spoken = _voice.strip_markers(spoken)
     out = []
     if words:
         line, lstart = [], None
@@ -602,6 +606,7 @@ def _caps_events(words, spoken, t, dur):
 def _karaoke_caps(words, spoken, t, dur, kcaps_html, anim, cidp):
     """Phụ đề KARAOKE (escbase): ASR word-level → dòng ~5 từ, mỗi từ TỐI→TRẮNG đúng mốc đọc.
     Append HTML vào kcaps_html + tween vào anim. Không ASR → fallback cả-dòng fade tuyến tính."""
+    spoken = _voice.strip_markers(spoken)
     if words:
         lines, cur = [], []
         for w in words:
@@ -643,7 +648,7 @@ def _seg_bullets(seg, n=3, max_len=92):
     n narration sentences trimmed at a word boundary."""
     bullets = [b.strip() for b in (seg.get("bullets") or []) if b and b.strip()]
     if not bullets:
-        for s in _SENT_RE.split((seg.get("narration") or "").strip()):
+        for s in _SENT_RE.split(_voice.strip_markers((seg.get("narration") or "").strip())):
             s = s.strip().rstrip(".")
             if not s:
                 continue
@@ -723,11 +728,12 @@ def _synth_long(model, text, prompt, max_chunk=240):
     # GIỌNG = profile CLONE, KHÔNG bao giờ rơi về instruct= (mỗi câu một người nói khác).
     # Caller quên truyền prompt thì tự lấy clone prompt của profile mặc định.
     if prompt is None:
-        prompt = profiles.get_clone_prompt(model)
-        if prompt is None:
-            print("[news_video][WARN] không tìm thấy voice profile — KHÔNG render bằng giọng "
-                  "synthetic. Tạo một profile giọng trước (voice-studio), rồi khai tên nó ở "
-                  "voice.profile trong spec.", flush=True)
+        # Không có profile nào thì `ProfileError` (kèm cách sửa) — không lùi về giọng synthetic.
+        prompt = _voice.load_voice(model)
+    if isinstance(prompt, (_voice.MarkedVoice, str)):
+        # Đường marker-aware: `[marker]` đổi clip, marker lạ bị gỡ (voice_studio.lab.vlab). Cả khối đi
+        # một lượt để marker có hiệu lực qua ranh giới câu; vlab tự tổng hợp từng câu.
+        return engine.normalize(_voice.synth_text(model, text, prompt))
     chunks, cur = [], ""
     for s in _SENT_RE.split(text):
         if cur and len(cur) + len(s) + 1 > max_chunk:
@@ -740,8 +746,7 @@ def _synth_long(model, text, prompt, max_chunk=240):
     gap = np.zeros(int(sr * 0.18), dtype=np.float32)
     parts = []
     for c in chunks:
-        a, _sr = engine.synth(c, prompt=prompt, language="Vietnamese", model=model)
-        parts.append(np.asarray(a, dtype=np.float32))
+        parts.append(_voice.synth_text(model, c, prompt))   # prompt trần: gỡ marker, giọng trung tính
         parts.append(gap)
     out = np.concatenate(parts) if parts else np.zeros(int(sr * 0.2), dtype=np.float32)
     return engine.normalize(out)

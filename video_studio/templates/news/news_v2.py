@@ -14,7 +14,7 @@ import soundfile as sf
 
 from voice_studio import av, engine
 
-from ... import render, spec as spec_mod
+from ... import render, spec as spec_mod, voice as _voice
 from .news_video import _esc, _proj, _SENT_RE, _tts_normalize, resolve_brand
 
 ACCENTS = ["#00E5FF", "#A78BFA", "#F472B6", "#60A5FA", "#00E676", "#FFC857"]
@@ -40,12 +40,11 @@ def _caption_blocks(model, narration, voice_profile, gap=0.16):
     """Synth từng câu, trả (audio_full, dur_full, cues[(start,end,text)])."""
     sr = model.sampling_rate
     text = _tts_normalize((narration or "").strip())
-    sents = [s.strip() for s in _SENT_RE.split(text) if s.strip()] or [text]
     parts, cues, t = [], [], 0.0
     sil = np.zeros(int(sr * gap), dtype=np.float32)
-    for s in sents:
-        a = np.asarray(engine.synth(s, prompt=voice_profile or None, language="Vietnamese",
-                                    model=model)[0], dtype=np.float32)
+    # Marker sắc thái (`[hao-hung] …`) đi qua parser của repo giọng; `s` trả về đã gỡ marker nên
+    # phụ đề không bao giờ hiện chữ trong ngoặc vuông.
+    for s, a in _voice.synth_sentences(model, text, voice_profile or None):
         d = len(a) / sr
         cues.append((round(t, 2), round(t + d + gap, 2), s))
         t += d + gap
