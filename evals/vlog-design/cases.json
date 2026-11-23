@@ -1,0 +1,84 @@
+{
+  "skill_name": "vlog-design",
+  "status": "draft",
+  "baseline": "not_run",
+  "cases": [
+    {
+      "id": "vlog-design-typical",
+      "kind": "typical",
+      "should_trigger": true,
+      "prompt": "Đây là lời thoại tập 1 (fixtures/script-weekly-report.md), 3 clip tôi quay nói trước camera và ý tưởng: kể chuyện từ hỏi AI từng câu đến làm việc với cả đội AI. Lên storyboard hoàn chỉnh và danh sách asset để dựng video YouTube 16:9 có avatar, màn hình demo và hoạt họa.",
+      "expected_behaviors": [
+        "Chia lời thoại thành beat có mốc thời gian ước lượng trước khi chọn hình.",
+        "Mỗi beat gán một chế độ hình (người, người + hoạt họa, hoạt họa, màn hình, người + màn hình) và một mã bố cục từ thư viện.",
+        "Mỗi cảnh có ý → ẩn dụ hình, phần tử cụ thể, chữ trên màn hình, chuyển động trước → sau, cách nối cảnh.",
+        "Xuất asset manifest gồm icon, ảnh, font, màu, motion với nguồn và giấy phép, đánh dấu thứ cần tạo mới.",
+        "Kiểm nhịp: không quá 3 cảnh liên tiếp cùng bố cục, avatar không chiếm quá tỉ lệ đã chốt.",
+        "3 clip người nói được nhắc nhưng không có file: ghi «chưa có», không bịa nội dung clip."
+      ],
+      "fixtures": [
+        "fixtures/script-weekly-report.md"
+      ]
+    },
+    {
+      "id": "vlog-design-edge",
+      "kind": "edge",
+      "should_trigger": true,
+      "prompt": "Chưa có clip quay nào, chỉ có lời thoại trong fixtures/script-weekly-report.md và ý tưởng: video hướng dẫn 3 bước có quay màn hình. Làm storyboard và danh sách tài nguyên.",
+      "expected_behaviors": [
+        "Ghi rõ thiếu clip người: thay bằng avatar có sẵn hoặc bố cục không người, không bịa cảnh quay thật.",
+        "Liệt kê các đoạn quay màn hình cần ghi (shot list) với thao tác và độ dài.",
+        "Vẫn xuất storyboard và manifest đầy đủ; mục thiếu ghi 'chưa có' thay vì bỏ trống."
+      ],
+      "fixtures": [
+        "fixtures/script-weekly-report.md"
+      ]
+    },
+    {
+      "id": "vlog-design-negative",
+      "kind": "near-miss",
+      "should_trigger": false,
+      "prompt": "Cắt bỏ các đoạn ngập ngừng và khoảng lặng trong clip phỏng vấn này rồi xuất mp4.",
+      "expected_behaviors": [
+        "Không dùng skill này; chuyển sang video-cleanup hoặc video-edit."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "vlog-design-boundary",
+      "kind": "near-miss",
+      "should_trigger": false,
+      "prompt": "Lên storyboard cho video lyric bài hát mới, chữ chạy theo nhạc trên nền ảnh phong cảnh.",
+      "expected_behaviors": [
+        "Không dùng vlog-design; chuyển sang video-storyboard-design hoặc lyric-video-effects."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "vlog-design-gate",
+      "kind": "edge",
+      "should_trigger": true,
+      "prompt": "Dùng lời thoại fixtures/script-weekly-report.md, có avatar sẵn trong trạm. Làm storyboard rồi dựng luôn video hoàn chỉnh cho tôi.",
+      "expected_behaviors": [
+        "Làm tới bước 6 (khung hình chính) rồi dừng chờ duyệt, không dựng cả video.",
+        "Kiểm hồ sơ avatar có lời đồng ý dùng mặt trước khi dùng.",
+        "Bảng nhịp chạy pace_check --profile presenter; rời toàn khung không dùng cắt cứng (TR-03), quay về toàn khung cắt (TR-04).",
+        "Mọi mã LY/TR/VO/TX/IG trong storyboard tồn tại trong thư viện."
+      ],
+      "fixtures": [
+        "fixtures/script-weekly-report.md"
+      ]
+    },
+    {
+      "id": "vlog-design-assets-permission",
+      "kind": "edge",
+      "should_trigger": true,
+      "prompt": "Storyboard xong rồi, tải hết icon và ảnh cần dùng về giúp tôi, tạo thêm ảnh AI nếu thiếu.",
+      "expected_behaviors": [
+        "Lập manifest có nguồn + giấy phép trước; chỉ tải/tạo ảnh khi người dùng đã cho phép trong phiên và ghi nguồn từng dòng.",
+        "Prompt ảnh AI có khoá phong cách chung; không đưa khung hình video mẫu vào công cụ tạo ảnh."
+      ],
+      "fixtures": []
+    }
+  ]
+}

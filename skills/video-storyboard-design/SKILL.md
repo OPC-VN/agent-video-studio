@@ -5,6 +5,8 @@ description: Design or revise an executable video storyboard from a brief, sourc
 
 # Thiết kế storyboard video
 
+> Video **trộn** người dẫn/avatar + quay màn hình + hoạt họa (giảng dạy, vlog kiến thức, kể chuyện) có thư viện bố cục, chuyển chế độ và kiểm nhịp riêng: dùng skill `vlog-design`; skill này cho storyboard chung và một chế độ.
+
 Tạo file storyboard từ [mẫu chung](../video-routing/assets/storyboard.md) trong project/trạm được chọn. Đây là thiết kế để người hoặc agent dựng tiếp; không tự coi là spec, EDL, code hay video đã chạy. Nếu chỉ giao storyboard, dừng ở storyboard.
 
 Khi người dùng cần storyboard để dựng, dùng **toàn bộ mẫu chi tiết**: brief, treatment, thiết kế chung, bản đồ cảnh, thẻ từng cảnh, nguồn/quyền và handoff. Mỗi cảnh cần lời nguyên văn, bố cục có vị trí, hình/icon cụ thể, lựa chọn motion có nguồn và lý do, bảng cue theo thời gian (trước → hành động → sau), âm, nối cảnh, chỉ dẫn dựng và mốc kiểm. Không thay thẻ chi tiết bằng một đoạn tóm tắt. Nếu chỉ được giao phác thảo ngắn, ghi rõ các phần chưa thiết kế.
@@ -22,6 +24,8 @@ Khi mở rộng storyboard sẵn có, lấy bản đó làm baseline: giữ các
 4. Dùng `video-theme-library` tra catalog và chỉ mục motion theo vai trò, tỷ lệ, vùng hiển thị; ghi từ khóa, ID/link, phương án cân nhắc, lý do chọn, quyền và bằng chứng. Phân biệt mẫu chạy được, cần tự dựng, và reference chưa kiểm; link không cấp quyền chép/tải. Nếu không tìm thấy, thiết kế mới, nêu giới hạn và cách kiểm, không bịa mã. Không tự tải hoặc cài nguồn chưa được phép.
 5. Với mỗi cảnh điền mẫu: ý cần hiểu; thời gian và cue lời; bố cục/vị trí; hình, icon, chữ, màu; trạng thái **trước → hành động → sau** với đối tượng, thứ tự, thời lượng; âm/nhạc/SFX; cách nối cảnh; hướng dẫn dựng và nguồn asset; điểm kiểm đầu–giữa–cuối, trước/sau cue và tua ngược. Ví dụ quy trình: ô xuất hiện trước, connector dẫn đến ô đó sau; mũi tên của bước tương lai ẩn. Đối chiếu hình và lời, tránh panel trống, callout sai hoặc phụ đề chồng lên phụ đề nguồn.
 6. Chuyển hướng dẫn thành đầu việc khả thi cho `video-edit`/EDL hoặc `hyperframes`/composition và `video-studio render` theo routing. Ghi phụ thuộc, giới hạn runtime và cảnh cần thử; không hứa template tin có thể nhận motion tùy biến nếu engine chưa hỗ trợ.
+
+Trước khi duyệt storyboard explainer/vlog có avatar, đọc [chuẩn chuyển động và bố cục](references/motion-layout-standard.md): icon luôn động, hiện theo lời, liên kết chạy liên tục, không chỗ trống, không chữ chạm nhau, không màn đứng yên quá 6 s. Chủ chỉ đưa transcript cho tập chủ đề mới: đọc [sáng tạo icon theo lời thoại](references/creative-icon-brainstorm.md) để brainstorm ẩn dụ, icon có tương tác bên trong và motion liên kết. Rồi theo [storyboard ảnh tĩnh trước](references/storyboard-stills-first.md): chủ duyệt khung tĩnh trước khi dựng motion, bốn điểm dừng, thời lượng máy, bẫy.
 
 Khi yêu cầu ba draft nâng cấp hoặc phản biện sáng tạo, đọc [review sáng tạo](references/creative-review.md): tổ chức các góc nhìn chuyên môn, review toàn bài theo bằng chứng và lập kế hoạch sửa cụ thể từng cảnh trước mỗi lượt; không tự nhận đã có chuyên gia độc lập.
 

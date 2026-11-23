@@ -45,7 +45,7 @@ skill `video-cleanup`. Không mở mọi thẻ nếu brief không gọi tới.
 Khi yêu cầu cần xử lý media bằng FFmpeg, tra danh mục `ffmpeg-tool-index.md` trong skill
 `video-edit` để chọn luồng đã có; không suy rằng mọi hiệu ứng đề xuất đã được triển khai.
 
-Khi cần thiết kế hoặc chỉnh storyboard, dùng `video-storyboard-design` để phân tích nguồn, tra motion và bàn giao thiết kế từng cảnh. Khi được giao dựng đầy đủ, dùng quy trình ba draft trong workflow chung; nếu chỉ giao storyboard thì dừng ở storyboard.
+Video giảng dạy/kể chuyện trộn người hoặc avatar + màn hình + hoạt họa (từ lời thoại, clip thô, ý tưởng ra storyboard có mã, manifest tài nguyên, khung hình chính): dùng `vlog-design`. Khi cần thiết kế hoặc chỉnh storyboard khác, dùng `video-storyboard-design` để phân tích nguồn, tra motion và bàn giao thiết kế từng cảnh. Khi được giao dựng đầy đủ, dùng quy trình ba draft trong workflow chung; nếu chỉ giao storyboard thì dừng ở storyboard.
 
 Nhân vật hoặc vật nét mực chuyển động thủ tục, tua được: dùng `line-art-motion`.
 

@@ -33,6 +33,12 @@ kiểm).
 - Gia cố đường nhận đầu vào ngoài: tải ảnh URL, ảnh B-ROLL Openverse và trang GitHub đi qua một hàm tải công khai (ghim địa chỉ chống DNS rebinding, kiểm lại từng chuyển hướng, trần byte, từ chối máy không phân giải được); URL ảnh vượt trần bị từ chối thay vì cắt cụt; đường tải này không dùng biến proxy.
 - Đường UNC/thiết bị Windows không bị chạm hệ tệp, tên ổ chỉ nhận chữ cái ASCII; `render --project-dir` so tệp trước và sau khi chép, ghi file ra qua tệp tạm không đoán được, từ chối liên kết/thư mục ở đích, cảnh báo khi ghi đè, hiện tối đa 60 dòng lỗi `check --strict`.
 
+## 0.10.1 — 2026-11-23
+
+- **Chỉ tài liệu skill:** thêm reference `skills/video-storyboard-design/references/motion-layout-standard.md` (chuẩn chuyển động và bố cục explainer có avatar: duyệt theo đoạn S1…Sn rồi gộp, icon luôn động, liên kết chạy liên tục, nền, nhạc, âm lượng, tất định, 16 mã kiểm `CK-*`, sáu câu soi). Dòng trỏ thêm ở `video-storyboard-design`, `creative-review`, `video-routing/references/video-workflow`, `vlog-design`, `avatar-create`, `video-theme-library/references/gsap-recipes`. Không đổi mã, lệnh hay hành vi.
+
+- **Chỉ tài liệu skill (bổ sung sau khi tập mẫu được chủ kênh duyệt):** hai reference mới của `video-storyboard-design`: `references/creative-icon-brainstorm.md` (từ transcript chủ đề mới ra bảng brainstorm sáu cột, tiêu chí icon động đạt khi các thành phần bên trong tương tác, thư viện mười công thức motion liên kết, bảng mẫu 17 dòng từ tập đã duyệt, phân loại nguồn icon, mẫu đặc tả animation) và `references/storyboard-stills-first.md` (bảy bước, bốn điểm dừng duyệt: storyboard ảnh tĩnh, giọng, từng đoạn S, bản ghép; thời lượng máy đo được; bảng bẫy). `motion-layout-standard.md` thêm ba luật MUST (duyệt ảnh tĩnh trước motion, tương tác bên trong icon, hình sinh từ lời thoại của tập) và mã kiểm thứ 17 `CK-ICON-PARTS`. `video-routing/references/video-workflow.md` thêm mục «Từ transcript tới final cho explainer có avatar»; `gsap-recipes.md` thêm bốn công thức mô tả. Không đổi mã, lệnh hay hành vi.
+
 ## 0.10.0 — 2026-11-14
 
 - Mở rộng quy trình lyric video: lập số ảnh và lượt cảnh theo thời lượng, nội dung lời; đề xuất hiệu ứng theo cảnh và demo có hình, nhạc, chữ.

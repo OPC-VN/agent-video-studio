@@ -33,3 +33,7 @@ Ví dụ: cảnh storyboard thumbnail → canvas chưa được thực thi; đ�
 - **Draft 3:** thực hiện kế hoạch 2→3, xuất riêng, xem/nghe encode đầy đủ nếu có khả năng và kiểm kỹ các vùng đã đổi. Bàn giao ba file, bảng so sánh khác biệt thực tế theo mốc và lợi ích người xem, mục còn thiếu, đề xuất lựa chọn. Không mặc định sinh bản thứ tư.
 
 Khi review trực tiếp hoặc thành phần cần thiết không khả dụng, ghi `CHƯA KIỂM`, chỉ rõ quyết định nào còn thiếu bằng chứng và không tự ký đạt. Nếu người dùng vẫn giao tiếp tục, có thể tạo bản tiếp theo trong phạm vi họ giao, nhưng mô tả trung thực đó là sửa theo bằng chứng hẹp, không tuyên bố đã thực hiện review đầy đủ. Không gửi media ra dịch vụ ngoài, tải/cài hoặc dùng asset chưa được phép.
+
+## Sáu câu soi thêm cho explainer có avatar
+
+Trước mỗi lượt gửi duyệt, trả lời từng câu (chi tiết và mức MUST/SHOULD ở [motion-layout-standard](motion-layout-standard.md)): icon nào còn đứng yên? đối tượng có hiện đúng lúc lời nhắc tới không? các icon nối nhau có hiệu ứng liên kết chạy liên tục không? có chỗ trống lệch hay nội dung chưa phủ vùng an toàn không? có chữ chạm chữ, header hay avatar không? có khoảng nào màn đứng yên quá 6 s không?
