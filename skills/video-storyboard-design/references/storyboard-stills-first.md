@@ -81,3 +81,6 @@ Ví dụ lập kế hoạch cho tập 9 phút có 5 phút avatar: avatar ≈ 100
 | Xoá thư mục tạm dùng chung | phiên render khác đang chạy chết giữa chừng | chỉ xoá thư mục con do chính lượt mình tạo; không xoá cả `.tmp` |
 | Xoá liên kết thư mục (junction) bằng lệnh xoá đệ quy | xoá luôn dữ liệu ở đích | gỡ junction bằng lệnh gỡ thư mục rỗng (`rmdir`), không xoá đệ quy |
 | Hai phiên cùng ghi một project | file dựng bị ghi đè giữa lượt render | khi một phiên đang render, phiên khác chỉ đọc thư mục đó |
+| Chương YouTube ngắn hơn 10 s | intro 9 s hoặc outro 8 s không thành chương riêng; YouTube bỏ cả danh sách chương | tính mốc chương ở bước 1: mốc đầu `0:00`, ≥ 3 mốc, mỗi chương ≥ 10 s; gộp intro + thẻ chương đầu thành «Mở đầu»; outro tối thiểu 10 s |
+| Tên nội bộ lên hình khi cổng công khai chưa mở | video xong mới biết pipeline marketing chặn tên đó (cổng G21, `brand.internal_tools`) | ở bước 1 đánh dấu mọi tên sản phẩm/công cụ; tên thuộc danh sách nội bộ thì hỏi chủ kênh trước Dừng 1, ghi lời cho phép vào ghi chú phát hành |
+| Khoảng im giữa nhạc intro và giọng | 1–2 s im tuyệt đối ngay sau intro, chữ chào hiện mà không có tiếng | thiết kế nhạc nền vào trước giọng, hoặc kéo đuôi nhạc intro tới sát câu đầu; đo RMS vùng nối ở bước 7 |

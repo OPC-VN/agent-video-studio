@@ -10,6 +10,7 @@ Hai reference đi kèm: [creative-icon-brainstorm](creative-icon-brainstorm.md) 
 - [Icon và liên kết](#icon-và-liên-kết)
 - [Bố cục và nhấn mạnh](#bố-cục-và-nhấn-mạnh)
 - [Nền, nhạc và âm lượng](#nền-nhạc-và-âm-lượng)
+- [Chương YouTube và tên nội bộ](#chương-youtube-và-tên-nội-bộ)
 - [Tất định kỹ thuật](#tất-định-kỹ-thuật)
 - [Kiểm tự động nên có](#kiểm-tự-động-nên-có)
 - [Sáu câu soi trước khi gửi duyệt](#sáu-câu-soi-trước-khi-gửi-duyệt)
@@ -57,7 +58,13 @@ Hai reference đi kèm: [creative-icon-brainstorm](creative-icon-brainstorm.md) 
 - **MUST** nền tối đồng nhất toàn tập. Dải neuron (plexus) chỉ ở thẻ chương và outro; màn nội dung chỉ có hạt nhạt cộng nối mảnh quanh viền, giữa màn để trống cho nội dung.
 - **MUST** âm lượng bản mới bằng bản đã duyệt đầu tiên: tích hợp −14,4 ±0,3 LUFS, true peak ≤ −1,0 dBTP, LRA lệch ≤ 1 LU. Nâng bằng gain cộng limiter ở hậu kỳ, không loudnorm động; giọng mới cân bằng MỘT hệ số gain về đúng mức giọng cũ.
 - **MUST** nhạc intro tắt hẳn trước khi giọng vào (không duck), cú đập trùng mốc hit của hình. Nhạc outro (**SHOULD**) cùng motif, cú đập trùng lúc logo đáp, vào sau chữ cuối ≥ 0,4 s.
+- **SHOULD** không để khoảng im tuyệt đối giữa nhạc intro và giọng (một tập đã phát hành còn 1,4 s im ngay sau intro, chữ chào hiện mà không có tiếng): cho nhạc nền vào trước giọng, fade-in bắt đầu khi nhạc intro còn đang tắt dần; hoặc kéo đuôi nhạc intro tới sát câu đầu. Kiểm bằng đo RMS vùng nối intro → giọng, không chỉ nghe.
 - **MUST** lời mới đi qua hồ sơ giọng của kênh: chuẩn hoá từ ngoại ngữ/viết tắt trong bản TTS (không đổi câu chữ), ASR nghe lại khớp 100 %. Xem `voice-routing`.
+
+## Chương YouTube và tên nội bộ
+
+- **MUST** tính mốc chương YouTube ngay khi tách cảnh: mốc đầu `0:00`, ít nhất 3 mốc, **mỗi chương ≥ 10 s** (ngắn hơn thì YouTube bỏ cả danh sách chương). Intro ngắn hơn 10 s không đứng riêng: gộp intro + thẻ chương đầu thành một chương «Mở đầu». Outro là một chương thì dài tối thiểu 10 s; ngắn hơn thì gộp vào chương cuối.
+- **MUST** trước khi đưa tên một sản phẩm hay công cụ lên hình hoặc vào lời, xem kênh có cổng «tên nội bộ» không (pipeline marketing: cổng G21, `brand.internal_tools` trong `channel.yml`). Tên nằm trong danh sách đó thì chỉ chủ kênh mở cổng; chưa mở thì hỏi chủ trước khi dựng cảnh có tên, vì bỏ tên sau khi render là dựng lại cả đoạn. Lời cho phép của chủ ghi vào ghi chú phát hành.
 
 ## Tất định kỹ thuật
 
