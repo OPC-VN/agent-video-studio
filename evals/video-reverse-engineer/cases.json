@@ -1,0 +1,51 @@
+{
+  "skill_name": "video-reverse-engineer",
+  "status": "draft",
+  "baseline": "not_run",
+  "cases": [
+    {
+      "id": "video-reverse-engineer-corpus",
+      "kind": "typical",
+      "should_trigger": true,
+      "prompt": "Tôi đã tải 5 video giảng dạy dài (thư mục raw). Bóc toàn bộ khung hình và chữ để học bố cục, hiệu ứng, chuyển cảnh rồi đóng gói thành thư viện markdown.",
+      "expected_behaviors": [
+        "Theo references/corpus-study.md: extract → nhật ký cảnh song song → soi dày cả hai chiều đổi chế độ → stats → chưng cất có mã → kiểm chứng 10% → review độc lập.",
+        "Hỏi trước khi gửi khung có mặt người thật lên model; dữ liệu trích nằm trong trạm.",
+        "Mọi số tỉ lệ/số đếm lấy từ corpus_extract.py stats; thư viện không chứa tên kênh, tên người, đường dẫn máy."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "video-reverse-engineer-merge-one",
+      "kind": "typical",
+      "should_trigger": true,
+      "prompt": "Học thêm video mẫu mới này rồi bổ sung vào thư viện vlog-design.",
+      "expected_behaviors": [
+        "Lập gói assets/reference-patterns.md cho video (mã Vnn mới), đối chiếu pattern-index.md, mẫu mới đặt XX-NEW-n đủ 9 trường.",
+        "Kiểm chứng ≈10% + mọi mẫu mới, trình danh sách mã mới chờ người dùng duyệt trước khi ghi thư viện.",
+        "Sau gộp chạy build_index.py --check và test thư viện."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "video-reverse-engineer-single",
+      "kind": "typical",
+      "should_trigger": true,
+      "prompt": "Mổ xẻ video quảng cáo 30 giây này: cảnh nào quay thật, cảnh nào AI, cắt ở đâu, chữ phủ gì.",
+      "expected_behaviors": [
+        "Dùng video-studio reference decompose + review (VLM tắt), không chạy quy trình bộ mẫu."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "video-reverse-engineer-negative",
+      "kind": "near-miss",
+      "should_trigger": false,
+      "prompt": "Cắt video phỏng vấn này thành 3 đoạn 60 giây cho Reels.",
+      "expected_behaviors": [
+        "Không dùng skill này; chuyển sang video-edit."
+      ],
+      "fixtures": []
+    }
+  ]
+}

@@ -1,5 +1,15 @@
 # Công thức GSAP đang thử nghiệm
 
+## Mục lục
+
+- Phạm vi và nguồn
+- Giấy phép
+- Nạp runtime
+- Tất định
+- Recipe
+- Cách thử
+- Công thức dùng lại từ kênh OPC OS (mô tả, chưa là module của repo)
+
 ## Phạm vi và nguồn
 
 Bảy module do dự án tự viết, đặt trong `assets/gsap-recipes/`. Các ví dụ giả định GSAP và plugin cần thiết đã nạp cục bộ và `timeline` đã tạo ở trạng thái paused. Chúng hiện là bản thử nghiệm: đã render fixture tổng hợp và kiểm tua snapshot trên Windows; chưa xác minh tái sử dụng độc lập hoặc đa nền tảng. Không dùng kết quả kiểm tĩnh làm bằng chứng render.
@@ -92,3 +102,19 @@ Truyền text, bảng ký tự và seed vào `build`. Giá trị tại một th�
 ## Cách thử
 
 `python -m pytest tests/test_node_suite.py -q` chạy kiểm seek và các phép thử JavaScript. `GSAP_TEST_TARBALL` có thể trỏ tới gói cục bộ đúng hash để chạy `tests/test_gsap_recipes_browser.py`; thiếu gói thì SKIP, không tính đạt. Bộ Chromium kiểm ba thứ tự với fixture riêng. DrawSVG so pixel của SVG trong fixture; MorphSVG so năm điểm hình học với độ chính xác 0,1 px. Phạm vi này chưa chứng minh tính tất định của mọi hình hoặc render HyperFrames.
+
+## Công thức dùng lại từ kênh OPC OS (mô tả, chưa là module của repo)
+
+Rút từ kit của một kênh (`opc_kit/fx.py`); mọi công thức tuân mục Tất định (không `repeat:-1`, vòng lặp hữu hạn gắn `data:'loop'`).
+
+- **`pulse`:** viền vàng nhấp nháy dim (1 ↔ .3), mở đúng cửa lời và tắt hẳn sau cửa.
+- **`dot_run` / `arrow_run`:** dải chấm hoặc mũi tên chạy liên tục nối hai icon, chấm chạy vàng nhạt trên nền chấm trắng mờ.
+- **Thẻ lắp vào ô nét đứt:** ô rỗng nét đứt hiện từ đầu, tới lời thì thẻ bay vào ô.
+- **Thẻ chương bay lên góc:** cùng một phần tử thu nhỏ thành nhãn góc, không bản sao.
+- **Quả cầu lưới thuần theo `t`:** vẽ canvas bằng hàm thuần, một tween proxy, vòng kín.
+- **`ring_spin`:** vòng nét đứt xoay quanh ô đang được nói, một vòng ≈ 6 s.
+- **Đốm sáng chạy vòng / photon trên dây:** đốm chạy quỹ đạo dưới cụm icon; hạt sáng chạy dọc dây cong về lõi, lệch pha theo chỉ số.
+- **Đổi chiều dòng, vòng kín:** dải chấm đảo hướng tại một mốc lời; cuối cảnh thêm cung về để khép vòng.
+- **Tương tác bên trong icon:** cắt thành phần ra lớp riêng theo alpha, miếng xoá tại chỗ cũ, tween lớp cắt (thẻ đổi cột, cột tăng giảm, chấm chạy trong ống bằng `strokeDashoffset`).
+
+Quy tắc dùng và kiểm: [motion-layout-standard](../../video-storyboard-design/references/motion-layout-standard.md). Chọn công thức liên kết theo nghĩa câu và tiêu chí icon có tương tác bên trong: [creative-icon-brainstorm](../../video-storyboard-design/references/creative-icon-brainstorm.md).

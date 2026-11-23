@@ -8,6 +8,8 @@ bằng chứng và dừng ở đầu ra người dùng giao. Không cần ngư�
 
 - [Hợp đồng đầu ra](#hợp-đồng-đầu-ra)
 - [Quy trình toàn diện](#quy-trình-toàn-diện)
+- [Quy ước duyệt theo đoạn và giọng mới](#quy-ước-duyệt-theo-đoạn-và-giọng-mới)
+- [Từ transcript tới final cho explainer có avatar](#từ-transcript-tới-final-cho-explainer-có-avatar)
 - [Các nhánh rút gọn](#các-nhánh-rút-gọn)
 - [Từ URL mẫu sang template tái sử dụng](#từ-url-mẫu-sang-template-tái-sử-dụng)
 
@@ -78,6 +80,30 @@ trạm hoặc file đích trước khi thử lại vì nội dung có thể đã
 materialize thành thư mục project; không tuyên bố đã lưu khi thao tác trả lỗi.
 Không chuyển ảnh, nhạc, font, tên hay lời riêng vào repo; đề xuất đưa vào plugin cần review riêng.
 Một preview hoặc thẻ tham chiếu không chứng minh component có thể render hay đã tái dùng.
+
+## Quy ước duyệt theo đoạn và giọng mới
+
+Áp cho video dài có người dẫn/avatar; chi tiết ở [chuẩn chuyển động và bố cục](../../video-storyboard-design/references/motion-layout-standard.md).
+
+- **Duyệt theo đoạn rồi gộp:** chia S1…Sn ở mép cảnh (`segments.json`), chủ duyệt từng đoạn; đạt hết mới gộp một bản, một bản mix âm liên tục, lệch mối nối ≤ 1 khung.
+- **Giọng mới:** giọng đã duyệt không tạo lại; chỉ sinh giọng cho lời mới, rồi dừng cho chủ nghe thử trước khi dựng avatar.
+- **Cảnh chuyển sang tập sau:** cất vào thư mục `videoN-parked`, không xoá.
+
+## Từ transcript tới final cho explainer có avatar
+
+Dùng khi chủ kênh chỉ đưa transcript và vài ý chỉnh, theme và format của kênh đã có. Nhánh này thay bước 6 (ba draft) bằng duyệt theo điểm dừng; chi tiết, số đo máy và bẫy ở [storyboard ảnh tĩnh trước](../../video-storyboard-design/references/storyboard-stills-first.md).
+
+| # | Bước | Skill sở hữu | Điểm dừng chờ chủ |
+|---|---|---|---|
+| 1 | Tách chương, cảnh ở ranh câu; ước thời lượng | `video-storyboard-design` | — |
+| 2 | Brainstorm ẩn dụ và icon theo lời, chọn, phân loại nguồn, đặc tả animation ([reference](../../video-storyboard-design/references/creative-icon-brainstorm.md)) | `video-storyboard-design`, `video-theme-library` | — |
+| 3 | Storyboard **ảnh tĩnh**: mỗi cảnh một khung dựng thật, ghép bảng thumbnail | `video-storyboard-design`, `hyperframes` | **Dừng 1: storyboard tĩnh** |
+| 4 | Giọng cho lời đã chốt, ASR nghe lại, cân mức | `voice-routing` | **Dừng 2: giọng** |
+| 5 | Icon mới, logo, avatar từ giọng đã duyệt, motion theo giờ chữ, `segments.json` | `avatar-create`, `hyperframes` | — |
+| 6 | Render nháp và tự kiểm từng đoạn S1…Sn | `video-studio render` | **Dừng 3: từng đoạn S** |
+| 7 | Ghép hình + một bản mix âm liên tục, kiểm mối nối; rồi bản chất lượng giao | `video-edit` | **Dừng 4: bản ghép**, đạt mới render final |
+
+Chưa qua một điểm dừng thì không chạy bước đắt sau nó (chưa duyệt hình thì không sinh giọng và không tạo icon mới; chưa duyệt giọng thì không dựng avatar); trong lúc chờ chỉ làm việc không phụ thuộc quyết định đó. Câu hỏi ngoài bốn điểm dừng luôn kèm mặc định để làm tiếp. Báo trước thời lượng máy của bước sắp chạy.
 
 ## Các nhánh rút gọn
 

@@ -60,3 +60,7 @@ Engine đọc khẩu hình từ **giọng**. Nhạc và hiệu ứng làm khẩu
 | Avatar + slide + nhạc | video-studio (`render --project-dir`, `edit`) | video bài giảng |
 
 Lồng tiếng cho video không có avatar (chỉ slide) dùng `video-studio narrate`, không dùng luồng avatar.
+
+## Đoạn nối thêm vào video đã duyệt
+
+Chỉ làm take mới cho đoạn lời mới, không render lại take cũ; kiểm mối nối giữa take cũ và mới (hình, âm, lệch ≤ 1 khung).

@@ -12,6 +12,7 @@ video mẫu (tệp cục bộ, đã rõ quyền)
   → reference videomd --check                   gói hợp lệ
   → agent nhìn ảnh: reference tiles/frames + review → apply-review
   → reference-map.md                            bảng beat: mốc, lời, hình, chữ, màu, hiệu ứng, bằng chứng @khung
+  ↘ (học để làm loạt video) reference-patterns.md → gộp vào thư viện vlog-design: references/library-merge.md
   → video-remix-brief                           brief, treatment, storyboard (nội dung và tư liệu CỦA NGƯỜI DÙNG)
   → engine sẵn có                               land-plot-map-video (bản đồ), HyperFrames, narrate, edit, theme library
   → video-studio render                         bản dựng
@@ -23,10 +24,10 @@ video mẫu (tệp cục bộ, đã rõ quyền)
 | rea-video cho | Dùng làm gì | Engine/skill nhận |
 |---|---|---|
 | `video/rhythm.md`: mốc `change`/`cut` theo khung (`@N`) | ứng viên ranh beat; độ dài từng beat | `reference-map.md` cột «Thời điểm» |
-| `video/timeline.md`: camera, chuyển cảnh, nhãn «made~» | loại chuyển động mỗi cảnh (tĩnh/lướt/zoom) | storyboard cột «Camera/chuyển cảnh» |
+| `video/timeline.md`: camera, chuyển cảnh, nhãn «made~» | loại chuyển động mỗi cảnh (tĩnh/lướt/zoom) | thẻ cảnh: trường «Chuyển cảnh» (mẫu chung) hoặc mã TR (storyboard `vlog-design`) |
 | `video/look.md` | khung hình, ánh sáng, màu (cảnh quay thật) | brief; cảnh quay thật → `video-edit` |
 | `video/packaging.md` + `packaging/timeline.json` | chữ phủ, nhãn, sticker, âm nhấn: thời điểm, kiểu | lớp chữ HyperFrames; mẫu `land-plot-map-video` |
-| `video/sound.md` | giọng/nhạc/âm nhấn, có bắt nhịp | `narrate`, nhạc có quyền |
+| `video/sound.md` | giọng/nhạc/âm nhấn, có bắt nhịp | `narrate`, nhạc có quyền; gói mẫu mục 6 → nhóm AU của thư viện `vlog-design` |
 | `video/remake.md` | kế hoạch **dùng model sinh** (Seedance…) | **bỏ**: dựng bằng engine của repo này |
 
 ## Tiêu chí «giống» (đo được; ngưỡng là ASSUMPTION, người dùng chốt)
