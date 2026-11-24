@@ -1,0 +1,37 @@
+{
+  "_doc": "Plan cắt giọng cho scripts/cut_voice.py. tl_in / tl_out là giây trên timeline bản dài, ĐÃ chỉnh theo số đo (khoảng lặng, trũng năng lượng), không phải mốc kế hoạch. Chép file này thành beats-plan.json trong thư mục short rồi sửa số.",
+  "lead": 0.30,
+  "gap": 0.30,
+  "fade_ms": 25,
+  "tail": 2.4,
+  "segments": [
+    {
+      "id": "S1",
+      "tl_in": 246.92,
+      "tl_out": 254.95,
+      "clip": "voice",
+      "first_word": "k93w7",
+      "last_word": "k97w5",
+      "gap_after": 0.30,
+      "note": "vào giữa lời liền tại trũng −25 dB để bỏ từ nối; cần người nghe"
+    },
+    {
+      "id": "S2",
+      "tl_in": 457.34,
+      "tl_out": 466.50,
+      "clip": "voiceEnd",
+      "first_word": "k205w2",
+      "last_word": "k208w9",
+      "gap_after": 0.0,
+      "note": "liền với S3: rút khoảng lặng gốc 0,82 s còn 0,34 s, hai điểm cắt đều trong vùng im"
+    },
+    {
+      "id": "S3",
+      "tl_in": 467.00,
+      "tl_out": 486.62,
+      "clip": "voiceEnd",
+      "first_word": "k209w0",
+      "last_word": "k216w6"
+    }
+  ]
+}

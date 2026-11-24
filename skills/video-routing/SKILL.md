@@ -75,6 +75,7 @@ Trên máy có `OPCOS_WORKSPACES`, `--mode embedded --yes` chọn trạm trong r
   `schema_version: 1`. `brand` bắt buộc; thiếu là mã 2. Khuôn spec: `docs/CONTRACT.md`.
   Video tin cần 1–2 ảnh thật của chủ thể: làm bước «tìm ảnh» sau dossier, trước storyboard —
   [tìm ảnh cho video tin](references/news-image-search.md). Project HyperFrames tự dựng: `render --project-dir`.
+- **Biến một video dài đã xong thành loạt short/reel 9:16 dựng lại từ nguồn** (đề xuất ý tưởng, cắt giọng theo điểm đo, bố cục infographic dọc, icon động, duyệt ảnh tĩnh rồi mới render): đọc skill `video-long-to-shorts`. Vừa giao xong một video dài thì hỏi người dùng có muốn làm short không. Chỉ có mp4 cần cắt khung + phụ đề thì vẫn là `video-edit`.
 - **Đã có video câm, cần giọng**: `narrate`. Ghim `--profile`, đừng dùng `--instruct` cho bản
   giao (mỗi câu một giọng khác).
 - **Avatar nói** (mặt người dùng hoặc người đã đồng ý nói theo WAV mới; mở bài, kết bài, khung góc xen slide; hồ sơ avatar dùng lại): đọc skill `avatar-create` TRƯỚC, kể cả khi chỉ cần một lệnh `video-studio avatar`. Skill sở hữu cổng đồng ý, lối đi optimize → render → qa và hồ sơ trong trạm.
