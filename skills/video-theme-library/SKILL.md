@@ -76,6 +76,23 @@ bằng `video-studio render --project-dir <thư mục> --out <thư mục ra>`: l
 và render bằng engine ghim trên bản chép cô lập; project có `.npmrc`, `package.json` hay
 `node_modules/` bị từ chối (mã 2).
 
+### Top Story có ảnh phải và infographic dưới tiêu đề
+
+Khi brief yêu cầu ảnh cố định bên phải, chọn `top_story.visual_layout: image-right` cho cả Full và Short.
+Storyboard có mở, các chương và kết. Mỗi cảnh ghi riêng:
+
+- **Cột trái:** tiêu đề, ngay dưới là 2–4 hành động ngắn. Mỗi hành động có một icon đúng nghĩa.
+  Tham chiếu [mẫu infographic Vlog Design](../vlog-design/references/text-and-infographic-motion.md)
+  để chọn luồng quy trình, timeline, so sánh hoặc biểu đồ. HyperFrames lần lượt hiện thẻ và tạo
+  chuyển động icon theo nhịp. GIF, khi có, là tham chiếu hoặc nguồn thiết kế chuyển động.
+- **Cột phải:** một ảnh tĩnh cục bộ liên quan trực tiếp tới cảnh, giữ nguyên tỷ lệ và có credit.
+  Nếu thiếu, sai chủ đề, trùng hoặc không có căn cứ dùng, tìm lại ảnh theo thực thể và hành động.
+  Giữ ở bước chuẩn bị nếu vẫn thiếu ảnh. Cột này dành riêng cho ảnh.
+- **Kiểm trước và sau render:** cả Full/Short đều phải có hai cột cùng lúc. Kiểm ảnh nhận ra được,
+  thẻ hành động đọc rõ, phụ đề nằm ngoài hai cột. Với khung dọc, rút mô tả trước khi giảm cỡ chữ.
+
+Hợp đồng spec và ví dụ trường dữ liệu ở `docs/TOPSTORY_IMAGE_RIGHT.md` trong repo Video Studio.
+
 ## Quy trình bốn bước
 
 Với lyric video, sau layout hãy tra skill `lyric-video-effects`

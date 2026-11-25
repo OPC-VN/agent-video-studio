@@ -39,6 +39,8 @@ the FULL section duration so they can never run out before their window ends.
 from __future__ import annotations
 
 import argparse
+import base64
+import io
 import json
 import os
 import re
@@ -60,6 +62,7 @@ from ... import _env, _paths, projects, render
 from ... import voice as _voice
 from ...contract import ContractError, StationMissing
 from . import news_video as nv
+from . import top_story_split as split
 
 PROJECT = "topstory"
 
@@ -343,6 +346,7 @@ _LONG_HEAD = """<!doctype html>
 """ + _V2_BASE + """
   .brand{position:absolute;top:54px;left:90px;display:flex;align-items:center;gap:16px;z-index:6}
   .brand .mark{width:48px;height:48px;border-radius:13px;background:linear-gradient(135deg,var(--ac1),#2563eb);box-shadow:0 0 20px rgba(0,229,255,.45)}
+  .brand .mark img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
   .brand .n{font-size:30px;font-weight:800}.brand .n span{color:var(--ac1)}
   .epi{position:absolute;top:62px;right:90px;color:var(--mut);font-size:26px;z-index:6}
   .seg{position:absolute;inset:0;opacity:0;z-index:2}
@@ -376,7 +380,7 @@ _LONG_HEAD = """<!doctype html>
   <div class="orb" id="orb1" style="width:540px;height:540px;left:-120px;top:120px;background:var(--ac1)"></div>
   <div class="orb" id="orb2" style="width:480px;height:480px;right:-90px;bottom:-70px;background:var(--ac2)"></div>
   {BG}
-  <div class="brand"><span class="mark"></span><div class="n">{BA} <span>{BB}</span></div></div>
+  <div class="brand"><span class="mark">{LOGO_MARK}</span><div class="n">{BA} <span>{BB}</span></div></div>
   <div class="epi">{EPI}</div>
   {SEGS}
   <div class="cap">{CAPS}</div>
@@ -408,6 +412,7 @@ _SHORT_HEAD = """<!doctype html>
 """ + _V2_BASE + """
   .brand{position:absolute;top:64px;left:64px;display:flex;align-items:center;gap:14px;z-index:6}
   .brand .mark{width:54px;height:54px;border-radius:15px;background:linear-gradient(135deg,var(--ac1),#2563eb);box-shadow:0 0 20px rgba(0,229,255,.45)}
+  .brand .mark img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
   .brand .n{font-size:34px;font-weight:800}.brand .n span{color:var(--ac1)}
   .epi{position:absolute;top:74px;right:64px;color:var(--mut);font-size:26px;z-index:6}
   .site{position:absolute;bottom:46px;left:0;right:0;text-align:center;color:#67809f;font-size:28px;z-index:6}
@@ -457,7 +462,7 @@ _SHORT_HEAD = """<!doctype html>
   <div class="orb" id="orb1" style="width:480px;height:480px;left:-120px;top:120px;background:var(--ac1)"></div>
   <div class="orb" id="orb2" style="width:420px;height:420px;right:-90px;bottom:60px;background:var(--ac2)"></div>
   {BG}
-  <div class="brand"><span class="mark"></span><div class="n">{BA} <span>{BB}</span></div></div>
+  <div class="brand"><span class="mark">{LOGO_MARK}</span><div class="n">{BA} <span>{BB}</span></div></div>
   <div class="epi">{EPI}</div>
   <div class="site">{BSITE}</div>
   {SEGS}
@@ -538,11 +543,11 @@ def guard_media_sources(sections, json_dir, media_dir):
                     f"media của phần {i} nằm trong thư mục media tạm của bước dựng (media/ của project): {p}. "
                     "Bước dựng xoá và ghi lại thư mục này — chép sang nơi khác rồi trỏ tới đó")
 
-def _prep_media(sec, sec_i, json_dir, full_dur, tag):
+def _prep_media(sec, sec_i, json_dir, full_dur, tag, *, project_dir=None):
     """Materialize one section's images/clips into the project folder.
     Returns [{"kind": "image"|"clip", "src": rel}]. Clips are ffmpeg-fit to the
     FULL section duration so their display window can never outrun the file."""
-    media_dir = os.path.join(_proj(), "media")
+    media_dir = os.path.join(project_dir or _proj(), "media")
     os.makedirs(media_dir, exist_ok=True)
     out = []
     _items = sec.get("media") or []
@@ -763,15 +768,91 @@ def _accent_css():
     return f"<style>:root{{{decl}}}</style>"
 
 
-def _build(story, blocks, total, head, json_dir, tag):
+def _split_scenes(story):
+    if story.get("visual_layout") != "image-right":
+        return []
+    scenes = [story.get("cover_visual"), *story.get("sections", []), story.get("outro_visual")]
+    for scene in scenes:
+        if not isinstance(scene, dict) or not str(scene.get("title") or "").strip():
+            raise ContractError("image-right requires a title in every scene, including cover and outro")
+        media = scene.get("media")
+        if (not isinstance(media, list) or len(media) != 1 or not isinstance(media[0], dict)
+                or media[0].get("type") != "image" or not isinstance(media[0].get("src"), str)
+                or not media[0]["src"] or media[0]["src"].lower().startswith(("http:", "https:"))):
+            raise ContractError("image-right requires exactly one local still image per scene")
+        diagram = scene.get("diagram")
+        items = diagram.get("items") if isinstance(diagram, dict) else None
+        if (not isinstance(items, list) or not 2 <= len(items) <= 4 or any(
+                not isinstance(item, dict) or not str(item.get("t") or "").strip()
+                or item.get("icon") not in split.ICONS for item in items)):
+            raise ContractError("image-right requires two to four labeled infographic steps with supported icons")
+    return scenes
+
+
+def _validated_scenes(story, scenes, json_dir):
+    if story.get("visual_layout") == "image-right":
+        scenes = _split_scenes(story)
+        for scene in scenes:
+            if not _local_media(scene["media"][0]["src"], json_dir, nv._LOCAL_EXTS, scene["title"]):
+                raise ContractError(f'image-right: missing local image for {scene["title"]}')
+    return scenes
+
+
+def _logo_markup(json_dir):
+    logo = BRAND.get("logo")
+    if logo is None:
+        return ""
+    formats = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}
+    file = _local_media(logo, json_dir, formats, "logo") if isinstance(logo, str) else None
+    if not file:
+        raise ContractError("brand.logo must point to a local PNG, JPEG or WebP image")
+    try:
+        from PIL import Image
+    except ImportError as exc:
+        raise StationMissing("brand.logo requires Pillow in the video runtime") from exc
+    mime = formats[os.path.splitext(file)[1].lower()]
+    try:
+        with open(file, "rb") as stream:
+            data = stream.read(8 * 1024 * 1024 + 1)
+        if len(data) > 8 * 1024 * 1024:
+            raise ValueError("logo is larger than 8 MiB")
+        with Image.open(io.BytesIO(data)) as image:
+            if Image.MIME.get(image.format) != mime:
+                raise ValueError("file contents do not match the image extension")
+            image.verify()
+    except (OSError, ValueError, Image.DecompressionBombError) as exc:
+        raise ContractError(f"cannot read brand.logo: {exc}") from exc
+    encoded = base64.b64encode(data).decode("ascii")
+    return f'<img src="data:{mime};base64,{encoded}" alt="Logo">'
+
+
+def _build(story, blocks, total, head, json_dir, tag, *, project_dir=None):
     """Assemble the composition HTML. blocks = list of dicts:
     {kind: intro|sec|outro, sec, audio, dur, beats|None}."""
     segs_html, anim, caps_ev, kcaps_html = [], [], [], []
     t = 0.0
     sec_i = 0
     track = 1
-    for blk in blocks:
+    split_scenes = _split_scenes(story)
+    if split_scenes:
+        head = head.replace("</style></head>", split.CSS + "</style></head>")
+    for block_index, blk in enumerate(blocks):
         kind, sec, dur, beats = blk["kind"], blk.get("sec"), blk["dur"], blk.get("beats")
+        if split_scenes:
+            scene = split_scenes[block_index]
+            sid = f"{tag}split-{block_index}"
+            kicker = {"intro": "MỞ ĐẦU", "outro": "KẾT LUẬN"}.get(kind, f"PHẦN {block_index}")
+            media = _prep_media(scene, block_index, json_dir, dur, tag, project_dir=project_dir)
+            if len(media) != 1 or media[0]["kind"] != "image":
+                raise ContractError(f'image-right: cannot render image for {scene["title"]}')
+            segs_html.append(split.scene_html(scene, sid, media[0]["src"], kicker))
+            anim.append(f'    m.set("#{sid}",{{opacity:1}},{t:.2f});')
+            anim.extend(split.scene_animation(scene, sid, t, dur))
+            if t + dur < total - 0.1:
+                anim.append(f'    m.set("#{sid}",{{opacity:0}},{t + dur:.2f});')
+            _short_caps(blk, scene, t, dur, kcaps_html, anim, f"{sid}cap")
+            t += dur
+            continue
         if kind == "intro":
             sid = "seg-cover"
             # escbase hook-orb-badge: JSON top-level "repo" -> avatar chủ repo trong orb
@@ -875,9 +956,10 @@ def _build(story, blocks, total, head, json_dir, tag):
                     anim.append(f'    m.fromTo("#{sid}-b{j}",{{opacity:0,y:26}},{{opacity:1,y:0,duration:0.4,ease:"power2.out"}},{rt:.2f});')
                 if multi_img:
                     anim.extend(nv.hero_anim(sid, len(smedia), t, dur))
-                elif img_div and smedia[0]["kind"] == "image":
+                elif img_div:
                     anim.append(f'    m.to("#{sid}-im",{{opacity:1,duration:0.45}},{t + 0.25:.2f});')
-                    anim.append(f'    m.fromTo("#{sid}-im",{{scale:1.0}},{{scale:1.06,duration:{max(1.0, dur):.2f},ease:"none"}},{t + 0.45:.2f});')
+                    if smedia[0]["kind"] == "image":
+                        anim.append(f'    m.fromTo("#{sid}-im",{{scale:1.0}},{{scale:1.06,duration:{max(1.0, dur):.2f},ease:"none"}},{t + 0.45:.2f});')
                 if t + dur < total - 0.1:
                     anim.append(f'    m.to("#{sid}",{{opacity:0,duration:0.45}},{t + dur - 0.45:.2f});')
                 _short_caps(blk, sec, t, dur, kcaps_html, anim, f"{sid}cap")
@@ -1024,6 +1106,7 @@ def _build(story, blocks, total, head, json_dir, tag):
         return int(((total or 600) + 20) // dur) + 1
 
     html = (head.replace("{ACSS}", _accent_css())
+                .replace("{LOGO_MARK}", _logo_markup(json_dir))
                 .replace("{TOTAL}", str(total))
                 .replace("{RGRID}", str(_rep(26)))
                 .replace("{RORB1}", str(_rep(15)))
@@ -1079,7 +1162,7 @@ def make_long(story, out_path, model, prompt, json_dir):
     if not sections:
         raise ValueError("top_story.sections is empty")
     media_dir = os.path.join(_proj(), "media")
-    guard_media_sources(sections, json_dir, media_dir)     # TRƯỚC rmtree: nguồn trong media/ sẽ bị xoá
+    guard_media_sources(_validated_scenes(story, sections, json_dir), json_dir, media_dir)     # TRƯỚC rmtree: nguồn trong media/ sẽ bị xoá
     if os.path.isdir(media_dir):
         shutil.rmtree(media_dir, ignore_errors=True)
 
@@ -1136,7 +1219,7 @@ def make_short(story, out_path, model, prompt, json_dir):
     print("  [short] synthesizing narration ...", flush=True)
     blocks = []
     media_dir = os.path.join(_proj(), "media")
-    guard_media_sources(sections, json_dir, media_dir)
+    guard_media_sources(_validated_scenes(story, sections, json_dir), json_dir, media_dir)
     os.makedirs(media_dir, exist_ok=True)
     headline_kw = (story.get("image_query") or story.get("headline") or "technology").strip()
     intro = story.get("intro_short") or f"{story.get('headline', '')}. Đây là tin AI nóng nhất hôm nay."
@@ -1195,6 +1278,8 @@ def _apply_branding(b):
     """
     given = {k: v for k, v in (b or {}).items() if str(v or "").strip()}
     merged = nv.resolve_brand({**BRAND_DEFAULTS, **BRAND, **given})
+    if "logo" not in given:
+        merged.pop("logo", None)
     BRAND.clear()
     BRAND.update(merged)
 

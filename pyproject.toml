@@ -18,11 +18,11 @@ dependencies = []
 # Lồng tiếng + render theo template: cần repo giọng (`agent-voice-studio`, bản clone
 # `pip install -e` vào CÙNG venv — chưa lên PyPI nên extras chỉ để pip kiểm, không tải được)
 # và hai thư viện âm thanh mà template dùng để ghép/ghi sóng.
-voice = ["agent-voice-studio>=0.2.0.dev0", "numpy", "soundfile"]
+voice = ["agent-voice-studio>=0.2.0.dev0", "numpy", "soundfile", "pillow>=10"]
 # Chỉnh footage thật (bộ helper chưng cất từ video-use): nặng, không vào lõi.
 edit = ["numpy", "pillow", "matplotlib", "librosa", "requests", "faster-whisper"]
 # `pyyaml` chỉ để TEST đọc được frontmatter skill và file CI — lõi không import yaml.
-test = ["pytest", "pyyaml"]
+test = ["pytest", "pyyaml", "pillow>=10"]
 
 [project.scripts]
 video-studio = "video_studio.cli:main"
