@@ -1,0 +1,114 @@
+{
+  "skill_name": "video-long-to-shorts",
+  "status": "draft",
+  "baseline": "not_run",
+  "cases": [
+    {
+      "id": "long-to-shorts-typical",
+      "kind": "typical",
+      "should_trigger": true,
+      "prompt": "Video dài tập 3 đã dựng xong bằng HyperFrames (project trong trạm, có index.html, voice.wav và các take avatar). Cắt giúp tôi vài short 9:16 để đăng Reels và Shorts.",
+      "expected_behaviors": [
+        "Chạy source_map.py trên composition nguồn và kiểm kê clip giọng, take avatar, khoảng không có avatar trước khi đề xuất.",
+        "Trình ít nhất 3 ứng viên trong SHORTS-PLAN.md, mỗi ứng viên có mã dòng nguồn, mốc timeline, điểm rubric, tỉ lệ giây có avatar và rủi ro.",
+        "Dừng ở Cổng 1 chờ người dùng chọn short, nhạc nền và tên hãng được nhắc; không cắt giọng trước khi có lời chọn.",
+        "Lời của short lấy nguyên văn từ nguồn; hook và thẻ kết không thêm khẳng định ngoài lời gốc."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-offer-after-long-video",
+      "kind": "typical",
+      "should_trigger": true,
+      "prompt": "Bản final video dài 9 phút render xong và QA đạt rồi. Tổng kết giúp tôi và cho biết bước tiếp theo.",
+      "expected_behaviors": [
+        "Sau khi tổng kết, hỏi một câu người dùng có muốn đóng gói thành short 9:16 không.",
+        "Kèm ít nhất 3 ý tưởng short cắt từ lời của bản dài, có khuyến nghị bắt đầu từ ý nào và vì sao.",
+        "Không tự dựng short khi người dùng chưa trả lời; nếu người dùng từ chối thì dừng."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-stills-gate",
+      "kind": "edge",
+      "should_trigger": true,
+      "prompt": "Tôi chọn SH-A và SH-B trong kế hoạch rồi, có nhạc nền. Dựng luôn rồi gửi file mp4 cho tôi nhé.",
+      "expected_behaviors": [
+        "Dựng SH-A trước tới bảng ảnh tĩnh rồi dừng ở Cổng 2; không render bản giao khi chưa có lời duyệt ảnh tĩnh.",
+        "Điểm cắt và mốc phụ đề lấy từ nhận dạng giọng trên file âm, không lấy thẳng mốc chữ karaoke; quy đổi thời gian qua bản đồ clip audio.",
+        "Mọi ý hiện bằng icon hoặc logo động, không chip chữ; avatar nhỏ; phụ đề cụm 3–5 từ sát đáy.",
+        "Chạy gap_scan.py trước khi gửi ảnh; gửi kèm danh sách icon còn ở mức sàn và ICON-GAPS.md.",
+        "Nêu rủi ro giấy phép nhạc nền và ghi 'chưa xác minh' nếu chưa có nguồn."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-review-feedback",
+      "kind": "edge",
+      "should_trigger": true,
+      "prompt": "Xem ảnh tĩnh v2 rồi: icon chỉ sáng lên chứ không động, nửa dưới khung trống, có hai logo nền tảng video trong cùng một khung, và có logo của hãng tôi không hề nhắc. Sửa đi.",
+      "expected_behaviors": [
+        "Icon chính của mỗi câu có ít nhất 2 thành phần bên trong tương tác theo nghĩa của vật (cửa sổ bật, ô lịch đổi chỗ, cột biểu đồ đổi); đường nối giữa icon chạy liên tục.",
+        "Đổi sang mẫu bố cục infographic dọc phủ đều vùng hoạt họa; không dồn một bên, không có trên thiếu dưới.",
+        "Gỡ asset lặp trong một khung; chỉ giữ logo hãng được nhắc tên trong lời của beat.",
+        "Sửa trong script dựng rồi sinh lại, chạy lại gap_scan.py, gửi bảng ảnh v3 và giữ bảng v2 để so; vẫn chờ lời duyệt."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-missing-icons",
+      "kind": "edge",
+      "should_trigger": true,
+      "prompt": "Short SH-C thiếu icon cho 6 ý. Tự tìm trên mạng hoặc nhờ công cụ tạo ảnh làm cho đủ rồi dựng tiếp.",
+      "expected_behaviors": [
+        "Ghi 6 ý thiếu vào ICON-GAPS.md với icon tạm và đề xuất trước.",
+        "Chỉ tải hoặc tạo icon sau khi người dùng cho phép rõ trong phiên; gọi công cụ của hãng khác theo luật gọi chéo của máy.",
+        "Khi được phép: gom nhu cầu cả loạt vào một tấm lưới theo khoá phong cách kênh, cấm chữ và logo; icon cần thành phần rời chỗ thì xin dạng bung lớp.",
+        "Không tự thêm logo hãng không được nhắc trong lời."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-embedded-media",
+      "kind": "edge",
+      "should_trigger": true,
+      "prompt": "Short này có đoạn tôi nói về màn hình demo, lồng clip quay màn hình vào khung dọc đoạn đó, các icon cũ cứ để nguyên xung quanh.",
+      "expected_behaviors": [
+        "Dùng mẫu media lồng: media chiếm vùng hoạt họa, chỉ còn phụ đề và avatar nhỏ.",
+        "Giải thích luật 'khung có media thì chỉ tập trung vào media' và đề nghị gỡ icon xung quanh; lệnh trực tiếp của người dùng thắng, nhưng ghi rõ ngoại lệ và lỗi gap_scan tương ứng.",
+        "Media là khung thật cắt từ nguồn, không dựng khung giả."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-negative-crop-only",
+      "kind": "near-miss",
+      "should_trigger": false,
+      "prompt": "Tôi chỉ có file mp4 buổi phỏng vấn 20 phút, cắt lấy đoạn 2:10–2:55, đổi khung dọc và chèn phụ đề.",
+      "expected_behaviors": [
+        "Không dùng skill này (không có nguồn để dựng lại); chuyển sang video-edit."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-negative-news-short",
+      "kind": "near-miss",
+      "should_trigger": false,
+      "prompt": "Dựng bản tin AI hôm nay từ spec JSON, xuất cả bản 16:9 và bản short dọc.",
+      "expected_behaviors": [
+        "Không dùng skill này; theo video-routing chạy video-studio render với spec bản tin."
+      ],
+      "fixtures": []
+    },
+    {
+      "id": "long-to-shorts-negative-new-long-storyboard",
+      "kind": "near-miss",
+      "should_trigger": false,
+      "prompt": "Từ lời thoại tập 4 và ba clip quay màn hình, lên storyboard video dài 16:9 có avatar.",
+      "expected_behaviors": [
+        "Không dùng skill này; chuyển sang vlog-design. Chỉ đề nghị làm short sau khi video dài đã giao."
+      ],
+      "fixtures": []
+    }
+  ]
+}

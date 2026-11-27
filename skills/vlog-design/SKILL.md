@@ -73,3 +73,5 @@ Hỏng ở bước nào thì sửa tại bước đó rồi chạy lại kiểm 
 ## Tiêu chí hoàn thành
 
 Đủ 7 file ở bảng trên trong project của trạm, `pace_check` đạt, manifest không dòng thiếu nguồn, khung hình chính đã được duyệt; báo rõ phần chưa kiểm (chưa nghe audio, chưa render đủ).
+
+**Sau khi video dài đã dựng và giao xong:** hỏi người dùng có muốn đóng gói thành short 9:16 không, kèm ≥ 3 ý tưởng cắt từ lời gốc; đồng ý thì chuyển skill `video-long-to-shorts`.

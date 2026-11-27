@@ -164,9 +164,9 @@ maps references, reusable code and templates to their locations and records righ
 The current [GSAP core draw recipe](skills/video-theme-library/references/gsap-core-draw.md) is a
 single candidate preset; it is not a complete GSAP template library.
 
-`skills/` holds **37 skills**: sixteen written for this repo (`video-routing`, `video-edit`, `avatar-create`,
+`skills/` holds **38 skills**: seventeen written for this repo (`video-routing`, `video-edit`, `avatar-create`,
 `video-cleanup`, `video-theme-library`, `video-reference-analysis`,
-`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `video-storyboard-design`, `vlog-design`, `line-art-motion`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, [`infographic-production`](skills/infographic-production/SKILL.md)) and **21 distilled from the current HyperFrames skill set**
+`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `video-storyboard-design`, `vlog-design`, `line-art-motion`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, `video-long-to-shorts`, [`infographic-production`](skills/infographic-production/SKILL.md)) and **21 distilled from the current HyperFrames skill set**
 (`skills/hyperframes/`). Those 21 are translated into Vietnamese, condensed and edited from the
 upstream `skills/<name>/SKILL.md` at one pinned tag; the frontmatter stays in English because
 that is what a harness reads to route. No upstream binary (font, audio, image) and no upstream
@@ -176,7 +176,7 @@ that is what a harness reads to route. No upstream binary (font, audio, image) a
 Skills are **not** copied into the station. The repo root carries one small adapter per skill in
 `.claude/skills/` (Claude Code) and `.agents/skills/` (Codex, Antigravity): it holds only the
 skill's `name` and `description` and points the agent at the original under `skills/`. Open the
-repository folder in your host and it sees all 37; `git pull` is enough to get new skill content.
+repository folder in your host and it sees all 38; `git pull` is enough to get new skill content.
 After adding, removing or re-describing a skill, run `python scripts/build_host_adapters.py`;
 `tests/test_host_adapters.py` fails when an adapter drifts from its source. A station set up by
 an older version still holds copies plus `skills-lock.json`: `init --station DIR --migrate`

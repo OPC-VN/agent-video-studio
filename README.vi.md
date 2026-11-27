@@ -156,9 +156,9 @@ chỉ nơi đặt reference, mã dùng lại và template mới, cùng cách ghi
 [Recipe GSAP core draw](skills/video-theme-library/references/gsap-core-draw.md) hiện là một
 preset candidate, chưa phải thư viện template GSAP hoàn chỉnh.
 
-`skills/` có **37 skill**: mười sáu skill của chính repo này (`video-routing`, `video-edit`, `avatar-create`,
+`skills/` có **38 skill**: mười bảy skill của chính repo này (`video-routing`, `video-edit`, `avatar-create`,
 `video-cleanup`, `video-theme-library`, `video-reference-analysis`,
-`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `video-storyboard-design`, `vlog-design`, `line-art-motion`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, [`infographic-production`](skills/infographic-production/SKILL.md)) và **21 skill chưng cất từ bộ skill hiện hành của HyperFrames**
+`video-remix-brief`, `lyric-video-effects`, `photo-ambient-effects`, `video-storyboard-design`, `vlog-design`, `line-art-motion`, `land-plot-map-video`, `video-reverse-engineer`, `real-estate-location-video`, `video-long-to-shorts`, [`infographic-production`](skills/infographic-production/SKILL.md)) và **21 skill chưng cất từ bộ skill hiện hành của HyperFrames**
 (`skills/hyperframes/`). Bộ 21 này là bản **đã dịch sang tiếng Việt, rút gọn và biên tập lại** từ
 `skills/<tên>/SKILL.md` của upstream tại một tag cụ thể — frontmatter giữ tiếng Anh vì đó là thứ
 harness đọc để định tuyến. Không file nhị phân nào của upstream (font, nhạc, ảnh) được chép vào
@@ -167,7 +167,7 @@ harness đọc để định tuyến. Không file nhị phân nào của upstrea
 
 Skill **không** được chép vào trạm. Gốc repo có một adapter nhỏ cho mỗi skill ở `.claude/skills/`
 (Claude Code) và `.agents/skills/` (Codex, Antigravity): adapter chỉ mang `name` + `description`
-của skill và trỏ agent về bản gốc trong `skills/`. Mở thư mục repo trong host là thấy đủ 37 skill;
+của skill và trỏ agent về bản gốc trong `skills/`. Mở thư mục repo trong host là thấy đủ 38 skill;
 `git pull` là có nội dung skill mới. Thêm, xoá hay đổi mô tả skill thì chạy
 `python scripts/build_host_adapters.py`; `tests/test_host_adapters.py` đỏ khi adapter lệch nguồn.
 Trạm dựng bằng bản cũ còn bản chép cùng `skills-lock.json`: `init --station DIR --migrate` **gỡ**

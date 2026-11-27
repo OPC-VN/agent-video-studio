@@ -32,3 +32,5 @@ Khi yêu cầu ba draft nâng cấp hoặc phản biện sáng tạo, đọc [re
 ## Giao tiếp và review
 
 Giao file storyboard, tóm tắt ý tưởng, lựa chọn motion, nguồn/quyền, chi phí và điểm cần người dùng quyết. Nếu được giao dựng video đầy đủ, theo [workflow chung](../video-routing/references/video-workflow.md): draft 1 → agent xem/nghe trực tiếp, đề xuất và sửa → draft 2 → xem/nghe, đề xuất sáng tạo phù hợp và sửa → draft 3; kiểm và bàn giao cả ba để người dùng chọn. Pilot ngắn không tính draft. Nếu không thể xem hoặc nghe trực tiếp, ghi rõ chưa kiểm, không tự nhận đã review và báo phần phụ thuộc chưa hoàn thành. Không tự mở thêm vòng sau draft 3 nếu chưa được giao.
+
+Sau khi video dài đã dựng và giao xong, hỏi người dùng có muốn đóng gói thành short 9:16 không, kèm ít nhất 3 ý tưởng cắt từ lời gốc; đồng ý thì chuyển skill `video-long-to-shorts`.
